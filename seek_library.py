@@ -2,20 +2,17 @@ import requests
 import json
 import string
 import getpass
-
-
+import sys
+import io
 import ipywidgets as widgets
 # Importing the libraries we need to format the data in a more readable way.
 import pandas as pd
 from pandas.io.json import json_normalize
 
 from IPython.display import display
-
+from IPython.display import HTML
 from IPython.core.interactiveshell import InteractiveShell
 InteractiveShell.ast_node_interactivity = "all"
-
-
-
 
 
 
@@ -48,13 +45,11 @@ def json_for_resource(type, id):
 
 def get_input(prompt):
     return input(prompt)
-# 
-#
-# widgets.IntText(
-#     value=7,
-#     description='ID number:',
-#     disabled=False
-# )
+
+def get_number_input():
+
+    return id_number_to_find
+
 
 # to call s = read()
 class read():
@@ -66,25 +61,43 @@ class read():
         self.search_id = None
         self.option_chosen = None
         self.search_id = None
+        self.current_blob = None
 
 
 
-    def search(self):
+    def query(self):
         isa_options_widget = widgets.Dropdown(
-            options=['Investigation', 'Assay', 'Study'],
+            options=['Investigation', 'Assay', 'Study', 'Data File'],
             value='Investigation',
-            description='Search:',
+            description='Search Type:',
         )
-        isa_options_widget.observe(self.change_made)
+        isa_options_widget.observe(self.change_made_ISA)
         display(isa_options_widget)
         self.option_chosen = str(isa_options_widget.value)
-        self.search_id = get_input("Search for Item ID:")
-        self.find_project()
 
-    def change_made(self, change):
+        id_number_to_find= widgets.BoundedIntText(
+            value=1,
+            description='ID number:',
+            disabled=False,
+            min=1,
+            max = sys.maxsize
+        )
+        id_number_to_find.observe(self.change_made_ID)
+        display(id_number_to_find)
+        self.search_id = id_number_to_find.value
+
+    def search(self):
+        self.display_datafile()
+
+    def change_made_ISA(self, change):
         if change['type'] == 'change' and change['name'] == 'value':
             #print("changed to %s" % change['new'])
             self.option_chosen = str(change['new'])
+
+    def change_made_ID(self, change):
+        if change['type'] == 'change' and change['name'] == 'value':
+            #print("changed to %s" % change['new'])
+            self.search_id = int(change['new'])
 
     def option_type(self):
         #s.option_type() to call
@@ -93,56 +106,48 @@ class read():
     def id_number_to_find(self):
         print(self.search_id)
 
-    def find_project(self):
-        print("IT works")
-        display(self.option_type)
-        display(self.id_number_to_find)
+    def display_datafile(self):
+        datafile_id = self.search_id
+        result_datafile = json_for_resource('data_files',datafile_id)
+        title = json_methods.get_title(result_datafile)
+        description = json_methods.get_description(result_datafile)
 
-def find_project():
-    #from IPython.core.interactiveshell import InteractiveShell
-    #InteractiveShell.ast_node_interactivity = "all"
-    project_id = input('ID of project')
-    result = json_for_resource('projects',project_id)
-    print("Project: " + result['data']['attributes']['title'] + "\n")
+        self.current_blob = json_methods.get_blob(result_datafile)
+        link = blob_methods.get_link(self.current_blob)
+        filename = blob_methods.get_filename(self.current_blob)
 
-    display(result['data']['relationships'])
-    files = []
-    type = 'data_files'
+        headers = { "Accept": "text/csv" }
+        r = requests.get(link, headers=headers, params={'sheet':'1'})
+        r.raise_for_status()
 
-    for item in result['data']['relationships'][type]['data']:
-      j = json_for_resource(item['type'],item['id'])
-      files.append({
-          'id':j['data']['id'],
-          'title':j['data']['attributes']['title'],
-      })
+        csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
 
-    print(str(len(files)) + " found")
+        display(HTML('<h1><u>{0}</u></h1>'.format(title)))
+        display(HTML('<p>{0}</p>'.format(description)))
+        # display()
+        display(HTML('<h4>{0}</h4>'.format(filename)))
+        # display(filename)
+        display(csv)
 
-    display(json_normalize(files))
+    def download_link(self):
+        link = self.current_blob['link']
+        filename = self.current_blob['original_filename']
+        download_link = link+"/download"
+        print("Download link: " + download_link + "\n")
+        HTML("<a href='"+ download_link + "'>Download + " + filename + "</a>")
+class blob_methods():
+    def get_link(blob):
+        return blob['link']
 
-def test():
-    #from IPython.core.interactiveshell import InteractiveShell
-    #InteractiveShell.ast_node_interactivity = "all"
-    base_url = 'https://testing.sysmo-db.org'
-    #base_url = 'https://sandbox3.fairdomhub.org'
+    def get_filename(blob):
+        return blob['original_filename']
 
-    headers = {"Accept": "application/vnd.api+json",
-               "Accept-Charset": "ISO-8859-1"}
+class json_methods():
+    def get_title(r):
+        return r['data']['attributes']['title']
 
-    session = requests.Session()
-    session.headers.update(headers)
-    session.auth = (input('Username:'), getpass.getpass('Password'))
-    print('hello')
+    def get_description(r):
+        return r['data']['attributes']['description']
 
-    data_file_id = 734
-    data_file_id
-    result = json_for_resource('data_files',data_file_id,session)
-
-    title = result['data']['attributes']['title']
-
-    print(title)
-
-
-    print(result['data']['attributes'])
-    print(result['data']['attributes']['policy'])
-    print('bye')
+    def get_blob(r):
+        return r['data']['attributes']['content_blobs'][0]

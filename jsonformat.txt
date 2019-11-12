@@ -1,0 +1,119 @@
+id
+1
+---
+type
+investigations
+---
+attributes
+{'snapshots': [{'snapshot': 1, 'url': 'https://fairdomhub.org/investigations/1/snapshots/1'}, {'snapshot': 2, 'url': 'https://fairdomhub.org/investigations/1/snapshots/2'}], 'title': "Creating data sheet template for 'omics data", 'description': 'Data integration is an essential part of Systems Biology. Scientists need to combine different sources of information in order to model biological systems, and relate those models to available experimental data for validation. Currently, only a small fraction of the data and models produced during Systems Biology investigations are deposited for reuse by the community, and only a smaller fraction of that data is standards compliant, semantic content.  \r\nBy embedding semantic technologies into familiar data management tools, the SEEK [1] enables semantic annotation of new data and the generation and querying of linkeddata  compliant datasets, whilst hiding the complexities of ontologies and metadata from its users. \r\nThis investigation contains spreadsheet templates and examples for SEEK users to download and use for structuring experimental data.  Templates make use of the Minimal Information Models (https://www.biosharing.org), which have been collected under the umbrella of MIBBI (Minimum Information for Biological and Biomedical Investigations). \r\nThese templates were developed by FAIRDOM  team,  FAIRDOM PALs,  and SEEK users\r\n\r\n', 'other_creators': None}
+---
+snapshots
+[{'snapshot': 1, 'url': 'https://fairdomhub.org/investigations/1/snapshots/1'}, {'snapshot': 2, 'url': 'https://fairdomhub.org/investigations/1/snapshots/2'}]
+---
+title
+Creating data sheet template for 'omics data
+---
+description
+Data integration is an essential part of Systems Biology. Scientists need to combine different sources of information in order to model biological systems, and relate those models to available experimental data for validation. Currently, only a small fraction of the data and models produced during Systems Biology investigations are deposited for reuse by the community, and only a smaller fraction of that data is standards compliant, semantic content.
+By embedding semantic technologies into familiar data management tools, the SEEK [1] enables semantic annotation of new data and the generation and querying of linkeddata  compliant datasets, whilst hiding the complexities of ontologies and metadata from its users.
+This investigation contains spreadsheet templates and examples for SEEK users to download and use for structuring experimental data.  Templates make use of the Minimal Information Models (https://www.biosharing.org), which have been collected under the umbrella of MIBBI (Minimum Information for Biological and Biomedical Investigations).
+These templates were developed by FAIRDOM  team,  FAIRDOM PALs,  and SEEK users
+
+
+---
+other_creators
+None
+---
+relationships
+{'creators': {'data': [{'id': '136', 'type': 'people'}]}, 'submitter': {'data': [{'id': '136', 'type': 'people'}]}, 'people': {'data': [{'id': '136', 'type': 'people'}]}, 'projects': {'data': [{'id': '51', 'type': 'projects'}, {'id': '19', 'type': 'projects'}, {'id': '12', 'type': 'projects'}]}, 'studies': {'data': [{'id': '14', 'type': 'studies'}, {'id': '13', 'type': 'studies'}, {'id': '1', 'type': 'studies'}]}, 'assays': {'data': [{'id': '148', 'type': 'assays'}, {'id': '1', 'type': 'assays'}, {'id': '154', 'type': 'assays'}, {'id': '152', 'type': 'assays'}, {'id': '151', 'type': 'assays'}, {'id': '150', 'type': 'assays'}, {'id': '149', 'type': 'assays'}, {'id': '18', 'type': 'assays'}, {'id': '17', 'type': 'assays'}]}, 'data_files': {'data': [{'id': '2', 'type': 'data_files'}, {'id': '2754', 'type': 'data_files'}, {'id': '10', 'type': 'data_files'}, {'id': '927', 'type': 'data_files'}, {'id': '1101', 'type': 'data_files'}, {'id': '932', 'type': 'data_files'}, {'id': '9', 'type': 'data_files'}, {'id': '938', 'type': 'data_files'}, {'id': '928', 'type': 'data_files'}, {'id': '929', 'type': 'data_files'}, {'id': '930', 'type': 'data_files'}, {'id': '931', 'type': 'data_files'}, {'id': '933', 'type': 'data_files'}, {'id': '934', 'type': 'data_files'}, {'id': '8', 'type': 'data_files'}]}, 'models': {'data': []}, 'sops': {'data': [{'id': '75', 'type': 'sops'}, {'id': '76', 'type': 'sops'}]}, 'publications': {'data': [{'id': '400', 'type': 'publications'}, {'id': '401', 'type': 'publications'}, {'id': '300', 'type': 'publications'}, {'id': '139', 'type': 'publications'}]}, 'documents': {'data': []}}
+---
+creators
+{'data': [{'id': '136', 'type': 'people'}]}
+---
+data
+[{'id': '136', 'type': 'people'}]
+---
+submitter
+{'data': [{'id': '136', 'type': 'people'}]}
+---
+data
+[{'id': '136', 'type': 'people'}]
+---
+people
+{'data': [{'id': '136', 'type': 'people'}]}
+---
+data
+[{'id': '136', 'type': 'people'}]
+---
+projects
+{'data': [{'id': '51', 'type': 'projects'}, {'id': '19', 'type': 'projects'}, {'id': '12', 'type': 'projects'}]}
+---
+data
+[{'id': '51', 'type': 'projects'}, {'id': '19', 'type': 'projects'}, {'id': '12', 'type': 'projects'}]
+---
+studies
+{'data': [{'id': '14', 'type': 'studies'}, {'id': '13', 'type': 'studies'}, {'id': '1', 'type': 'studies'}]}
+---
+data
+[{'id': '14', 'type': 'studies'}, {'id': '13', 'type': 'studies'}, {'id': '1', 'type': 'studies'}]
+---
+assays
+{'data': [{'id': '148', 'type': 'assays'}, {'id': '1', 'type': 'assays'}, {'id': '154', 'type': 'assays'}, {'id': '152', 'type': 'assays'}, {'id': '151', 'type': 'assays'}, {'id': '150', 'type': 'assays'}, {'id': '149', 'type': 'assays'}, {'id': '18', 'type': 'assays'}, {'id': '17', 'type': 'assays'}]}
+---
+data
+[{'id': '148', 'type': 'assays'}, {'id': '1', 'type': 'assays'}, {'id': '154', 'type': 'assays'}, {'id': '152', 'type': 'assays'}, {'id': '151', 'type': 'assays'}, {'id': '150', 'type': 'assays'}, {'id': '149', 'type': 'assays'}, {'id': '18', 'type': 'assays'}, {'id': '17', 'type': 'assays'}]
+---
+data_files
+{'data': [{'id': '2', 'type': 'data_files'}, {'id': '2754', 'type': 'data_files'}, {'id': '10', 'type': 'data_files'}, {'id': '927', 'type': 'data_files'}, {'id': '1101', 'type': 'data_files'}, {'id': '932', 'type': 'data_files'}, {'id': '9', 'type': 'data_files'}, {'id': '938', 'type': 'data_files'}, {'id': '928', 'type': 'data_files'}, {'id': '929', 'type': 'data_files'}, {'id': '930', 'type': 'data_files'}, {'id': '931', 'type': 'data_files'}, {'id': '933', 'type': 'data_files'}, {'id': '934', 'type': 'data_files'}, {'id': '8', 'type': 'data_files'}]}
+---
+data
+[{'id': '2', 'type': 'data_files'}, {'id': '2754', 'type': 'data_files'}, {'id': '10', 'type': 'data_files'}, {'id': '927', 'type': 'data_files'}, {'id': '1101', 'type': 'data_files'}, {'id': '932', 'type': 'data_files'}, {'id': '9', 'type': 'data_files'}, {'id': '938', 'type': 'data_files'}, {'id': '928', 'type': 'data_files'}, {'id': '929', 'type': 'data_files'}, {'id': '930', 'type': 'data_files'}, {'id': '931', 'type': 'data_files'}, {'id': '933', 'type': 'data_files'}, {'id': '934', 'type': 'data_files'}, {'id': '8', 'type': 'data_files'}]
+---
+models
+{'data': []}
+---
+data
+[]
+---
+sops
+{'data': [{'id': '75', 'type': 'sops'}, {'id': '76', 'type': 'sops'}]}
+---
+data
+[{'id': '75', 'type': 'sops'}, {'id': '76', 'type': 'sops'}]
+---
+publications
+{'data': [{'id': '400', 'type': 'publications'}, {'id': '401', 'type': 'publications'}, {'id': '300', 'type': 'publications'}, {'id': '139', 'type': 'publications'}]}
+---
+data
+[{'id': '400', 'type': 'publications'}, {'id': '401', 'type': 'publications'}, {'id': '300', 'type': 'publications'}, {'id': '139', 'type': 'publications'}]
+---
+documents
+{'data': []}
+---
+data
+[]
+---
+links
+{'self': '/investigations/1'}
+---
+self
+/investigations/1
+---
+meta
+{'created': '2009-06-10T17:09:57.000Z', 'modified': '2018-03-02T09:47:05.000Z', 'api_version': '0.2', 'uuid': '12752b77-9032-4ab2-8b92-7cf2313aea1e', 'base_url': 'https://fairdomhub.org'}
+---
+created
+2009-06-10T17:09:57.000Z
+---
+modified
+2018-03-02T09:47:05.000Z
+---
+api_version
+0.2
+---
+uuid
+12752b77-9032-4ab2-8b92-7cf2313aea1e
+---
+base_url
+https://fairdomhub.org
+---

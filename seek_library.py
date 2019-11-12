@@ -91,124 +91,52 @@ class read():
 
         self.json = None
         self.data = object()
+        self.settings_list =None
 
 
-    def _loadJSON(self, layerName, layer):
-        '''
-        Code from Bogdan
-        '''
 
-        """Parses the json that each request returns
+        self.read_settings_file()
 
-        Recursively creates an attribute for the read object with the request
-        JSON. The attribute contains the structured object with the parsed JSON
 
-        :param layerName: the field that will contain the structure
-        :param layer: the json that needs to be parsed
-        :type layerName: str
-        :type layer: obj
-        :returns: void
-        :rtype: None
-
-        :Example:
-
-        >>> import SEEK as S
-        >>> request = S.read()
-        >>> request.request('assays',100)
-        >>> request._loadJSON(request, request.json['data'])
-        >>> request.data
-        <function SEEK.read._loadJSON.<locals>.<lambda>()>
-        >>> request.data.attributes.description
-        Proton fluxes ensue a change in the membrane potential to which the
-        potassium uptake responds. The membrane potential changes depend on the
-        extrusion of protons, buffering capacities of the media and experimental
-        parametes.
-        """
+    def read_settings_file(self):
+        fn = 'search_settings.txt'
+        try:
+            file = open(fn, 'r')
+        except IOError:
+            file = open(fn, 'w')
 
         try:
-            layerName = lambda: None
+            with file as f:
+                self.settings_list = f.readlines()
 
-            # if hasattr(layer, 'items'):
-
-            for key, value in layer.items():
-
-
-                if hasattr(value, 'items'):
-
-                    # print(str(key))
-                    setattr(layerName, key, self._loadJSON(key, value))
-                else:
-                    # print(str(key))
-                    setattr(layerName, key, value)
-
-            setattr(self,'data', layerName)
-
-            # else:
-            #     for item in range(0, len(layer)):
-
-            #         for key, value in layer[item].items():
-
-            #             if hasattr(value, 'items'):
-
-            #                 setattr(layerName, key, self.loadJSON(key, value))
-            #             else:
-
-            #                 setattr(layerName, key, value)
-            return layerName
+            self.settings_list = [int(value.strip()) for value in self.settings_list]
+            result = 1
+            file.close()
         except Exception as e:
-            print(str(e))
+            print('Error with settings file')
+            print('Delete file to fix')
+            result = e
 
-    def _request(self, type, id):
-        '''
-        Code from Bogdan
-        '''
+        if isinstance(result,Exception) == False:
+            self.load_settings()
 
-        """Uses python requests to query the SEEK API, then parses the JSON
-        using the loadJSON method.
+    def load_settings(self):
+        self.display_title = self.settings_list[0]
+        self.display_desc = self.settings_list[1]
+        self.display_model = self.settings_list[2]
+        self.display_model_name =self.settings_list[3]
+        self.display_download_link = self.settings_list[4]
 
-        :param type: type of the element eg: assays/studie/data_files
-        :param id: id of the element
-        :type type: str
-        :type id: str
-        :returns: True if request fulfils or False otherwise
-        :rtype: bool
-
-        :Example:
-
-        >>> import SEEK as S
-        >>> request = S.read()
-        >>> request._request('assays',100)
-        >>> request.data
-        <function SEEK.read._loadJSON.<locals>.<lambda>()>
-        >>> request.data.attributes.description
-        Proton fluxes ensue a change in the membrane potential to which the
-        potassium uptake responds. The membrane potential changes depend on the
-        extrusion of protons, buffering capacities of the media and experimental
-        parametes.
-        """
-
-        r = None
-
-        try:
-            # print(self.base_url + "/" + type + "/" + id)
-
-            r = self.session.get(self.base_url + "/" + type + "/" + id)
-            # r = self.session.get("https://fairdomhub.org/data_files/2222")
+    def load_default_settings(self):
+        self.display_title = 1
+        self.display_desc = 1
+        self.display_model = 1
+        self.display_model_name =1
+        self.display_download_link = 1
 
 
-            self.session.close()
-            r.close()
+        # print(*settings_list, sep='\n')
 
-            if r.status_code != 200:
-                return False
-            self.json = r.json()
-            self._loadJSON(self, self.json['data'])
-            self.requestList = []
-
-            return True
-
-        except Exception as e:
-            print(str(e))
 
     def query(self):
         '''
@@ -224,7 +152,7 @@ class read():
         #calls a function that checks for updates in the drop down menu
         isa_options_widget.observe(self.change_made_ISA)
         display(isa_options_widget)
-        self.option_chosen = str(isa_options_widget.value)
+        self.option_chosen = str('investigations')
 
         id_number_to_find= widgets.BoundedIntText(
             value=1,
@@ -242,7 +170,15 @@ class read():
         '''
         Searches Fairdom for the file based on user input
         '''
-        self.display_datafile()
+        self.load_default_settings()
+        self.display_ISA()
+
+    def search_properties(self):
+        '''
+        Searches Fairdom for the file based on user input
+        '''
+        self.load_settings()
+        self.display_ISA()
 
     def change_made_ISA(self, change):
         '''
@@ -254,11 +190,11 @@ class read():
 
             #assigns equivalent url address term
             if str(change['new']) == 'Investigation':
-                choice = 'investigation'
+                choice = 'investigations'
             elif str(change['new']) == 'Assay':
-                choice = 'assay'
-            elif str(change['new']) == 'Investigation':
-                choice = 'investigation'
+                choice = 'assays'
+            elif str(change['new']) == 'Study':
+                choice = 'studies'
             elif str(change['new']) == 'Data File':
                 choice = 'data_files'
             #sets the class variable to option
@@ -287,24 +223,44 @@ class read():
         '''
         print(self.search_id)
 
-    def display_datafile(self):
+    def display_ISA(self):
         '''
         displays the file by getting the appropriate data from the JSON tags
         '''
         #File ID to search for
-        datafile_id = self.search_id
+        id = self.search_id
         # File type
         type = self.option_chosen
-        # result_datafile = json_for_resource('data_files',datafile_id)
-
+        # print(id)
+        # print(type)
+        # result_datafile = json_for_resource('investigations',id)
+        # print(result_datafile)
         #turns the JSON response into a object
-        self._request(str(type),str(datafile_id))
+        # self._request(str(type),str(id))
+        self.json = json_for_resource(str(type),str(id))
+
 
         #title and description of file
-        title = json_methods.get_title(self.data)
-        description = json_methods.get_description(self.data)
-        #Gets blob data
-        self.current_blob = json_methods.get_blob(self.data)
+
+        title = json_methods.get_title(self.json)
+        description = json_methods.get_description(self.json)
+        if self.display_title == 1:
+            display(HTML('<h1><u>{0}</u></h1>'.format(title)))
+        # display(HTML('<p>{0}</p>'.format(description)))
+        if self.display_desc == 1:
+            print(description)
+
+        if type == 'data_files':
+            self.display_datafile()
+
+        print(json_methods.get_relationship_creators(self.json))
+
+    def display_datafile(self,):
+        '''
+        displays the file by getting the appropriate data from the JSON tags
+        '''
+
+        self.current_blob = json_methods.get_blob(self.json)
         link = blob_methods.get_link(self.current_blob)
         filename = blob_methods.get_filename(self.current_blob)
 
@@ -313,17 +269,18 @@ class read():
         r.raise_for_status()
         #gets spreadsheet from data file
         csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
-
-        display(HTML('<h1><u>{0}</u></h1>'.format(title)))
-        # display(HTML('<p>{0}</p>'.format(description)))
-        print(description)
-        display(HTML('<h4>File Name: {0}</h4>'.format(filename)))
+        if self.display_model_name ==1:
+            display(HTML('<h4>File Name: {0}</h4>'.format(filename)))
         # display(filename)
-        display(csv)
+        if self.display_download_link == 1:
+            self.download_link()
+        if self.display_model ==1:
+            display(csv)
+
 
     def download_link(self):
-        link = self.current_blob['link']
-        filename = self.current_blob['original_filename']
+        link = blob_methods.get_link(self.current_blob)
+        filename = blob_methods.get_filename(self.current_blob)
         download_link = link+"/download"
         print("Download link: " + download_link + "\n")
         HTML("<a href='"+ download_link + "'>Download + " + filename + "</a>")
@@ -343,14 +300,16 @@ class json_methods():
     '''
     Functions that associate with JSON data
     '''
-    def get_title(data):
+    def get_title(json):
         # print(data.attributes.title)
-        return data.attributes.title
+        return json['data']['attributes']['title']
 
-    def get_description(data):
+    def get_description(json):
         # print(data.attributes.description)
-        return data.attributes.description
+        return json['data']['attributes']['description']
 
+    def get_relationship_creators(json):
+        return json['data']['relationships']['creators']['data']
 
-    def get_blob(data):
-        return data.attributes.content_blobs
+    def get_blob(json):
+        return json['data']['attributes']['content_blobs']

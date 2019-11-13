@@ -5,10 +5,12 @@ import getpass
 import sys
 import io
 import ipywidgets as widgets
+
 # Importing the libraries we need to format the data in a more readable way.
 import pandas as pd
 from pandas.io.json import json_normalize
 
+from multiprocessing import Pool
 from IPython.display import display
 from IPython.display import HTML
 # from IPython.core.interactiveshell import InteractiveShell
@@ -92,9 +94,9 @@ class read():
         self.json = None
         self.data = object()
         self.settings_list =None
+        self.relationship_person_id =[]
 
-
-
+        self.maxProcesses = 5;
         self.read_settings_file()
 
 
@@ -223,6 +225,9 @@ class read():
         '''
         print(self.search_id)
 
+
+
+
     def display_ISA(self):
         '''
         displays the file by getting the appropriate data from the JSON tags
@@ -237,7 +242,7 @@ class read():
         # print(result_datafile)
         #turns the JSON response into a object
         # self._request(str(type),str(id))
-        self.json = json_for_resource(str(type),str(id))
+        self.json =json_methods.get_JSON(type,id)
 
 
         #title and description of file
@@ -253,9 +258,41 @@ class read():
         if type == 'data_files':
             self.display_datafile()
 
-        print(json_methods.get_relationship_creators(self.json))
+        # print(json_methods.get_relationship_creators(self.json))
+        # print(self.json)
 
-    def display_datafile(self,):
+        self.iterate_over_json_list(json_methods.get_relationship_creators(self.json))
+        self.relationship_drop_box()
+        self.multiprocess_search(self.relationship_person_id)
+    def relationship_drop_box(self):
+        x =self.relationship_person_id
+        defaultValue =[]
+        defaultValue.append(x[0])
+        dropdownRelationship = widgets.SelectMultiple(
+            options=x,
+            value=defaultValue,
+            rows=10,
+            description='Person ID',
+            disabled=False
+        )
+        display(dropdownRelationship)
+
+    def iterate_over_json_list(self,data):
+        self.relationship_person_id.clear()
+        # print(data)
+        for value in data:
+            # print(value)
+
+            self.relationship_person_id.append(value.get('id'))
+
+            # x = value
+            # print(x)
+            # for key,value in x.items():
+            #     # if key == :
+            #         # pass
+            #     print('key {!r} -> value {!r}'.format(key, value))
+
+    def display_datafile(self):
         '''
         displays the file by getting the appropriate data from the JSON tags
         '''
@@ -285,6 +322,29 @@ class read():
         print("Download link: " + download_link + "\n")
         HTML("<a href='"+ download_link + "'>Download + " + filename + "</a>")
 
+    def multiprocess_search(self,idNumbers):
+        # processesBeingRun =[]
+        # maxProcesses =self.maxProcesses
+        # if len(idNumbers) < maxProcesses:
+        #     maxProcesses = len(idNumbers)
+        #
+        # for processNumber in range (5)
+        #     currentProcess = multiprocessing.Process(target =retrieve_person_name,args=())
+        #     currentProcess.start()
+        #     processesBeingRun.append(currentProcess)
+        #
+        # for process in processesBeingRun:
+        #     process.join()
+
+        processesBeingRun = Pool(processes = 20)
+        dataRec = processesBeingRun.map(self.retrieve_person_name,idNumbers)
+
+        processesBeingRun.close()
+        print(dataRec)
+        
+    def retrieve_person_name(self,idNumber):
+        personMetaData = json_methods.get_JSON('people',idNumber)
+        return json_methods.get_title(personMetaData)
 
 class blob_methods():
     '''
@@ -300,6 +360,8 @@ class json_methods():
     '''
     Functions that associate with JSON data
     '''
+    def get_JSON(type,id):
+        return json_for_resource(str(type),str(id))
     def get_title(json):
         # print(data.attributes.title)
         return json['data']['attributes']['title']
@@ -309,7 +371,11 @@ class json_methods():
         return json['data']['attributes']['description']
 
     def get_relationship_creators(json):
+        # iterate_over_json_array(json)
         return json['data']['relationships']['creators']['data']
+
+    def get_person_name(json):
+        return json['data']['attributes']['title']
 
     def get_blob(json):
         return json['data']['attributes']['content_blobs']

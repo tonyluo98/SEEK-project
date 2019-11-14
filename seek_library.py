@@ -5,7 +5,7 @@ import getpass
 import sys
 import io
 import ipywidgets as widgets
-
+import functools as ft
 # Importing the libraries we need to format the data in a more readable way.
 import pandas as pd
 from pandas.io.json import json_normalize
@@ -13,6 +13,8 @@ from pandas.io.json import json_normalize
 from multiprocessing import Pool
 from IPython.display import display
 from IPython.display import HTML
+from IPython.display import clear_output
+
 # from IPython.core.interactiveshell import InteractiveShell
 # InteractiveShell.ast_node_interactivity = "all"
 
@@ -95,6 +97,8 @@ class read():
         self.data = object()
         self.settings_list =None
         self.relationship_person_id =[]
+
+        self.search_person_list = []
 
         self.maxProcesses = 5;
         self.read_settings_file()
@@ -212,6 +216,12 @@ class read():
             #print("changed to %s" % change['new'])
             self.search_id = int(change['new'])
 
+    def change_made_search_related_person(self, change):
+        '''
+        Checks for any updates in the select multiple
+        '''
+        self.search_person_list = change['new']
+
     def option_type(self):
         '''
         returns the TYPE of file to search for
@@ -260,22 +270,58 @@ class read():
 
         # print(json_methods.get_relationship_creators(self.json))
         # print(self.json)
+        self.relationship_display()
 
+
+    def relationship_display(self):
         self.iterate_over_json_list(json_methods.get_relationship_creators(self.json))
-        self.relationship_drop_box()
-        self.multiprocess_search(self.relationship_person_id)
-    def relationship_drop_box(self):
-        x =self.relationship_person_id
+        names = self.multiprocess_search(self.relationship_person_id)
+        personRelations = self.relationship_drop_box(names)
+
+        relationshipAccordion = widgets.Accordion(children=[personRelations])
+        relationshipAccordion.set_title(0,'related people')
+        relationshipAccordion.selected_index = None
+
+        relatedPeopleSearchButton = widgets.Button(
+            description='Search',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltip='Click me',
+        )
+
+
+
+        listOfWidgets  = [
+            relationshipAccordion,
+            relatedPeopleSearchButton
+                        ]
+
+
+
+        containerBox = widgets.VBox([listOfWidgets[0], listOfWidgets[1]])
+
+        relatedInfoTab = widgets.Tab()
+        relatedInfoTab.children =[containerBox,relatedPeopleSearchButton]
+        relatedInfoTab.set_title(0, 'Related People')
+        relatedInfoTab.set_title(1, 'Copy ')
+
+
+        relatedPeopleSearchButton.on_click(self.related_people_search)
+        display(relatedInfoTab)
+
+    def relationship_drop_box(self,listOfNames):
+        x =listOfNames
         defaultValue =[]
         defaultValue.append(x[0])
         dropdownRelationship = widgets.SelectMultiple(
             options=x,
             value=defaultValue,
-            rows=10,
+            rows=5,
             description='Person ID',
             disabled=False
         )
-        display(dropdownRelationship)
+        dropdownRelationship.observe(self.change_made_search_related_person,names='value')
+        return dropdownRelationship
 
     def iterate_over_json_list(self,data):
         self.relationship_person_id.clear()
@@ -336,15 +382,22 @@ class read():
         # for process in processesBeingRun:
         #     process.join()
 
-        processesBeingRun = Pool(processes = 20)
+        processesBeingRun = Pool(processes = 15)
         dataRec = processesBeingRun.map(self.retrieve_person_name,idNumbers)
 
         processesBeingRun.close()
-        print(dataRec)
-        
+        return dataRec
+
     def retrieve_person_name(self,idNumber):
         personMetaData = json_methods.get_JSON('people',idNumber)
         return json_methods.get_title(personMetaData)
+
+    def related_people_search(self,target):
+        clear_output()
+
+        # for x in range(len(self.search_person_list)):
+        #     print(self.search_person_list[x])
+
 
 class blob_methods():
     '''
@@ -371,7 +424,7 @@ class json_methods():
         return json['data']['attributes']['description']
 
     def get_relationship_creators(json):
-        # iterate_over_json_array(json)
+        # iterate_over_json_array(json)accordion
         return json['data']['relationships']['creators']['data']
 
     def get_person_name(json):

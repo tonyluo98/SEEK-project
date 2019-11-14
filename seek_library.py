@@ -40,6 +40,18 @@ def json_for_resource(type, id, session):
     r.raise_for_status()
     return r.json()
 
+def json_for_resource_parent(type):
+    base_url = 'https://www.fairdomhub.org'
+
+    headers = {
+      "Accept": "application/vnd.api+json",
+      "Accept-Charset": "ISO-8859-1"
+    }
+
+    r = requests.get(base_url + "/" + type, headers=headers)
+    r.raise_for_status()
+    return r.json()
+
 def json_for_resource(type, id):
     '''
     Helper method for receiving JSON response given an id and type of data
@@ -72,9 +84,14 @@ class read():
     (https://www.fairdomhub.org)
 
     To use :
-        x.read()
-        x.Query()
-        x.Search()
+
+        import seek_library as s
+
+        x= s.read()
+
+        x.query()
+        x.search()
+        x.search_properties()
     '''
     def __init__(self):
         '''
@@ -87,6 +104,8 @@ class read():
                "Accept-Charset": "ISO-8859-1"}
         self.session = requests.Session()
         self.session.headers.update(self.headers)
+        self.search_method = None
+        self.search_topic = None
 
         self.search_id = None
         self.option_chosen = None
@@ -98,10 +117,47 @@ class read():
         self.settings_list =None
         self.relationship_person_id =[]
 
+
+        self.dict_of_users_and_ids = {}
+        self.list_of_user_names=[]
+        self.list_of_user_ids=[]
+
         self.search_person_list = []
+
 
         self.maxProcesses = 5;
         self.read_settings_file()
+
+        self.get_all_FAIRDOM_user_names_ID()
+
+
+    def get_all_FAIRDOM_user_names_ID(self):
+        usersJSON = json_methods.get_id_and_name_from_parent(json_methods.get_JSON_from_parent('people'))
+        self.iterate_over_json_list_for_name_ID(usersJSON)
+        # print(self.dict_of_users_and_ids)
+
+    def iterate_over_json_list_for_name_ID(self,data):
+        self.dict_of_users_and_ids.clear()
+        # print(data)
+        for value in data:
+            # print(value)
+            name_key=json_methods.get_name_from_person_parent(value)
+            id_value=json_methods.get_ID_from_person_parent(value)
+            # print(name_key)
+            # print(id_value)
+            # print()
+
+            self.dict_of_users_and_ids[name_key] =id_value
+            # print(json_methods.get_ID_from_person_parent(value))
+            # print()
+            # print()
+
+        self.list_of_user_names=list(self.dict_of_users_and_ids.keys())
+        self.list_of_user_ids=list(self.dict_of_users_and_ids.values())
+
+        # display(self.list_of_user_names)
+        # display(self.list_of_user_ids)
+
 
 
     def read_settings_file(self):
@@ -143,7 +199,6 @@ class read():
 
         # print(*settings_list, sep='\n')
 
-
     def query(self):
         '''
         Displays interactive widgets in forms of a dropdown bar for the TYPE of
@@ -157,7 +212,7 @@ class read():
         )
         #calls a function that checks for updates in the drop down menu
         isa_options_widget.observe(self.change_made_ISA)
-        display(isa_options_widget)
+        # display(isa_options_widget)
         self.option_chosen = str('investigations')
 
         id_number_to_find= widgets.BoundedIntText(
@@ -169,13 +224,41 @@ class read():
         )
         #calls a function that checks for updates in the text box
         id_number_to_find.observe(self.change_made_ID)
-        display(id_number_to_find)
+        # display(id_number_to_find)
         self.search_id = id_number_to_find.value
+
+
+        ISAwidgets  = [
+            isa_options_widget,
+            id_number_to_find
+                        ]
+
+        ISAcontainerBox = widgets.VBox([ISAwidgets[0], ISAwidgets[1]])
+
+        nameBoxSearch = widgets.Combobox(
+            # value='John',
+            placeholder='Enter Name',
+            options=self.list_of_user_names,
+            description='Person Name :',
+            ensure_option=True,
+            disabled=False
+        )
+
+
+        query_tab = widgets.Tab()
+        query_tab.children =[ISAcontainerBox]
+        query_tab.set_title(0, 'ISA query')
+        query_tab.set_title(1, 'Copy ')
+
+        display(query_tab)
 
     def search(self):
         '''
         Searches Fairdom for the file based on user input
         '''
+        self.search_method = 'default'
+        clear_output()
+
         self.load_default_settings()
         self.display_ISA()
 
@@ -183,6 +266,10 @@ class read():
         '''
         Searches Fairdom for the file based on user input
         '''
+        self.search_method = 'specific'
+
+        clear_output()
+
         self.load_settings()
         self.display_ISA()
 
@@ -206,7 +293,6 @@ class read():
             #sets the class variable to option
             self.option_chosen = choice
             # print('Chosen ' +self.option_chosen)
-
 
     def change_made_ID(self, change):
         '''
@@ -235,9 +321,6 @@ class read():
         '''
         print(self.search_id)
 
-
-
-
     def display_ISA(self):
         '''
         displays the file by getting the appropriate data from the JSON tags
@@ -253,7 +336,7 @@ class read():
         #turns the JSON response into a object
         # self._request(str(type),str(id))
         self.json =json_methods.get_JSON(type,id)
-
+        # print(self.json)
 
         #title and description of file
 
@@ -272,8 +355,14 @@ class read():
         # print(self.json)
         self.relationship_display()
 
-
     def relationship_display(self):
+        # print(self.json)
+        # print()
+        # print()
+        # print()
+        # print()
+        #
+        # print(json_methods.get_relationship_creators(self.json))
         self.iterate_over_json_list(json_methods.get_relationship_creators(self.json))
         names = self.multiprocess_search(self.relationship_person_id)
         personRelations = self.relationship_drop_box(names)
@@ -360,7 +449,6 @@ class read():
         if self.display_model ==1:
             display(csv)
 
-
     def download_link(self):
         link = blob_methods.get_link(self.current_blob)
         filename = blob_methods.get_filename(self.current_blob)
@@ -393,8 +481,11 @@ class read():
         return json_methods.get_title(personMetaData)
 
     def related_people_search(self,target):
-        clear_output()
 
+        if self.search_method == 'default':
+            self.search()
+        else:
+            self.search_properties()
         # for x in range(len(self.search_person_list)):
         #     print(self.search_person_list[x])
 
@@ -415,6 +506,10 @@ class json_methods():
     '''
     def get_JSON(type,id):
         return json_for_resource(str(type),str(id))
+
+    def get_JSON_from_parent(type):
+        return json_for_resource_parent(str(type))
+
     def get_title(json):
         # print(data.attributes.title)
         return json['data']['attributes']['title']
@@ -426,6 +521,15 @@ class json_methods():
     def get_relationship_creators(json):
         # iterate_over_json_array(json)accordion
         return json['data']['relationships']['creators']['data']
+
+    def get_id_and_name_from_parent(json):
+        return json['data']
+
+    def get_ID_from_person_parent(json):
+        return json['id']
+
+    def get_name_from_person_parent(json):
+        return json['attributes']['title']
 
     def get_person_name(json):
         return json['data']['attributes']['title']

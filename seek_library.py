@@ -123,6 +123,7 @@ class read():
         self.list_of_user_ids=[]
 
         self.search_person_list = []
+        self.max_id=0;
 
 
         self.maxProcesses = 5;
@@ -132,6 +133,7 @@ class read():
 
 
     def get_all_FAIRDOM_user_names_ID(self):
+
         usersJSON = json_methods.get_id_and_name_from_parent(json_methods.get_JSON_from_parent('people'))
         self.iterate_over_json_list_for_name_ID(usersJSON)
         # print(self.dict_of_users_and_ids)
@@ -141,24 +143,24 @@ class read():
         # print(data)
         for value in data:
             # print(value)
-            name_key=json_methods.get_name_from_person_parent(value)
-            id_value=json_methods.get_ID_from_person_parent(value)
-            # print(name_key)
-            # print(id_value)
+            id_key=json_methods.get_ID_from_person_parent(value)
+            name_value=json_methods.get_name_from_person_parent(value)
+            # print(name_value)
+            # print(id_key)
             # print()
-
-            self.dict_of_users_and_ids[name_key] =id_value
+            id_key=int(id_key)
+            if id_key > self.max_id:
+                self.max_id = id_key
+            self.dict_of_users_and_ids[id_key] =name_value
             # print(json_methods.get_ID_from_person_parent(value))
             # print()
             # print()
 
-        self.list_of_user_names=list(self.dict_of_users_and_ids.keys())
-        self.list_of_user_ids=list(self.dict_of_users_and_ids.values())
+        self.list_of_user_ids=list(self.dict_of_users_and_ids.keys())
+        self.list_of_user_names=list(self.dict_of_users_and_ids.values())
 
         # display(self.list_of_user_names)
         # display(self.list_of_user_ids)
-
-
 
     def read_settings_file(self):
         fn = 'search_settings.txt'
@@ -233,22 +235,55 @@ class read():
             id_number_to_find
                         ]
 
-        ISAcontainerBox = widgets.VBox([ISAwidgets[0], ISAwidgets[1]])
+        ISAContainerBox = widgets.VBox([ISAwidgets[0], ISAwidgets[1]])
 
+        #
+        #
+        # print(self.list_of_user_names[0])
+        # print(self.list_of_user_ids[0])
+        sortedUserList = []
+        sortedUserList = self.list_of_user_names[:]
+        sortedUserList.sort()
+        # print(self.list_of_user_names)
         nameBoxSearch = widgets.Combobox(
-            # value='John',
+            value='Vid A',
             placeholder='Enter Name',
-            options=self.list_of_user_names,
+            options=sortedUserList,
             description='Person Name :',
             ensure_option=True,
             disabled=False
         )
+        nameBoxSearch.observe(self.change_made_person_name)
+
+
+        personIDSearch= widgets.BoundedIntText(
+            value=1,
+            description='Person ID :',
+            disabled=False,
+            min=1,
+            max = self.max_id
+        )
+
+        personIDSearch.observe(self.change_made_person_name)
+
+        PersonwWidgets  = [
+            nameBoxSearch,
+            personIDSearch
+                        ]
+
+        personContainerBox = widgets.VBox([PersonwWidgets[0], PersonwWidgets[1]])
+
 
 
         query_tab = widgets.Tab()
-        query_tab.children =[ISAcontainerBox]
+        query_tab.children =[ISAContainerBox,personContainerBox]
         query_tab.set_title(0, 'ISA query')
-        query_tab.set_title(1, 'Copy ')
+        query_tab.set_title(1, 'Person query ')
+
+
+        #
+        # print(self.list_of_user_names[0])
+        # print(self.list_of_user_ids[0])
 
         display(query_tab)
 
@@ -272,6 +307,44 @@ class read():
 
         self.load_settings()
         self.display_ISA()
+
+    def change_made_person_name(self, change):
+        '''
+        Checks for any updates in the text box
+        '''
+        if change['type'] == 'change' and change['name'] == 'value':
+            print("changed to %s" % change['new'])
+            print("Old to %s" % change['old'])
+
+        #
+        # print(self.list_of_user_ids)
+        # print()
+        # print()
+        # print()
+        # print('---------------')
+        # print(change['new'].get('value'))
+        # print(self.list_of_user_names[0])
+        # # print()
+        # if change['old'] is not '':
+
+        nameChosen = change['new'].get('value')
+        print('tttttttt')
+        print(nameChosen)
+        newIDIndex = self.list_of_user_ids[self.list_of_user_names.index(nameChosen)]
+        print(newIDIndex)
+
+
+
+    def change_made_person_ID(self, change, nameWidget):
+        '''
+        Checks for any updates in the text box
+        '''
+        if change['type'] == 'change' and change['name'] == 'value':
+            print("changed to %s" % change['new'])
+            # self.search_id = int(change['new'])
+
+    # def alter_value_in_person_search(self):
+
 
     def change_made_ISA(self, change):
         '''

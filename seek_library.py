@@ -19,7 +19,6 @@ from IPython.display import clear_output
 # InteractiveShell.ast_node_interactivity = "all"
 
 
-
 def json_for_resource(type, id, session):
     '''
     Helper method for receiving JSON response given an id and type of data
@@ -65,17 +64,6 @@ def json_for_resource(type, id):
     r.raise_for_status()
     return r.json()
 
-def get_input(prompt):
-    '''
-    Get user input
-    '''
-    return input(prompt)
-
-def get_number_input():
-    '''
-    Get user input
-    '''
-    return id_number_to_find
 
 # to call s = read()
 class read():
@@ -91,7 +79,7 @@ class read():
 
         x.query()
         x.search()
-        x.search_properties()
+        x.search_custom_settings()
     '''
     def __init__(self):
         '''
@@ -104,12 +92,12 @@ class read():
                "Accept-Charset": "ISO-8859-1"}
         self.session = requests.Session()
         self.session.headers.update(self.headers)
-        self.search_method = None
+        self.search_setting_type = None
         self.search_topic = None
 
-        self.search_id = None
-        self.option_chosen = None
-        self.search_id = None
+        self.search_doc_id = None
+        self.doc_option_selected = None
+        self.search_doc_id = None
         self.current_blob = None
 
         self.json = None
@@ -123,41 +111,51 @@ class read():
         self.list_of_user_ids=[]
 
         self.search_person_list = []
-        self.max_id=0;
+        self.max_ID_value=0;
 
+        self.name_search_widget = None
+        self.people_search_ID_widget = None
 
+        self.query_tab = None
         self.maxProcesses = 5;
         self.read_settings_file()
 
-        self.get_all_FAIRDOM_user_names_ID()
+        self.get_all_FAIRDOM_user_names_and_ID()
 
 
-    def get_all_FAIRDOM_user_names_ID(self):
+    def get_all_FAIRDOM_user_names_and_ID(self):
 
-        usersJSON = json_methods.get_id_and_name_from_parent(json_methods.get_JSON_from_parent('people'))
-        self.iterate_over_json_list_for_name_ID(usersJSON)
+        peopleJSON = json_methods.get_id_and_name_from_parent(json_methods.get_JSON_from_parent('people'))
+        self.iterate_over_json_list_for_name_ID(peopleJSON)
         # print(self.dict_of_users_and_ids)
 
     def iterate_over_json_list_for_name_ID(self,data):
         self.dict_of_users_and_ids.clear()
         # print(data)
         for value in data:
+            list_of_ID =[]
             # print(value)
-            id_key=json_methods.get_ID_from_person_parent(value)
-            name_value=json_methods.get_name_from_person_parent(value)
+            name_key=json_methods.get_name_from_people_JSON(value)
+            id_value=json_methods.get_ID_from_people_JSON(value)
             # print(name_value)
             # print(id_key)
             # print()
-            id_key=int(id_key)
-            if id_key > self.max_id:
-                self.max_id = id_key
-            self.dict_of_users_and_ids[id_key] =name_value
-            # print(json_methods.get_ID_from_person_parent(value))
+            # id_value=(id_value)
+            if int(id_value) > self.max_ID_value:
+                self.max_ID_value = int(id_value)
+
+            if name_key in self.dict_of_users_and_ids:
+                list_of_ID = self.dict_of_users_and_ids.get(name_key)
+
+            list_of_ID.append(id_value)
+            self.dict_of_users_and_ids[name_key] =list_of_ID
+
+            # print(json_methods.get_ID_from_people_JSON(value))
             # print()
             # print()
 
-        self.list_of_user_ids=list(self.dict_of_users_and_ids.keys())
-        self.list_of_user_names=list(self.dict_of_users_and_ids.values())
+            self.list_of_user_ids.append(id_value)
+            self.list_of_user_names.append(name_key)
 
         # display(self.list_of_user_names)
         # display(self.list_of_user_ids)
@@ -186,14 +184,14 @@ class read():
 
     def load_settings(self):
         self.display_title = self.settings_list[0]
-        self.display_desc = self.settings_list[1]
+        self.display_description = self.settings_list[1]
         self.display_model = self.settings_list[2]
         self.display_model_name =self.settings_list[3]
         self.display_download_link = self.settings_list[4]
 
     def load_default_settings(self):
         self.display_title = 1
-        self.display_desc = 1
+        self.display_description = 1
         self.display_model = 1
         self.display_model_name =1
         self.display_download_link = 1
@@ -201,171 +199,84 @@ class read():
 
         # print(*settings_list, sep='\n')
 
-    def query(self):
-        '''
-        Displays interactive widgets in forms of a dropdown bar for the TYPE of
-        file to search and a text box for the ID of the file.
-        Text box doesn't accept numbers less than 1
-        '''
-        isa_options_widget = widgets.Dropdown(
-            options=['Investigation', 'Assay', 'Study', 'Data File'],
-            value='Investigation',
-            description='Search Type:',
-        )
-        #calls a function that checks for updates in the drop down menu
-        isa_options_widget.observe(self.change_made_ISA)
-        # display(isa_options_widget)
-        self.option_chosen = str('investigations')
-
-        id_number_to_find= widgets.BoundedIntText(
-            value=1,
-            description='ID number:',
-            disabled=False,
-            min=1,
-            max = sys.maxsize
-        )
-        #calls a function that checks for updates in the text box
-        id_number_to_find.observe(self.change_made_ID)
-        # display(id_number_to_find)
-        self.search_id = id_number_to_find.value
-
-
-        ISAwidgets  = [
-            isa_options_widget,
-            id_number_to_find
-                        ]
-
-        ISAContainerBox = widgets.VBox([ISAwidgets[0], ISAwidgets[1]])
-
-        #
-        #
-        # print(self.list_of_user_names[0])
-        # print(self.list_of_user_ids[0])
-        sortedUserList = []
-        sortedUserList = self.list_of_user_names[:]
-        sortedUserList.sort()
-        # print(self.list_of_user_names)
-        nameBoxSearch = widgets.Combobox(
-            value='Vid A',
-            placeholder='Enter Name',
-            options=sortedUserList,
-            description='Person Name :',
-            ensure_option=True,
-            disabled=False
-        )
-        nameBoxSearch.observe(self.change_made_person_name)
-
-
-        personIDSearch= widgets.BoundedIntText(
-            value=1,
-            description='Person ID :',
-            disabled=False,
-            min=1,
-            max = self.max_id
-        )
-
-        personIDSearch.observe(self.change_made_person_name)
-
-        PersonwWidgets  = [
-            nameBoxSearch,
-            personIDSearch
-                        ]
-
-        personContainerBox = widgets.VBox([PersonwWidgets[0], PersonwWidgets[1]])
 
 
 
-        query_tab = widgets.Tab()
-        query_tab.children =[ISAContainerBox,personContainerBox]
-        query_tab.set_title(0, 'ISA query')
-        query_tab.set_title(1, 'Person query ')
 
-
-        #
-        # print(self.list_of_user_names[0])
-        # print(self.list_of_user_ids[0])
-
-        display(query_tab)
-
-    def search(self):
-        '''
-        Searches Fairdom for the file based on user input
-        '''
-        self.search_method = 'default'
-        clear_output()
-
-        self.load_default_settings()
-        self.display_ISA()
-
-    def search_properties(self):
-        '''
-        Searches Fairdom for the file based on user input
-        '''
-        self.search_method = 'specific'
-
-        clear_output()
-
-        self.load_settings()
-        self.display_ISA()
-
-    def change_made_person_name(self, change):
+    def change_made_name_search(self, change):
         '''
         Checks for any updates in the text box
         '''
-        if change['type'] == 'change' and change['name'] == 'value':
-            print("changed to %s" % change['new'])
-            print("Old to %s" % change['old'])
-
-        #
-        # print(self.list_of_user_ids)
-        # print()
-        # print()
-        # print()
-        # print('---------------')
-        # print(change['new'].get('value'))
-        # print(self.list_of_user_names[0])
-        # # print()
-        # if change['old'] is not '':
-
-        nameChosen = change['new'].get('value')
-        print('tttttttt')
-        print(nameChosen)
-        newIDIndex = self.list_of_user_ids[self.list_of_user_names.index(nameChosen)]
-        print(newIDIndex)
 
 
 
-    def change_made_person_ID(self, change, nameWidget):
+        self.people_search_ID_widget.unobserve(self.change_made_people_search_ID)
+
+        if (change['new'] ==''):
+            self.people_search_ID_widget.value = ''
+        elif change['type'] == 'change' and change['name'] == 'value':
+            name_selected = change['new']
+
+            # print('tttttttt')
+            # print(name_selected)
+            if name_selected in self.dict_of_users_and_ids.keys():
+                ID_index_list = self.dict_of_users_and_ids.get(name_selected)
+                # print(ID_index_list)
+                if len(ID_index_list) > 1:
+                    # idWidget.options = ID_index_list
+                    self.people_search_ID_widget.value = ''
+                    self.people_search_ID_widget.placeholder = 'Choose ID'
+                    self.people_search_ID_widget.options = ID_index_list
+
+                else :
+                    self.people_search_ID_widget.value = str(ID_index_list[0])
+            else :
+                self.people_search_ID_widget.value = ''
+                self.people_search_ID_widget.options = []
+
+
+        self.people_search_ID_widget.observe(self.change_made_people_search_ID)
+
+
+    def change_made_people_search_ID(self, change):
         '''
         Checks for any updates in the text box
         '''
-        if change['type'] == 'change' and change['name'] == 'value':
-            print("changed to %s" % change['new'])
-            # self.search_id = int(change['new'])
+
+        self.name_search_widget.unobserve(self.change_made_name_search)
+        if change['new'] =='':
+            self.name_search_widget.value = ''
+        elif change['type'] == 'change' and change['name'] == 'value':
+            ID=str(change['new'])
+            if (change['new'] in self.list_of_user_ids):
+                name = self.list_of_user_names[self.list_of_user_ids.index(ID)]
+                self.name_search_widget.value = name
+            else:
+                self.name_search_widget.value = ''
+        self.name_search_widget.observe(self.change_made_name_search)
+
+            # print("changed to %s" % change['new'])
+            # self.search_doc_id = int(change['new'])
 
     # def alter_value_in_person_search(self):
 
 
-    def change_made_ISA(self, change):
+    def change_made_doc_option(self, change):
         '''
         Checks for any updates in the dropdown menu
         '''
-        choice = None
+        option = None
         if change['type'] == 'change' and change['name'] == 'value':
-            #print("changed to %s" % change['new'])
-
-            #assigns equivalent url address term
             if str(change['new']) == 'Investigation':
-                choice = 'investigations'
+                option = 'investigations'
             elif str(change['new']) == 'Assay':
-                choice = 'assays'
+                option = 'assays'
             elif str(change['new']) == 'Study':
-                choice = 'studies'
+                option = 'studies'
             elif str(change['new']) == 'Data File':
-                choice = 'data_files'
+                option = 'data_files'
             #sets the class variable to option
-            self.option_chosen = choice
-            # print('Chosen ' +self.option_chosen)
+            self.doc_option_selected = option
 
     def change_made_ID(self, change):
         '''
@@ -373,7 +284,7 @@ class read():
         '''
         if change['type'] == 'change' and change['name'] == 'value':
             #print("changed to %s" % change['new'])
-            self.search_id = int(change['new'])
+            self.search_doc_id = int(change['new'])
 
     def change_made_search_related_person(self, change):
         '''
@@ -381,27 +292,238 @@ class read():
         '''
         self.search_person_list = change['new']
 
+    def document_tab(self):
+        doc_option_widget = widgets.Dropdown(
+            options=['Investigation', 'Assay', 'Study', 'Data File'],
+            # value='Investigation',
+            description='Search Type:',
+        )
+        #calls a function that checks for updates in the drop down menu
+        doc_option_widget.observe(self.change_made_doc_option)
+        # display(doc_option_widget)
+        # self.doc_option_selected = str('investigations')
+
+        doc_id_search_widget= widgets.BoundedIntText(
+            value=1,
+            description='ID number:',
+            disabled=False,
+            min=1,
+            max = sys.maxsize
+        )
+        #calls a function that checks for updates in the text box
+        doc_id_search_widget.observe(self.change_made_ID)
+        # display(doc_id_search_widget)
+        self.search_doc_id = doc_id_search_widget.value
+
+
+        doc_select_widget_list  = [
+            doc_option_widget,
+            doc_id_search_widget
+                        ]
+
+        doc_select_widgets_container = widgets.VBox([doc_select_widget_list[0],
+                                                    doc_select_widget_list[1]])
+        return doc_select_widgets_container
+
+    def person_tab(self):
+        #
+        #
+        # print(self.list_of_user_names[0])
+        # print(self.list_of_user_ids[0])
+        user_list_alphabet_order = []
+        user_list_alphabet_order = self.list_of_user_names[:]
+        user_list_alphabet_order = list(dict.fromkeys(user_list_alphabet_order))
+        user_list_alphabet_order.sort()
+        user_list_alphabet_order.append('')
+
+        # print(self.list_of_user_names)
+
+
+        self.people_search_ID_widget = widgets.Combobox(
+            # value='',
+            placeholder='Enter ID',
+            options=[],
+            description='ID :',
+            ensure_option=False,
+            disabled=False
+        )
+        #
+        # people_search_ID_widget= widgets.BoundedIntText(
+        #     value=1,
+        #     description='Person ID :',
+        #     disabled=False,
+        #     min=1,
+        #     max = self.max_ID_value
+        # )
+
+        self.people_search_ID_widget.observe(self.change_made_people_search_ID)
+
+        self.name_search_widget = widgets.Combobox(
+            # value='',
+            placeholder='Enter Name',
+            options=user_list_alphabet_order,
+            description='Name :',
+            ensure_option=False,
+            disabled=False
+        )
+        self.name_search_widget.observe(self.change_made_name_search)
+
+        people_search_widget_list  = [
+            self.name_search_widget,
+            self.people_search_ID_widget
+                        ]
+
+        people_search_container = widgets.VBox([people_search_widget_list[0], people_search_widget_list[1]])
+
+        return people_search_container
+
+    def settings_tab(self):
+
+        style = {'description_width': '150px'}
+        layout = {'width': '500px'}
+
+        title_option = widgets.ToggleButtons(
+            options=['Yes', 'No'],
+            description='Display Title:',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['', ''],
+            style =style,
+            layout=layout,
+        #     icons=['check'] * 3
+        )
+
+        description_option = widgets.ToggleButtons(
+            options=['Yes', 'No'],
+            description='Display Description:',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['', ''],
+            style =style,
+            layout=layout,
+
+        #     icons=['check'] * 3
+        )
+
+        model_option = widgets.ToggleButtons(
+            options=['Yes', 'No'],
+            description='Display Model:',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['', ''],
+            style =style,
+            layout=layout,
+        #     icons=['check'] * 3
+        )
+
+        model_name_option = widgets.ToggleButtons(
+            options=['Yes', 'No'],
+            description='Display Model Name:',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['', ''],
+            style =style,
+            layout=layout,
+        #     icons=['check'] * 3
+        )
+
+        download_link_option = widgets.ToggleButtons(
+            options=['Yes', 'No'],
+            description='Display Download Link:',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['', ''],
+            style =style,
+            layout=layout,
+        #     icons=['check'] * 3
+        )
+
+
+        settings_widget_list  = [
+            title_option,
+            description_option,
+            model_option,
+            model_name_option,
+            download_link_option
+                        ]
+
+        settings_container = widgets.VBox([settings_widget_list[0],
+                                           settings_widget_list[1],
+                                           settings_widget_list[2],
+                                           settings_widget_list[3],
+                                           settings_widget_list[4]])
+
+        return settings_container
+
+
+    def query(self):
+        '''
+        Displays interactive widgets in forms of a dropdown bar for the TYPE of
+        file to search and a text box for the ID of the file.
+        Text box doesn't accept numbers less than 1
+        '''
+
+
+        doc_tab = self.document_tab()
+        person_tab=self.person_tab()
+        settings_tab =self.settings_tab()
+
+        self.query_tab = widgets.Tab()
+        self.query_tab.children =[doc_tab,
+                            person_tab,
+                            settings_tab]
+        self.query_tab.set_title(0, 'Document query')
+        self.query_tab.set_title(1, 'Person query')
+        self.query_tab.set_title(2, 'Search settings')
+
+
+        print(self.query_tab.children[2].children[2].value)
+        display(self.query_tab)
+
+
+    def search(self):
+        '''
+        Searches Fairdom for the file based on user input
+        '''
+        self.search_setting_type = 'default'
+        clear_output()
+
+        self.load_default_settings()
+        self.display_doc()
+
+    def search_custom_settings(self):
+        '''
+        Searches Fairdom for the file based on user input
+        '''
+        self.search_setting_type = 'specific'
+
+        clear_output()
+
+        self.load_settings()
+        self.display_doc()
+
+
     def option_type(self):
         '''
         returns the TYPE of file to search for
         '''
         #s.option_type() to call
-        print(self.option_chosen)
+        print(self.doc_option_selected)
 
-    def id_number_to_find(self):
+    def doc_id_search_widget(self):
         '''
         returns the file ID number
         '''
-        print(self.search_id)
+        print(self.search_doc_id)
 
-    def display_ISA(self):
+    def display_doc(self):
         '''
         displays the file by getting the appropriate data from the JSON tags
         '''
         #File ID to search for
-        id = self.search_id
+        id = self.search_doc_id
         # File type
-        type = self.option_chosen
+        type = self.doc_option_selected
         # print(id)
         # print(type)
         # result_datafile = json_for_resource('investigations',id)
@@ -418,7 +540,7 @@ class read():
         if self.display_title == 1:
             display(HTML('<h1><u>{0}</u></h1>'.format(title)))
         # display(HTML('<p>{0}</p>'.format(description)))
-        if self.display_desc == 1:
+        if self.display_description == 1:
             print(description)
 
         if type == 'data_files':
@@ -426,9 +548,9 @@ class read():
 
         # print(json_methods.get_relationship_creators(self.json))
         # print(self.json)
-        self.relationship_display()
+        self.display_relationship()
 
-    def relationship_display(self):
+    def display_relationship(self):
         # print(self.json)
         # print()
         # print()
@@ -438,61 +560,57 @@ class read():
         # print(json_methods.get_relationship_creators(self.json))
         self.iterate_over_json_list(json_methods.get_relationship_creators(self.json))
         names = self.multiprocess_search(self.relationship_person_id)
-        personRelations = self.relationship_drop_box(names)
+        people_relation = self.relationship_drop_box(names)
 
-        relationshipAccordion = widgets.Accordion(children=[personRelations])
-        relationshipAccordion.set_title(0,'related people')
-        relationshipAccordion.selected_index = None
+        relationship_accordian_widget = widgets.Accordion(children=[people_relation])
+        relationship_accordian_widget.set_title(0,'related people')
+        relationship_accordian_widget.selected_index = None
 
-        relatedPeopleSearchButton = widgets.Button(
+        relation_people_search_button = widgets.Button(
             description='Search',
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltip='Click me',
         )
 
-
-
-        listOfWidgets  = [
-            relationshipAccordion,
-            relatedPeopleSearchButton
+        relationship_widget_list  = [
+            relationship_accordian_widget,
+            relation_people_search_button
                         ]
 
 
 
-        containerBox = widgets.VBox([listOfWidgets[0], listOfWidgets[1]])
+        relationshi_people_container = widgets.VBox([relationship_widget_list[0], relationship_widget_list[1]])
 
-        relatedInfoTab = widgets.Tab()
-        relatedInfoTab.children =[containerBox,relatedPeopleSearchButton]
-        relatedInfoTab.set_title(0, 'Related People')
-        relatedInfoTab.set_title(1, 'Copy ')
+        related_info_tab = widgets.Tab()
+        related_info_tab.children =[relationshi_people_container,relation_people_search_button]
+        related_info_tab.set_title(0, 'Related People')
+        related_info_tab.set_title(1, 'Copy ')
 
 
-        relatedPeopleSearchButton.on_click(self.related_people_search)
-        display(relatedInfoTab)
+        relation_people_search_button.on_click(self.related_people_search)
+        display(related_info_tab)
 
-    def relationship_drop_box(self,listOfNames):
-        x =listOfNames
-        defaultValue =[]
-        defaultValue.append(x[0])
-        dropdownRelationship = widgets.SelectMultiple(
+    def relationship_drop_box(self,list_of_names):
+        x =list_of_names
+        default_value =[]
+        default_value.append(x[0])
+        relationship_dropdown_widget = widgets.SelectMultiple(
             options=x,
-            value=defaultValue,
+            value=default_value,
             rows=5,
             description='Person ID',
             disabled=False
         )
-        dropdownRelationship.observe(self.change_made_search_related_person,names='value')
-        return dropdownRelationship
+        relationship_dropdown_widget.observe(self.change_made_search_related_person,names='value')
+        return relationship_dropdown_widget
 
     def iterate_over_json_list(self,data):
         self.relationship_person_id.clear()
         # print(data)
         for value in data:
             # print(value)
-
             self.relationship_person_id.append(value.get('id'))
-
             # x = value
             # print(x)
             # for key,value in x.items():
@@ -555,10 +673,10 @@ class read():
 
     def related_people_search(self,target):
 
-        if self.search_method == 'default':
+        if self.search_setting_type == 'default':
             self.search()
         else:
-            self.search_properties()
+            self.search_custom_settings()
         # for x in range(len(self.search_person_list)):
         #     print(self.search_person_list[x])
 
@@ -598,10 +716,10 @@ class json_methods():
     def get_id_and_name_from_parent(json):
         return json['data']
 
-    def get_ID_from_person_parent(json):
+    def get_ID_from_people_JSON(json):
         return json['id']
 
-    def get_name_from_person_parent(json):
+    def get_name_from_people_JSON(json):
         return json['attributes']['title']
 
     def get_person_name(json):

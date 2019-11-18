@@ -102,7 +102,7 @@ class read():
 
         self.json = None
         self.data = object()
-        self.settings_list =None
+        self.settings_list =[]
         self.relationship_person_id =[]
 
 
@@ -119,7 +119,7 @@ class read():
         self.query_tab = None
         self.maxProcesses = 5;
         self.read_settings_file()
-
+        self.load_default_settings()
         self.get_all_FAIRDOM_user_names_and_ID()
 
 
@@ -165,37 +165,72 @@ class read():
         try:
             file = open(fn, 'r')
         except IOError:
-            file = open(fn, 'w')
+            file = open(fn, 'w+')
 
         try:
             with file as f:
                 self.settings_list = f.readlines()
 
-            self.settings_list = [int(value.strip()) for value in self.settings_list]
+            self.settings_list = [str(value.strip()) for value in self.settings_list]
             result = 1
             file.close()
         except Exception as e:
             print('Error with settings file')
             print('Delete file to fix')
             result = e
+        #
+        # if isinstance(result,Exception) == False:
+        #     self.load_settings()
 
-        if isinstance(result,Exception) == False:
-            self.load_settings()
+
+    def save_settings(self):
+        fn = 'search_settings1.txt'
+        try:
+            file = open(fn, 'w')
+            for item in self.settings_list:
+                toWrite =item+'\n'
+                file.write(toWrite)
+            file.close()
+        except FileNotFoundError:
+
+            print('File does not exist')
+
+        except:
+            print('Error with settings file')
+            print('Delete file to fix')
 
     def load_settings(self):
         self.display_title = self.settings_list[0]
+        self.query_tab.children[2].children[0].children[0].value = self.display_title
+
+
         self.display_description = self.settings_list[1]
+        self.query_tab.children[2].children[0].children[1].value = self.display_description
+
         self.display_model = self.settings_list[2]
+        self.query_tab.children[2].children[0].children[2].value = self.display_model
+
         self.display_model_name =self.settings_list[3]
+        self.query_tab.children[2].children[0].children[3].value = self.display_model_name
+
         self.display_download_link = self.settings_list[4]
+        self.query_tab.children[2].children[0].children[4].value = self.display_download_link
+
 
     def load_default_settings(self):
         self.display_title = 1
         self.display_description = 1
         self.display_model = 1
-        self.display_model_name =1
+        self.display_model_name =0
         self.display_download_link = 1
 
+        if len(self.settings_list) < 5:
+            self.settings_list= [None] * 5
+        self.settings_list[0]= 'Yes'
+        self.settings_list[1]= 'Yes'
+        self.settings_list[2]= 'Yes'
+        self.settings_list[3]= 'Yes'
+        self.settings_list[4]= 'Yes'
 
         # print(*settings_list, sep='\n')
 
@@ -232,6 +267,7 @@ class read():
                     self.people_search_ID_widget.value = str(ID_index_list[0])
             else :
                 self.people_search_ID_widget.value = ''
+                self.people_search_ID_widget.placeholder = 'Enter ID'
                 self.people_search_ID_widget.options = []
 
 
@@ -291,6 +327,25 @@ class read():
         Checks for any updates in the select multiple
         '''
         self.search_person_list = change['new']
+
+    def on_click_setting_load_save(self, button):
+        '''
+        Checks for any updates in the text box
+        '''
+        # print()
+        # print(button)
+        # print(self.settings_list)
+        # print()
+        # print(self.query_tab.children[2])
+        # print()
+        # print()
+        # print(self.query_tab.children[2].children)
+
+        if button.description == 'Load Settings':
+            self.load_settings()
+        elif button.description == 'Save Settings':
+            self.save_settings()
+
 
     def document_tab(self):
         doc_option_widget = widgets.Dropdown(
@@ -379,8 +434,12 @@ class read():
 
     def settings_tab(self):
 
-        style = {'description_width': '150px'}
-        layout = {'width': '500px'}
+        style_left = {'description_width': '145px'}
+        style_right = {'description_width': '100px'}
+
+        layout_left = {'width': '464px'}
+        layout_right = {'width': '200px'}
+
 
         title_option = widgets.ToggleButtons(
             options=['Yes', 'No'],
@@ -388,8 +447,8 @@ class read():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style,
-            layout=layout,
+            style =style_left,
+            layout=layout_left,
         #     icons=['check'] * 3
         )
 
@@ -399,8 +458,8 @@ class read():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style,
-            layout=layout,
+            style =style_left,
+            layout=layout_left,
 
         #     icons=['check'] * 3
         )
@@ -411,8 +470,8 @@ class read():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style,
-            layout=layout,
+            style =style_left,
+            layout=layout_left,
         #     icons=['check'] * 3
         )
 
@@ -422,8 +481,8 @@ class read():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style,
-            layout=layout,
+            style =style_left,
+            layout=layout_left,
         #     icons=['check'] * 3
         )
 
@@ -433,25 +492,59 @@ class read():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style,
-            layout=layout,
+            style =style_left,
+            layout=layout_left,
         #     icons=['check'] * 3
         )
 
 
-        settings_widget_list  = [
+        load_settings_option = widgets.Button(
+            description='Load Settings',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltip='Click me',
+            style =style_right,
+            layout=layout_right,
+            # icon='check'
+        )
+
+        save_settings_option = widgets.Button(
+            description='Save Settings',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltip='Click me',
+            style =style_right,
+            layout=layout_right,
+            # icon='check'
+        )
+
+        load_settings_option.on_click(self.on_click_setting_load_save)
+        save_settings_option.on_click(self.on_click_setting_load_save)
+
+
+
+        setting_option_widget_list  = [
             title_option,
             description_option,
             model_option,
             model_name_option,
             download_link_option
                         ]
+        settings_widget_list = [
+            load_settings_option,
+            save_settings_option
+        ]
 
-        settings_container = widgets.VBox([settings_widget_list[0],
-                                           settings_widget_list[1],
-                                           settings_widget_list[2],
-                                           settings_widget_list[3],
-                                           settings_widget_list[4]])
+        left_column = widgets.VBox([setting_option_widget_list[0],
+                                   setting_option_widget_list[1],
+                                   setting_option_widget_list[2],
+                                   setting_option_widget_list[3],
+                                   setting_option_widget_list[4]])
+
+        right_column = widgets.VBox([settings_widget_list[0],
+                                    settings_widget_list[1]])
+
+        settings_container = widgets.HBox([left_column,right_column])
 
         return settings_container
 
@@ -477,7 +570,7 @@ class read():
         self.query_tab.set_title(2, 'Search settings')
 
 
-        print(self.query_tab.children[2].children[2].value)
+        # print(self.query_tab.children[2].children[2].value)
         display(self.query_tab)
 
 

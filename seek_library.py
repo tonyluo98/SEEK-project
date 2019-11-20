@@ -19,11 +19,6 @@ from IPython.display import clear_output
 # InteractiveShell.ast_node_interactivity = "all"
 
 
-def hide_traceback(exc_tuple=None, filename=None, tb_offset=None,
-                   exception_only=False, running_compiled_code=False):
-    etype, value, tb = sys.exc_info()
-    return ipython._showtraceback(etype, value, ipython.InteractiveTB.get_exception_only(etype, value))
-
 class Query():
     '''
     Class used to search/browse data on the FairdomHub website
@@ -576,21 +571,36 @@ class Search():
         # print(self.json)
         #title and description of file
         if self.json != []:
-
-            title = self.json_handler.get_title(self.json)
-            description = self.json_handler.get_description(self.json)
-            if self.display_title == 'Yes':
-                display(HTML('<h1><u>{0}</u></h1>'.format(title)))
-            # display(HTML('<p>{0}</p>'.format(description)))
-            if self.display_description == 'Yes':
-                print(description)
-
+            self.display_title_and_description()
             if type == 'Data file':
                 self.display_datafile()
 
         # print(json_methods.get_relationship_creators(self.json))
         # print(self.json)
         # self.display_relationship()
+    def display_title_and_description(self):
+                # display(HTML('<h1><u>{0}</u></h1>'.format(title)))
+
+        title = self.json_handler.get_title(self.json)
+        title = ('<h1><u>{0}</u></h1>'.format(title))
+        description = self.json_handler.get_description(self.json)
+        t =description
+        description = ('<p style="font-size:140%;">{0}</p>'.format(description))
+        if self.display_title == 'Yes':
+            title_widget = widgets.HTML(
+                           value = title
+            )
+            display(title_widget)
+        # display(HTML('<p>{0}</p>'.format(description)))
+        if self.display_description == 'Yes':
+            description_widget = widgets.HTML(
+                           value = description
+            )
+            display(description_widget)
+
+            print()
+            print(t)
+
 
     def display_relationship(self):
         # print(self.json)

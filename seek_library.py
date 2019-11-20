@@ -19,8 +19,12 @@ from IPython.display import clear_output
 # InteractiveShell.ast_node_interactivity = "all"
 
 
+def hide_traceback(exc_tuple=None, filename=None, tb_offset=None,
+                   exception_only=False, running_compiled_code=False):
+    etype, value, tb = sys.exc_info()
+    return ipython._showtraceback(etype, value, ipython.InteractiveTB.get_exception_only(etype, value))
 
-class read():
+class Query():
     '''
     Class used to search/browse data on the FairdomHub website
     (https://www.fairdomhub.org)
@@ -38,19 +42,19 @@ class read():
         Contains details on what the search items are
         Gets all the user names and IDs of all FAIRDOM users
         '''
-        self.base_url = 'https://www.fairdomhub.org'
-        self.headers = {"Accept": "application/vnd.api+json",
-                        "Accept-Charset": "ISO-8859-1"}
-        self.session = requests.Session()
-        self.session.headers.update(self.headers)
-        self.search_setting_type = None
-        self.search_topic = None
+
+        '''
+        Will program ability to get json of item in query so that search wont
+        need to Wait
+        use multithreading??
+
+        '''
+        self.json = None
 
         self.json_handler = json_methods()
-
+        # self.search_and_display_handler =  search_and_display()
         self.search_doc_id = None
         self.doc_option_selected = None
-        self.search_doc_id = None
         self.current_blob = None
 
         self.settings_list_from_file=[]
@@ -231,13 +235,13 @@ class read():
         option = None
         if change['type'] == 'change' and change['name'] == 'value':
             if str(change['new']) == 'Investigation':
-                option = 'investigations'
+                option = 'Investigation'
             elif str(change['new']) == 'Assay':
-                option = 'assays'
+                option = 'Assay'
             elif str(change['new']) == 'Study':
-                option = 'studies'
+                option = 'Study'
             elif str(change['new']) == 'Data File':
-                option = 'data_files'
+                option = 'Data File'
             #sets the class variable to option
             self.doc_option_selected = option
 
@@ -269,12 +273,13 @@ class read():
         '''
         doc_option_widget = widgets.Dropdown(
             options=['Investigation', 'Assay', 'Study', 'Data File'],
-            # value='Investigation',
+            value='Investigation',
             description='Search Type:',
         )
 
         #calls a function that handles updates in the drop down menu
         doc_option_widget.observe(self.change_made_doc_option)
+        self.doc_option_selected = doc_option_widget.value
 
         doc_id_search_widget= widgets.BoundedIntText(
             value=1,
@@ -494,6 +499,19 @@ class read():
         self.display_download_link = self.query_tab.children[2].children[0].children[4].value
         self.settings_list[4] = self.display_download_link
 
+    def get_id_to_search(self):
+        return self.search_doc_id
+
+    def get_type_to_search(self):
+        return self.doc_option_selected
+
+    def get_topic(self):
+        return self.query_tab._titles.get('0')
+
+    def get_setting_options(self):
+        self.get_updated_setting_options()
+        return self.settings_list
+
     def query(self):
         '''
         Displays interactive widgets seperated out into different tabs
@@ -513,62 +531,66 @@ class read():
         display(self.query_tab)
 
 
+class Search():
+    def __init__(self):
+        self.topic = None
+        self.search_id = None
+        self.search_type = None
+        self.settings_list = []
+
+        self.display_title = ''
+        self.display_description = ''
+        self.display_model = ''
+        self.display_model_name = ''
+        self.display_download_link = ''
 
 
-    def search(self):
+        self.json = None
+        self.current_blob = None
+        self.json_handler = json_methods()
+
+    def assign_setting_option(self):
         '''
-        Searches Fairdom for the file based on user input
+        Get the newest values of the search options from the widgets in the
+        Search settings tab
         '''
-        self.search_setting_type = 'default'
-        clear_output()
+        self.display_title = self.settings_list[0]
 
-        self.load_default_settings()
-        self.display_doc()
+        self.display_description = self.settings_list[1]
 
-    def search_custom_settings(self):
-        '''
-        Searches Fairdom for the file based on user input
-        '''
-        self.search_setting_type = 'specific'
+        self.display_model = self.settings_list[2]
 
-        clear_output()
+        self.display_model_name = self.settings_list[3]
 
-        self.load_settings()
-        self.display_doc()
+        self.display_download_link = self.settings_list[4]
 
     def display_doc(self):
         '''
         displays the file by getting the appropriate data from the JSON tags
         '''
         #File ID to search for
-        id = self.search_doc_id
+        id = self.search_id
         # File type
-        type = self.doc_option_selected
-        # print(id)
-        # print(type)
-        # result_datafile = json_for_resource('investigations',id)
-        # print(result_datafile)
-        #turns the JSON response into a object
-        # self._request(str(type),str(id))
-        self.json =json_methods.get_JSON(type,id)
+        type = self.search_type
+        self.json =self.json_handler.get_JSON(type,id,'None')
         # print(self.json)
-
         #title and description of file
+        if self.json != []:
 
-        title = json_methods.get_title(self.json)
-        description = json_methods.get_description(self.json)
-        if self.display_title == 1:
-            display(HTML('<h1><u>{0}</u></h1>'.format(title)))
-        # display(HTML('<p>{0}</p>'.format(description)))
-        if self.display_description == 1:
-            print(description)
+            title = self.json_handler.get_title(self.json)
+            description = self.json_handler.get_description(self.json)
+            if self.display_title == 'Yes':
+                display(HTML('<h1><u>{0}</u></h1>'.format(title)))
+            # display(HTML('<p>{0}</p>'.format(description)))
+            if self.display_description == 'Yes':
+                print(description)
 
-        if type == 'data_files':
-            self.display_datafile()
+            if type == 'Data file':
+                self.display_datafile()
 
         # print(json_methods.get_relationship_creators(self.json))
         # print(self.json)
-        self.display_relationship()
+        # self.display_relationship()
 
     def display_relationship(self):
         # print(self.json)
@@ -643,26 +665,28 @@ class read():
         displays the file by getting the appropriate data from the JSON tags
         '''
 
-        self.current_blob = json_methods.get_blob(self.json)
-        link = json_methods.get_link(self.current_blob)
-        filename = json_methods.get_filename(self.current_blob)
+        self.current_blob = self.json_handler.get_blob(self.json)
+        link = self.json_handler.get_link(self.current_blob)
+        filename = self.json_handler.get_filename(self.current_blob)
 
         headers = { "Accept": "text/csv" }
         r = requests.get(link, headers=headers, params={'sheet':'1'})
         r.raise_for_status()
         #gets spreadsheet from data file
         csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
-        if self.display_model_name ==1:
+        # csv = pd.read_excel(self.fileName, header=columnForHeader, sheet_name=page)
+
+        if self.display_model_name =='Yes':
             display(HTML('<h4>File Name: {0}</h4>'.format(filename)))
         # display(filename)
-        if self.display_download_link == 1:
+        if self.display_download_link == 'Yes':
             self.download_link()
-        if self.display_model ==1:
+        if self.display_model =='Yes':
             display(csv)
 
     def download_link(self):
-        link = json_methods.get_link(self.current_blob)
-        filename = json_methods.get_filename(self.current_blob)
+        link = self.json_handler.get_link(self.current_blob)
+        filename = self.json_handler.get_filename(self.current_blob)
         download_link = link+"/download"
         print("Download link: " + download_link + "\n")
         HTML("<a href='"+ download_link + "'>Download + " + filename + "</a>")
@@ -707,10 +731,45 @@ class read():
         '''
         self.search_person_list = change['new']
 
+    def search_parameters(self,topic,id ,type ,settings_list):
+        self.topic = topic
+        self.search_id = id
+        self.search_type = type
+        self.settings_list = settings_list
 
-class search_and_display():
+    def search(self):
+        '''
+        Searches Fairdom for the file based on user input
+        '''
+        clear_output()
+        # print(self.topic)
+        self.assign_setting_option()
+        if self.topic == 'Document query':
+            self.display_doc()
+        elif self.topic == 'Person query':
+            pass
+        elif self.topic ==  'To be implemented':
+            pass
+
+'''
+To run
+x= s.SEEK()
+'''
+class SEEK():
     def __init__(self):
-        pass
+        self.SEEK_query = Query()
+        self.SEEK_search = Search()
+        self.SEEK_query.query()
+
+    def search(self):
+        topic = self.SEEK_query.get_topic()
+        setting_options = self.SEEK_query.get_setting_options()
+        id = self.SEEK_query.get_id_to_search()
+        type = self.SEEK_query.get_type_to_search()
+        self.SEEK_search.search_parameters(topic,id,type,setting_options)
+        self.SEEK_search.search()
+
+
 
 class json_methods():
     '''
@@ -721,6 +780,13 @@ class json_methods():
         self.list_of_user_ids =[]
         self.list_of_user_names =[]
         self.people_JSON = None
+
+    def check_webpage_status(self,r):
+
+        if r.status_code != 200:
+            print('Web site does not exist')
+            return False
+        return True
 
     def json_for_resource_type_id_session(self,type, id, session):
         '''
@@ -752,9 +818,20 @@ class json_methods():
         #base_url = 'https://sandbox3.fairdomhub.org'
         headers = {"Accept": "application/vnd.api+json",
                "Accept-Charset": "ISO-8859-1"}
+
         r = requests.get(base_url + "/" + type + "/" + str(id), headers=headers)
-        r.raise_for_status()
-        return r.json()
+        valid = self.check_webpage_status(r)
+
+        if valid:
+            r.raise_for_status()
+            return r.json()
+        else:
+            return []
+
+
+            # sys.exit(0)
+
+
 
     def json_for_resource_type(self,type):
         '''
@@ -772,6 +849,17 @@ class json_methods():
         return r.json()
 
     def get_JSON(self,type,id,session):
+
+        if type == 'Investigation':
+            type = 'investigations'
+        elif type == 'Assay':
+            type = 'assays'
+        elif type == 'Study':
+            type = 'studies'
+        elif type == 'Data File':
+            type = 'data_files'
+
+
         if session == 'None' and id != 'None':
             return self.json_for_resource_type_id(str(type),
                                              str(id))

@@ -52,17 +52,10 @@ class Query():
         self.doc_option_selected = None
         self.current_blob = None
 
-        self.settings_list_from_file=[]
-        self.settings_list =[]
+        self.settings_dict_from_file={}
+        self.settings_dict = {}
+
         self.relationship_person_id =[]
-
-        #Setting options
-        self.display_title = ''
-        self.display_description = ''
-        self.display_model = ''
-        self.display_model_name = ''
-        self.display_download_link = ''
-
 
         self.dict_of_users_and_ids = {}
         self.list_of_user_names=[]
@@ -105,11 +98,13 @@ class Query():
             file = open(fn, 'w+')
 
         try:
+
             with file as f:
-                self.settings_list = f.readlines()
-            #Create a list of the values
-            self.settings_list = [str(value.strip()) for value in self.settings_list]
-            self.settings_list_from_file=list(self.settings_list)
+                for line in f:
+                   (key, value) = line.split()
+                   self.settings_dict_from_file[key] = value
+
+            self.settings_dict = dict(self.settings_dict_from_file)
             file.close()
         except:
             print('Error with settings file')
@@ -123,9 +118,13 @@ class Query():
         fn = 'search_settings.txt'
         try:
             file = open(fn, 'w')
-            for item in self.settings_list:
-                to_write =item+'\n'
+
+            for key in self.settings_dict:
+                k = (key)
+                val = (self.settings_dict.get(key))
+                to_write = k + ' ' + val + '\n'
                 file.write(to_write)
+
             file.close()
         except:
             print('Error with settings file')
@@ -137,38 +136,47 @@ class Query():
         and display the choices on the widgets on the settings tab
         '''
         self.read_settings_file()
-        self.display_title = self.settings_list_from_file[0]
-        self.query_tab.children[2].children[0].children[0].value = self.display_title
+        self.query_tab.children[2].children[0].children[0].children[0].children[0].value = self.settings_dict_from_file.get('display_title')
 
-        self.display_description = self.settings_list_from_file[1]
-        self.query_tab.children[2].children[0].children[1].value = self.display_description
+        self.query_tab.children[2].children[0].children[0].children[0].children[1].value = self.settings_dict_from_file.get('display_description')
 
-        self.display_model = self.settings_list_from_file[2]
-        self.query_tab.children[2].children[0].children[2].value = self.display_model
+        self.query_tab.children[2].children[0].children[0].children[0].children[2].value = self.settings_dict_from_file.get('display_model_name')
 
-        self.display_model_name =self.settings_list_from_file[3]
-        self.query_tab.children[2].children[0].children[3].value = self.display_model_name
+        self.query_tab.children[2].children[0].children[0].children[0].children[3].value = self.settings_dict_from_file.get('display_model')
 
-        self.display_download_link = self.settings_list_from_file[4]
-        self.query_tab.children[2].children[0].children[4].value = self.display_download_link
+        self.query_tab.children[2].children[0].children[0].children[0].children[4].value = self.settings_dict_from_file.get('display_download_link')
+
+        self.query_tab.children[2].children[0].children[0].children[1].children[0].value = self.settings_dict_from_file.get('display_creators')
+        self.query_tab.children[2].children[0].children[0].children[1].children[1].value = self.settings_dict_from_file.get('display_submitter')
+        self.query_tab.children[2].children[0].children[0].children[1].children[2].value = self.settings_dict_from_file.get('display_related_people')
+        self.query_tab.children[2].children[0].children[0].children[1].children[3].value = self.settings_dict_from_file.get('display_related_projects')
+        self.query_tab.children[2].children[0].children[0].children[1].children[4].value = self.settings_dict_from_file.get('display_related_investigations')
+        self.query_tab.children[2].children[0].children[0].children[1].children[5].value = self.settings_dict_from_file.get('display_related_studies')
+        self.query_tab.children[2].children[0].children[0].children[1].children[6].value = self.settings_dict_from_file.get('display_related_assays')
+        self.query_tab.children[2].children[0].children[0].children[1].children[7].value = self.settings_dict_from_file.get('display_related_publications')
+        self.query_tab.children[2].children[0].children[0].children[1].children[8].value = self.settings_dict_from_file.get('display_related_events')
 
     def load_default_settings(self):
         '''
         Default settings for the search options
         '''
-        self.display_title = 'Yes'
-        self.display_description = 'Yes'
-        self.display_model = 'Yes'
-        self.display_model_name = 'Yes'
-        self.display_download_link = 'Yes'
 
-        if len(self.settings_list) < 5:
-            self.settings_list= [None] * 5
-        self.settings_list[0]= 'Yes'
-        self.settings_list[1]= 'Yes'
-        self.settings_list[2]= 'Yes'
-        self.settings_list[3]= 'Yes'
-        self.settings_list[4]= 'Yes'
+        self.settings_dict['display_title'] = 'Yes'
+        self.settings_dict['display_description'] = 'Yes'
+        self.settings_dict['display_model_name'] = 'Yes'
+        self.settings_dict['display_model'] = 'Yes'
+        self.settings_dict['display_download_link'] = 'Yes'
+
+        self.settings_dict['display_creators'] = 'Yes'
+        self.settings_dict['display_submitter'] = 'Yes'
+        self.settings_dict['display_related_people'] = 'Yes'
+        self.settings_dict['display_related_projects'] = 'Yes'
+        self.settings_dict['display_related_investigations'] = 'Yes'
+        self.settings_dict['display_related_studies'] = 'Yes'
+        self.settings_dict['display_related_assays'] = 'Yes'
+        self.settings_dict['display_related_publications'] = 'Yes'
+        self.settings_dict['display_related_events'] = 'Yes'
+
 
     def change_made_name_search(self, change):
         '''
@@ -330,7 +338,7 @@ class Query():
             options=user_list_alphabet_order,
             description='Name :',
             ensure_option=False,
-            disabled=False
+            disabled=False,
         )
 
         #Handles update to name widget
@@ -346,16 +354,11 @@ class Query():
 
         return people_search_container
 
-    def settings_tab(self):
-        '''
-        Creates tab relating to settings used for searching
-        '''
-        #Size of left and right column widgets
-        style_left = {'description_width': '145px'}
-        style_right = {'description_width': '100px'}
+    def general_setting_widgets(self):
 
-        layout_left = {'width': '464px'}
-        layout_right = {'width': '200px'}
+        style = {'description_width': '180px'}
+
+        layout = {'width': '600px'}
 
 
         title_option = widgets.ToggleButtons(
@@ -364,9 +367,9 @@ class Query():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style_left,
-            layout=layout_left,
-            value = self.display_title
+            style =style,
+            layout=layout,
+            value = self.settings_dict.get('display_title')
         #     icons=['check'] * 3
         )
 
@@ -376,9 +379,23 @@ class Query():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style_left,
-            layout=layout_left,
-            value = self.display_description
+            style =style,
+            layout=layout,
+            value =self.settings_dict.get('display_description')
+
+        #     icons=['check'] * 3
+        )
+
+
+        model_name_option = widgets.ToggleButtons(
+            options=['Yes', 'No'],
+            description='Display Model Name:',
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['', ''],
+            style =style,
+            layout=layout,
+            value = self.settings_dict.get('display_model_name')
 
         #     icons=['check'] * 3
         )
@@ -389,22 +406,9 @@ class Query():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style_left,
-            layout=layout_left,
-            value = self.display_model
-
-        #     icons=['check'] * 3
-        )
-
-        model_name_option = widgets.ToggleButtons(
-            options=['Yes', 'No'],
-            description='Display Model Name:',
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltips=['', ''],
-            style =style_left,
-            layout=layout_left,
-            value = self.display_model_name
+            style =style,
+            layout=layout,
+            value = self.settings_dict.get('display_model')
 
         #     icons=['check'] * 3
         )
@@ -415,21 +419,207 @@ class Query():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =style_left,
-            layout=layout_left,
-            value = self.display_download_link
+            style =style,
+            layout=layout,
+            value = self.settings_dict.get('display_download_link')
 
         #     icons=['check'] * 3
         )
 
+
+        setting_option_widget_list  = [
+            title_option,
+            description_option,
+            model_name_option,
+            model_option,
+            download_link_option
+                        ]
+
+        column = widgets.VBox([setting_option_widget_list[0],
+                                   setting_option_widget_list[1],
+                                   setting_option_widget_list[2],
+                                   setting_option_widget_list[3],
+                                   setting_option_widget_list[4]])
+
+
+        return column
+
+    def relationship_setting_widgets(self):
+            style = {'description_width': '180px'}
+            layout = {'width': '600px'}
+
+            creators_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display Creator:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_creators')
+
+                # value = self.display_title
+            #     icons=['check'] * 3
+            )
+
+            submitter_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display Submitter:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_submitter')
+
+                # value = self.display_description
+
+            #     icons=['check'] * 3
+            )
+
+            related_people_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display People:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_related_people')
+
+                # value = self.display_model
+
+            #     icons=['check'] * 3
+            )
+
+            related_projects_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display Related Projects:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_related_projects')
+
+                # value = self.display_model_name
+
+            #     icons=['check'] * 3
+            )
+
+            related_investigations_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display related investigations:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_related_investigations')
+
+                # value = self.display_download_link
+
+            #     icons=['check'] * 3
+            )
+
+            related_studies_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display related studies:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_related_studies')
+
+                # value = self.display_download_link
+
+            #     icons=['check'] * 3
+            )
+
+            related_assays_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display related assays:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_related_assays')
+
+                # value = self.display_download_link
+
+            #     icons=['check'] * 3
+            )
+
+            related_publications_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display related publications:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_related_publications')
+
+                # value = self.display_download_link
+
+            #     icons=['check'] * 3
+            )
+
+            related_events_option = widgets.ToggleButtons(
+                options=['Yes', 'No'],
+                description='Display related events:',
+                disabled=False,
+                button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                tooltips=['', ''],
+                style =style,
+                layout=layout,
+                value = self.settings_dict.get('display_related_events')
+
+                # value = self.display_download_link
+
+            #     icons=['check'] * 3
+            )
+            setting_option_widget_list  = [
+                creators_option,
+                submitter_option,
+                related_people_option,
+                related_projects_option,
+                related_investigations_option,
+                related_studies_option,
+                related_assays_option,
+                related_publications_option,
+                related_events_option
+                            ]
+
+            column = widgets.VBox([setting_option_widget_list[0],
+                                   setting_option_widget_list[1],
+                                   setting_option_widget_list[2],
+                                   setting_option_widget_list[3],
+                                   setting_option_widget_list[4],
+                                   setting_option_widget_list[5],
+                                   setting_option_widget_list[6],
+                                   setting_option_widget_list[7],
+                                   setting_option_widget_list[8]])
+
+
+            return column
+
+    def settings_tab(self):
+        '''
+        Creates tab relating to settings used for searching
+        '''
+
+        layout = {'width': '635px'}
 
         load_settings_option = widgets.Button(
             description='Load Settings',
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltip='Click me',
-            style =style_right,
-            layout=layout_right,
+            # style =style_right,
+            # layout=layout_right,
             # icon='check'
         )
 
@@ -438,32 +628,35 @@ class Query():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltip='Click me',
-            style =style_right,
-            layout=layout_right,
+            # style =style_right,
+            # layout=layout_right,
             # icon='check'
         )
 
         load_settings_option.on_click(self.on_click_setting_load_save)
         save_settings_option.on_click(self.on_click_setting_load_save)
 
-        setting_option_widget_list  = [
-            title_option,
-            description_option,
-            model_option,
-            model_name_option,
-            download_link_option
-                        ]
+
+        # relationship_setting_options_list = self.relationship_setting_widgets()
         settings_widget_list = [
             load_settings_option,
             save_settings_option
         ]
+        general_setting_options_list = self.general_setting_widgets()
+        relation_setting_option_list = self.relationship_setting_widgets()
+        settings_accordion = widgets.Accordion(
+                                    children=[general_setting_options_list,
+                                              relation_setting_option_list],
+                                              layout = layout)
 
-        #left column widgets are the search options
-        left_column = widgets.VBox([setting_option_widget_list[0],
-                                   setting_option_widget_list[1],
-                                   setting_option_widget_list[2],
-                                   setting_option_widget_list[3],
-                                   setting_option_widget_list[4]])
+        settings_accordion.set_title(0, 'General settings')
+        settings_accordion.set_title(1, 'Relationship settings')
+
+        settings_accordion.selected_index = None
+        # general_settings_accordion.set_title(1, 'Relationship settings')
+
+
+        left_column = widgets.VBox([settings_accordion])
 
         #right column widgets are for saving and loading the options
         right_column = widgets.VBox([settings_widget_list[0],
@@ -479,20 +672,84 @@ class Query():
         Get the newest values of the search options from the widgets in the
         Search settings tab
         '''
-        self.display_title = self.query_tab.children[2].children[0].children[0].value
-        self.settings_list[0] = self.display_title
+        value = self.get_query_tab_children_settings_values('display_title')
+        self.settings_dict['display_title'] = value
 
-        self.display_description = self.query_tab.children[2].children[0].children[1].value
-        self.settings_list[1] = self.display_description
+        value= self.get_query_tab_children_settings_values('display_description')
+        self.settings_dict['display_description'] = value
 
-        self.display_model = self.query_tab.children[2].children[0].children[2].value
-        self.settings_list[2] = self.display_model
+        value = self.get_query_tab_children_settings_values('display_model_name')
+        self.settings_dict['display_model_name'] = value
 
-        self.display_model_name = self.query_tab.children[2].children[0].children[3].value
-        self.settings_list[3] = self.display_model_name
+        value = self.get_query_tab_children_settings_values('display_download_link')
+        self.settings_dict['display_download_link'] = value
 
-        self.display_download_link = self.query_tab.children[2].children[0].children[4].value
-        self.settings_list[4] = self.display_download_link
+        value = self.get_query_tab_children_settings_values('display_model')
+        self.settings_dict['display_model'] = value
+
+        value = self.get_query_tab_children_settings_values('display_creators')
+        self.settings_dict['display_creators'] = value
+
+        value = self.get_query_tab_children_settings_values('display_submitter')
+        self.settings_dict['display_submitter'] = value
+
+        value = self.get_query_tab_children_settings_values('display_related_people')
+        self.settings_dict['display_related_people'] = value
+
+        value = self.get_query_tab_children_settings_values('display_related_projects')
+        self.settings_dict['display_related_projects'] = value
+
+        value = self.get_query_tab_children_settings_values('display_related_investigations')
+        self.settings_dict['display_related_investigations'] = value
+
+        value = self.get_query_tab_children_settings_values('display_related_studies')
+        self.settings_dict['display_related_studies'] = value
+
+        value = self.get_query_tab_children_settings_values('display_related_assays')
+        self.settings_dict['display_related_assays'] = value
+
+        value = self.get_query_tab_children_settings_values('display_related_publications')
+        self.settings_dict['display_related_publications'] = value
+
+        value = self.get_query_tab_children_settings_values('display_related_events')
+        self.settings_dict['display_related_events'] = value
+
+
+
+    def get_query_tab_children_settings_values(self,setting):
+
+        if setting == 'display_title':
+            return self.query_tab.children[2].children[0].children[0].children[0].children[0].value
+        elif setting == 'display_description':
+            return self.query_tab.children[2].children[0].children[0].children[0].children[1].value
+        elif setting == 'display_model_name':
+            return self.query_tab.children[2].children[0].children[0].children[0].children[2].value
+        elif setting == 'display_model':
+            return self.query_tab.children[2].children[0].children[0].children[0].children[3].value
+        elif setting == 'display_download_link':
+            return self.query_tab.children[2].children[0].children[0].children[0].children[4].value
+
+
+        elif setting == 'display_creators':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[0].value
+        elif setting == 'display_submitter':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[1].value
+        elif setting == 'display_related_people':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[2].value
+        elif setting == 'display_related_projects':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[3].value
+        elif setting == 'display_related_investigations':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[4].value
+        elif setting == 'display_related_studies':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[5].value
+        elif setting == 'display_related_assays':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[6].value
+        elif setting == 'display_related_publications':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[7].value
+        elif setting == 'display_related_events':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[8].value
+        else:
+            return 'Error'
 
     def get_id_to_search(self):
         return self.search_doc_id
@@ -503,9 +760,9 @@ class Query():
     def get_topic(self):
         return self.query_tab._titles.get('0')
 
-    def get_setting_options(self):
+    def get_setting_options_dict(self):
         self.get_updated_setting_options()
-        return self.settings_list
+        return self.settings_dict
 
     def query(self):
         '''
@@ -531,33 +788,12 @@ class Search():
         self.topic = None
         self.search_id = None
         self.search_type = None
-        self.settings_list = []
-
-        self.display_title = ''
-        self.display_description = ''
-        self.display_model = ''
-        self.display_model_name = ''
-        self.display_download_link = ''
-
+        self.settings_dict = {}
 
         self.json = None
         self.current_blob = None
         self.json_handler = json_methods()
 
-    def assign_setting_option(self):
-        '''
-        Get the newest values of the search options from the widgets in the
-        Search settings tab
-        '''
-        self.display_title = self.settings_list[0]
-
-        self.display_description = self.settings_list[1]
-
-        self.display_model = self.settings_list[2]
-
-        self.display_model_name = self.settings_list[3]
-
-        self.display_download_link = self.settings_list[4]
 
     def display_doc(self):
         '''
@@ -571,37 +807,34 @@ class Search():
         # print(self.json)
         #title and description of file
         if self.json != []:
-            self.display_title_and_description()
-            if type == 'Data file':
+            if self.settings_dict.get('display_title') == 'Yes':
+                self.display_title()
+
+            if self.settings_dict.get('display_description') == 'Yes':
+                self.display_description()
+
+            if type == 'Data File':
                 self.display_datafile()
 
         # print(json_methods.get_relationship_creators(self.json))
         # print(self.json)
+        # if self.display_re:
+        #     pass
         # self.display_relationship()
-    def display_title_and_description(self):
+    def display_title(self):
                 # display(HTML('<h1><u>{0}</u></h1>'.format(title)))
 
         title = self.json_handler.get_title(self.json)
         title = ('<h1><u>{0}</u></h1>'.format(title))
+
+        title_widget = widgets.HTML(
+                       value = title
+        )
+        display(title_widget)
+
+    def display_description(self):
         description = self.json_handler.get_description(self.json)
-        t =description
-        description = ('<p style="font-size:140%;">{0}</p>'.format(description))
-        if self.display_title == 'Yes':
-            title_widget = widgets.HTML(
-                           value = title
-            )
-            display(title_widget)
-        # display(HTML('<p>{0}</p>'.format(description)))
-        if self.display_description == 'Yes':
-            description_widget = widgets.HTML(
-                           value = description
-            )
-            display(description_widget)
-
-            print()
-            print(t)
-
-
+        print(description)
     def display_relationship(self):
         # print(self.json)
         # print()
@@ -674,25 +907,23 @@ class Search():
         '''
         displays the file by getting the appropriate data from the JSON tags
         '''
-
         self.current_blob = self.json_handler.get_blob(self.json)
         link = self.json_handler.get_link(self.current_blob)
-        filename = self.json_handler.get_filename(self.current_blob)
 
-        headers = { "Accept": "text/csv" }
-        r = requests.get(link, headers=headers, params={'sheet':'1'})
-        r.raise_for_status()
-        #gets spreadsheet from data file
-        csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
-        # csv = pd.read_excel(self.fileName, header=columnForHeader, sheet_name=page)
-
-        if self.display_model_name =='Yes':
+        if self.settings_dict.get('display_model_name') =='Yes':
+            filename = self.json_handler.get_filename(self.current_blob)
             display(HTML('<h4>File Name: {0}</h4>'.format(filename)))
         # display(filename)
-        if self.display_download_link == 'Yes':
-            self.download_link()
-        if self.display_model =='Yes':
+        if self.settings_dict.get('display_model') =='Yes':
+            headers = { "Accept": "text/csv" }
+            r = requests.get(link, headers=headers, params={'sheet':'1'})
+            r.raise_for_status()
+            #gets spreadsheet from data file
+            csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
             display(csv)
+
+        if self.settings_dict.get('display_download_link') == 'Yes':
+            self.download_link()
 
     def download_link(self):
         link = self.json_handler.get_link(self.current_blob)
@@ -702,18 +933,6 @@ class Search():
         HTML("<a href='"+ download_link + "'>Download + " + filename + "</a>")
 
     def multiprocess_search(self,idNumbers):
-        # processesBeingRun =[]
-        # maxProcesses =self.maxProcesses
-        # if len(idNumbers) < maxProcesses:
-        #     maxProcesses = len(idNumbers)
-        #
-        # for processNumber in range (5)
-        #     currentProcess = multiprocessing.Process(target =retrieve_person_name,args=())
-        #     currentProcess.start()
-        #     processesBeingRun.append(currentProcess)
-        #
-        # for process in processesBeingRun:
-        #     process.join()
 
         processesBeingRun = Pool(processes = 15)
         dataRec = processesBeingRun.map(self.retrieve_person_name,idNumbers)
@@ -725,15 +944,6 @@ class Search():
         personMetaData = json_methods.get_JSON('people',idNumber)
         return json_methods.get_title(personMetaData)
 
-    def related_people_search(self,target):
-
-        if self.search_setting_type == 'default':
-            self.search()
-        else:
-            self.search_custom_settings()
-        # for x in range(len(self.search_person_list)):
-        #     print(self.search_person_list[x])
-
     ## needs comments
     def change_made_search_related_person(self, change):
         '''
@@ -741,11 +951,11 @@ class Search():
         '''
         self.search_person_list = change['new']
 
-    def search_parameters(self,topic,id ,type ,settings_list):
+    def search_parameters(self,topic,id ,type ,settings_dict):
         self.topic = topic
         self.search_id = id
         self.search_type = type
-        self.settings_list = settings_list
+        self.settings_dict = settings_dict
 
     def search(self):
         '''
@@ -753,7 +963,6 @@ class Search():
         '''
         clear_output()
         # print(self.topic)
-        self.assign_setting_option()
         if self.topic == 'Document query':
             self.display_doc()
         elif self.topic == 'Person query':
@@ -773,10 +982,11 @@ class SEEK():
 
     def search(self):
         topic = self.SEEK_query.get_topic()
-        setting_options = self.SEEK_query.get_setting_options()
+        settings_dict = self.SEEK_query.get_setting_options_dict()
+        settings_dict = dict(settings_dict)
         id = self.SEEK_query.get_id_to_search()
         type = self.SEEK_query.get_type_to_search()
-        self.SEEK_search.search_parameters(topic,id,type,setting_options)
+        self.SEEK_search.search_parameters(topic,id,type,settings_dict)
         self.SEEK_search.search()
 
 

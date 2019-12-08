@@ -1,0 +1,14 @@
+display_title Yes
+display_description No
+display_model_name No
+display_model No
+display_download_link No
+display_creators Yes
+display_submitter Yes
+display_related_people Yes
+display_related_projects Yes
+display_related_investigations No
+display_related_studies Yes
+display_related_assays No
+display_related_publications Yes
+display_related_events No

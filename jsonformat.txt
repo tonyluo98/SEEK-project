@@ -117,3 +117,31 @@ uuid
 base_url
 https://fairdomhub.org
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(VBox(children=(Dropdown(description='Search Type:', options=('Investigation', 'Assay', 'Study', 'Data File'), value='Investigation'), BoundedIntText(value=1, description='ID number:', max=9223372036854775807, min=1))),
+ VBox(children=(Combobox(value='', description='Name :', options=('ALEJANDRO  COLMAN-LERNER',  HBox(children=(VBox(children=(ToggleButtons(description='Display Title:', layout=Layout(width='464px'), options=('Yes', 'No'), style=ToggleButtonsStyle(description_width='145px'), tooltips=('', ''), value='Yes'), ToggleButtons(description='Display Description:', layout=Layout(width='464px'), options=('Yes', 'No'), style=ToggleButtonsStyle(description_width='145px'), tooltips=('', ''), value='Yes'), ToggleButtons(description='Display Model:', layout=Layout(width='464px'), options=('Yes', 'No'), style=ToggleButtonsStyle(description_width='145px'), tooltips=('', ''), value='Yes'), ToggleButtons(description='Display Model Name:', layout=Layout(width='464px'), options=('Yes', 'No'), style=ToggleButtonsStyle(description_width='145px'), tooltips=('', ''), value='Yes'), ToggleButtons(description='Display Download Link:', layout=Layout(width='464px'), options=('Yes', 'No'), style=ToggleButtonsStyle(description_width='145px'), tooltips=('', ''), value='Yes'))), VBox(children=(Button(description='Load Settings', layout=Layout(width='200px'), style=ButtonStyle(), tooltip='Click me'), Button(description='Save Settings', layout=Layout(width='200px'), style=ButtonStyle(), tooltip='Click me'))))))

@@ -1,0 +1,42 @@
+Features :
+  Ability to search using id and type:
+      Working document types
+          eg: data files, ISA, YELLOW PAGES etc
+      People
+      Browse document types without knowing exact id of file
+          search function
+
+  Settings tab :
+      Load custom settings and save settings
+          eg, what should be displayed when searching
+
+  When item is displayed other data is accessible:
+      Related people
+      Submitter
+      Other files it is linked to
+
+  Ability to navigate to other related working documents without searching again
+
+  Cache previous searches to prevent a new search
+
+  Download data files and be able to edit it on Jupyter
+
+  Write to fairdomhub:
+      create and upload new ISA and data files
+
+      Auto fill some details for upload
+
+
+
+
+--------------------- Questions for interviewers -------------------------------
+
+What do you like about my features?
+What do you not like?
+Do you prefer Latex text or html text
+What do you find yourself often looking at on FAIRDOM?
+Any repeated searches on FAIRDOM?
+Any repetitive actions on FAIRDOM / Jupyter?
+What features would you like when using Jupyter and FAIRDOM?
+
+What do you do on FAIRDOM?

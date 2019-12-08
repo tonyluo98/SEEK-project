@@ -1,0 +1,16 @@
+initially two classes - read and write
+  Now query , search and display, json methods and Handler
+
+    This is so that easier communication and readability
+
+initially single widget for searching but discovered containers
+  allows for widgets to work in unison
+
+    Makes is easier for the user to understand whats going on
+
+drop box display none rather than have no drop box because it shows
+    repeatability (basically its teh same format to not confuse users)
+
+SKILLS:
+BAlsamiq
+know how to mockup

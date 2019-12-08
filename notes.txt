@@ -1,0 +1,125 @@
+evaluation
+why some ideas are better and some arent
+eg graph -- is it useful
+
+
+
+
+
+
+{"data":
+    {"id":"2222","type":"data_files","attributes":
+        {"title":"","description":"","license":"CC0-1.0","latest_version":1,"tags":null,
+         "versions":
+             [{"version":1,"revision_comments":null,"url":"https://fairdomhub.org/data_files/2222?version=1"}],
+         "version":1,"revision_comments":null,"created_at":"2018-08-22T15:01:10.000Z",
+         "updated_at":"2018-09-03T11:19:56.000Z",
+             "content_blobs":[{"original_filename":"Biomass Col.xlsx","url":null,
+                               "md5sum":"4151182e10eef1c1e55b5cafbe97456d",
+                               "sha1sum":"d9b2a2cf5baeb48a49b33b7dca96104168fc296d",
+                               "content_type":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                               "link":"https://fairdomhub.org/data_files/2222/content_blobs/5814","size":72820}],
+         "other_creators":"Benedicte Wenden"},
+     "relationships":
+         {"creators":{"data":[{"id":"854","type":"people"}]},
+         "submitter":{"data":[{"id":"850","type":"people"}]},
+         "people":{"data":[{"id":"854","type":"people"},{"id":"850","type":"people"}]},
+         "projects":{"data":[{"id":"59","type":"projects"}]},
+         "investigations":{"data":[{"id":"222","type":"investigations"}]},
+         "studies":{"data":[{"id":"400","type":"studies"}]},
+         "assays":{"data":[{"id":"709","type":"assays"}]},
+         "publications":{"data":[]},
+         "events":{"data":[]}},
+     "links":
+         {"self":"/data_files/2222?version=1"},
+     "meta":{"created":"2018-08-22T15:01:09.000Z","modified":"2018-09-03T11:19:56.000Z","api_version":"0.2","uuid":"202cac00-884a-0136-5113-549f350973c0","base_url":"https://fairdomhub.org"}},
+ "jsonapi":{"version":"1.0"}}
+
+
+INTERVIEW :
+
+What would you call them --- "query" or assets
+      the tab names
+
+Configure around yellow pages? and asset catalogue?
+
+How should i interact with seek, login system? presentation? search function? browse ??
+
+Steps?
+
+Set the scope, what do you do, what type of interface / Features
+
+
+What are your requirements?
+Top 20 ask of the seek?
+Alice and Bob stories
+Persona does he think for interacting
+  lab manager
+  student
+  researcher
+  etc
+
+How long is an acceptable wait time?
+What are your priorities ?
+Moscw
+
+How to present results?
+How to deal with permissions?
+Boundary of interaction between notebook and seek. What is too much?
+I should be able to see permissions, login system , Maybe set permissions?
+
+
+mark evaluation based on requirements and mosocow
+  fufill requiremenets
+  reinterview to get responses
+  scale respones 1 -5
+  feedback form
+
+testing
+  did i test ?
+  not necessarily have to write my own tests
+
+
+spiral methodology
+  learn , improve, leearn ,make ,test ,etc
+
+  table of my project vs api
+
+
+Use it for projects, get samples , computational
+Log of actions, metadata such as when it was created okay
+
+Automatically create working documents - autofill
+everything possible via seek - templates
+ with sharing permissons
+
+search for a particular dataset via type
+get all items from dataset
+
+scope searching within projects
+bugs
+
+sequencing data get me all the data sets ,
+breaking objects down from a search time
+create things within the API
+
+create files without uploading data
+
+use it for a local seek
+
+priorities :
+    search
+    ability to do it via command line
+    option to use widgits or not
+    programmable settings
+
+-----------------------------------------------------------------------------
+
+need to surface the type of the data file into the api itself --- requests
+  in report, how hard is this? ask stuart
+
+mention why i moscowd jaspers requiremenets
+rethink - and write what happened
+    hack such as do something else
+
+-------------------------------------------------------------------------------

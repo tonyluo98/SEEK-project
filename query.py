@@ -151,14 +151,14 @@ class Query():
         self.query_tab.children[2].children[0].children[0].children[0].children[4].value = self.settings_dict_from_file.get('display_download_link')
 
         self.query_tab.children[2].children[0].children[0].children[1].children[0].value = self.settings_dict_from_file.get('display_creators')
-        self.query_tab.children[2].children[0].children[0].children[1].children[1].value = self.settings_dict_from_file.get('display_submitter')
-        self.query_tab.children[2].children[0].children[0].children[1].children[2].value = self.settings_dict_from_file.get('display_related_people')
-        self.query_tab.children[2].children[0].children[0].children[1].children[3].value = self.settings_dict_from_file.get('display_related_projects')
-        self.query_tab.children[2].children[0].children[0].children[1].children[4].value = self.settings_dict_from_file.get('display_related_investigations')
-        self.query_tab.children[2].children[0].children[0].children[1].children[5].value = self.settings_dict_from_file.get('display_related_studies')
-        self.query_tab.children[2].children[0].children[0].children[1].children[6].value = self.settings_dict_from_file.get('display_related_assays')
-        self.query_tab.children[2].children[0].children[0].children[1].children[7].value = self.settings_dict_from_file.get('display_related_publications')
-        self.query_tab.children[2].children[0].children[0].children[1].children[8].value = self.settings_dict_from_file.get('display_related_events')
+        # self.query_tab.children[2].children[0].children[0].children[1].children[1].value = self.settings_dict_from_file.get('display_submitter')
+        # self.query_tab.children[2].children[0].children[0].children[1].children[2].value = self.settings_dict_from_file.get('display_related_people')
+        self.query_tab.children[2].children[0].children[0].children[1].children[1].value = self.settings_dict_from_file.get('display_related_projects')
+        self.query_tab.children[2].children[0].children[0].children[1].children[2].value = self.settings_dict_from_file.get('display_related_investigations')
+        self.query_tab.children[2].children[0].children[0].children[1].children[3].value = self.settings_dict_from_file.get('display_related_studies')
+        self.query_tab.children[2].children[0].children[0].children[1].children[4].value = self.settings_dict_from_file.get('display_related_assays')
+        self.query_tab.children[2].children[0].children[0].children[1].children[5].value = self.settings_dict_from_file.get('display_related_publications')
+        self.query_tab.children[2].children[0].children[0].children[1].children[6].value = self.settings_dict_from_file.get('display_related_events')
 
     def load_default_settings(self):
         '''
@@ -172,8 +172,8 @@ class Query():
         self.settings_dict['display_download_link'] = 'Yes'
 
         self.settings_dict['display_creators'] = 'Yes'
-        self.settings_dict['display_submitter'] = 'Yes'
-        self.settings_dict['display_related_people'] = 'Yes'
+        # self.settings_dict['display_submitter'] = 'Yes'
+        # self.settings_dict['display_related_people'] = 'Yes'
         self.settings_dict['display_related_projects'] = 'Yes'
         self.settings_dict['display_related_investigations'] = 'Yes'
         self.settings_dict['display_related_studies'] = 'Yes'
@@ -464,36 +464,36 @@ class Query():
                 # value = self.display_title
             #     icons=['check'] * 3
             )
-
-            submitter_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display Submitter:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_submitter')
-
-                # value = self.display_description
-
-            #     icons=['check'] * 3
-            )
-
-            related_people_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display People:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_related_people')
-
-                # value = self.display_model
-
-            #     icons=['check'] * 3
-            )
+            #
+            # submitter_option = widgets.ToggleButtons(
+            #     options=['Yes', 'No'],
+            #     description='Display Submitter:',
+            #     disabled=False,
+            #     button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            #     tooltips=['', ''],
+            #     style =style,
+            #     layout=layout,
+            #     value = self.settings_dict.get('display_submitter')
+            #
+            #     # value = self.display_description
+            #
+            # #     icons=['check'] * 3
+            # )
+            #
+            # related_people_option = widgets.ToggleButtons(
+            #     options=['Yes', 'No'],
+            #     description='Display People:',
+            #     disabled=False,
+            #     button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            #     tooltips=['', ''],
+            #     style =style,
+            #     layout=layout,
+            #     value = self.settings_dict.get('display_related_people')
+            #
+            #     # value = self.display_model
+            #
+            # #     icons=['check'] * 3
+            # )
 
             related_projects_option = widgets.ToggleButtons(
                 options=['Yes', 'No'],
@@ -586,8 +586,8 @@ class Query():
             )
             setting_option_widget_list  = [
                 creators_option,
-                submitter_option,
-                related_people_option,
+                # submitter_option,
+                # related_people_option,
                 related_projects_option,
                 related_investigations_option,
                 related_studies_option,
@@ -602,9 +602,9 @@ class Query():
                                    setting_option_widget_list[3],
                                    setting_option_widget_list[4],
                                    setting_option_widget_list[5],
-                                   setting_option_widget_list[6],
-                                   setting_option_widget_list[7],
-                                   setting_option_widget_list[8]])
+                                   setting_option_widget_list[6]])
+                                   # setting_option_widget_list[7],
+                                   # setting_option_widget_list[8]])
 
 
             return column
@@ -693,11 +693,11 @@ class Query():
         value = self.get_query_tab_children_settings_values('display_creators')
         self.settings_dict['display_creators'] = value
 
-        value = self.get_query_tab_children_settings_values('display_submitter')
-        self.settings_dict['display_submitter'] = value
+        # value = self.get_query_tab_children_settings_values('display_submitter')
+        # self.settings_dict['display_submitter'] = value
 
-        value = self.get_query_tab_children_settings_values('display_related_people')
-        self.settings_dict['display_related_people'] = value
+        # value = self.get_query_tab_children_settings_values('display_related_people')
+        # self.settings_dict['display_related_people'] = value
 
         value = self.get_query_tab_children_settings_values('display_related_projects')
         self.settings_dict['display_related_projects'] = value
@@ -733,22 +733,22 @@ class Query():
 
         elif setting == 'display_creators':
             return self.query_tab.children[2].children[0].children[0].children[1].children[0].value
-        elif setting == 'display_submitter':
-            return self.query_tab.children[2].children[0].children[0].children[1].children[1].value
-        elif setting == 'display_related_people':
-            return self.query_tab.children[2].children[0].children[0].children[1].children[2].value
+        # elif setting == 'display_submitter':
+        #     return self.query_tab.children[2].children[0].children[0].children[1].children[1].value
+        # elif setting == 'display_related_people':
+        #     return self.query_tab.children[2].children[0].children[0].children[1].children[2].value
         elif setting == 'display_related_projects':
-            return self.query_tab.children[2].children[0].children[0].children[1].children[3].value
+            return self.query_tab.children[2].children[0].children[0].children[1].children[1].value
         elif setting == 'display_related_investigations':
-            return self.query_tab.children[2].children[0].children[0].children[1].children[4].value
+            return self.query_tab.children[2].children[0].children[0].children[1].children[2].value
         elif setting == 'display_related_studies':
-            return self.query_tab.children[2].children[0].children[0].children[1].children[5].value
+            return self.query_tab.children[2].children[0].children[0].children[1].children[3].value
         elif setting == 'display_related_assays':
-            return self.query_tab.children[2].children[0].children[0].children[1].children[6].value
+            return self.query_tab.children[2].children[0].children[0].children[1].children[4].value
         elif setting == 'display_related_publications':
-            return self.query_tab.children[2].children[0].children[0].children[1].children[7].value
+            return self.query_tab.children[2].children[0].children[0].children[1].children[5].value
         elif setting == 'display_related_events':
-            return self.query_tab.children[2].children[0].children[0].children[1].children[8].value
+            return self.query_tab.children[2].children[0].children[0].children[1].children[6].value
         else:
             return 'Error'
 

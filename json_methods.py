@@ -65,7 +65,6 @@ class JSON_methods():
         #base_url = 'https://sandbox3.fairdomhub.org'
         headers = {"Accept": "application/vnd.api+json",
                "Accept-Charset": "ISO-8859-1"}
-
         r = requests.get(base_url + "/" + type + "/" + str(id), headers=headers)
         valid = self.check_webpage_status(r)
 
@@ -73,12 +72,11 @@ class JSON_methods():
             r.raise_for_status()
             return r.json()
         else:
+            print('invalid for {} type {}'.format(id,type))
             return []
 
 
             # sys.exit(0)
-
-
 
     def json_for_resource_type(self,type):
         '''
@@ -97,15 +95,17 @@ class JSON_methods():
 
     def get_JSON(self,type,id,session):
 
-        if type == 'Investigation':
+
+        if type == 'Project':
+            type = 'projects'
+        elif type == 'Investigation':
             type = 'investigations'
-        elif type == 'Assay':
-            type = 'assays'
         elif type == 'Study':
             type = 'studies'
+        elif type == 'Assay':
+            type = 'assays'
         elif type == 'Data File':
             type = 'data_files'
-
 
         if session == 'None' and id != 'None':
             return self.json_for_resource_type_id(str(type),
@@ -181,6 +181,21 @@ class JSON_methods():
 
     def get_relationship_people(self,json):
         return json['data']['relationships']['people']['data']
+
+    def get_relationship_projects(self,json):
+        return json['data']['relationships']['projects']['data']
+
+    def get_relationship_investigations(self,json):
+        return json['data']['relationships']['investigations']['data']
+
+    def get_relationship_assays(self,json):
+        return json['data']['relationships']['assays']['data']
+
+    def get_relationship_studies(self,json):
+        return json['data']['relationships']['studies']['data']
+
+    def get_relationship_investigations(self,json):
+        return json['data']['relationships']['assays']['data']
 
     def get_ID_from_people_JSON(self,json):
         return json['id']

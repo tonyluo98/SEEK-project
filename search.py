@@ -11,7 +11,7 @@ import pandas as pd
 import query
 from pandas.io.json import json_normalize
 
-from multiprocessing import Pool
+import multiprocessing as mp
 from IPython.display import display
 from IPython.display import HTML
 from IPython.display import clear_output
@@ -30,7 +30,18 @@ class Search():
         self.relationship_person_id =[]
         self.list_of_ids = []
         self.list_of_names = []
+        self.related_work_tab = None
 
+        self.temp_list_of_ids = []
+        self.project_names = []
+        self.project_ids = []
+        self.investigation_names = []
+        self.investigation_ids = []
+        self.study_names = []
+        self.study_ids = []
+        self.assay_names = []
+        self.assay_ids = []
+        self.tab_title_names_list =[]
 
     def display_doc(self):
         '''
@@ -72,114 +83,36 @@ class Search():
         description = self.json_handler.get_description(self.json)
         print(description)
     def display_people_relations(self):
-        creatorsDict  = self.json_handler.get_relationship_creators(self.json)
-        creator_names = self.getListOfNamesFromDict(creatorsDict)
+        '''
+        Shows all the related Projects / Studies / Assays related to current
+        working document.
 
-        creator_relation = self.relationship_drop_box(creator_names,'No')
-        creator_relation_people_search_button = self.createRelationSearchWidget(creator_relation.value)
-        creator_relationship_widget_list  = [
-            creator_relation,
-            creator_relation_people_search_button
-                        ]
-        creator_relationship_people_container = widgets.VBox([creator_relationship_widget_list[0], creator_relationship_widget_list[1]])
+        Checks settings list to see which to display, then for each item, a
+        container is created with the name of each related item
 
-        submittersDict  = self.json_handler.get_relationship_submitters(self.json)
-        submitter_names = self.getListOfNamesFromDict(submittersDict)
-
-        submitter_relation = self.relationship_drop_box(submitter_names,'No')
-        submitter_relation_people_search_button = self.createRelationSearchWidget(submitter_relation.value)
-        submitter_relationship_widget_list  = [
-            submitter_relation,
-            submitter_relation_people_search_button
-                        ]
-        submitter_relationship_people_container = widgets.VBox([submitter_relationship_widget_list[0], submitter_relationship_widget_list[1]])
-
-        peopleDict  = self.json_handler.get_relationship_people(self.json)
-        people_names = self.getListOfNamesFromDict(submittersDict)
-
-        people_relation = self.relationship_drop_box(people_names,'No')
-        people_relation_people_search_button = self.createRelationSearchWidget(people_relation.value)
-        people_relationship_widget_list  = [
-            people_relation,
-            people_relation_people_search_button
-                        ]
-        people_relationship_people_container = widgets.VBox([people_relationship_widget_list[0], people_relationship_widget_list[1]])
-
-        related_info_tab = widgets.Tab()
-        related_info_tab.children =[creator_relationship_people_container,
-                                    submitter_relationship_people_container,
-                                    people_relationship_people_container]
-        related_info_tab.set_title(0, 'Creators')
-        related_info_tab.set_title(1, 'Submitter')
-        related_info_tab.set_title(2, 'People')
-
-
-
-        # relation_people_search_button.on_click(self.related_people_search)
-        display(related_info_tab)
-
-    def display_work_relations(self):
+        Can be optimised by using multiprocessing
+        '''
+        #list of items to display
         container_list =[]
+        #name of items to display
         tab_title_names_list =[]
-        if self.settings_dict.get('display_related_projects') == 'Yes':
-            projectsDict  = self.json_handler.get_relationship_projects(self.json)
-            project_names = self.getListOfNamesFromDictSearch(projectsDict,'Project')
-            project_relation = self.relationship_drop_box(project_names,'Yes')
-            project_relation_people_search_button = self.createRelationSearchWidget(project_relation.value)
-            project_relationship_widget_list  = [
-                project_relation,
-                project_relation_people_search_button
-                            ]
-            project_relationship_container = widgets.VBox([project_relationship_widget_list[0], project_relationship_widget_list[1]])
-            container_list.append(project_relationship_container)
-            tab_title_names_list.append('Related Projects')
 
-        # if self.settings_dict.get('display_related_investigations') == 'Yes':
-        #     investigationsDict  = self.json_handler.get_relationship_investigations(self.json)
-        #     investigation_names = self.getListOfNamesFromDictSearch(investigationsDict,'Investigation')
-        #
-        #     investigation_relation = self.relationship_drop_box(investigation_names,'Yes')
-        #     investigation_relation_people_search_button = self.createRelationSearchWidget(investigation_relation.value)
-        #     investigaiton_relationship_widget_list  = [
-        #         investigation_relation,
-        #         investigation_relation_people_search_button
-        #                     ]
-        #     investigation_relationship_people_container = widgets.VBox([investigaiton_relationship_widget_list[0], investigaiton_relationship_widget_list[1]])
-        #     container_list.append(investigation_relationship_people_container)
-        #     tab_title_names_list.append('Related Investigations')
+        if self.settings_dict.get('display_creators') == 'Yes':
+            creator_relationship_people_container = self.createRelationContainer('Creator','No')
+            container_list.append(creator_relationship_people_container)
+            tab_title_names_list.append('Creator')
 
+        if self.settings_dict.get('display_submitter') == 'Yes':
+            submitter_relationship_people_container = self.createRelationContainer('Submitter','No')
+            container_list.append(submitter_relationship_people_container)
+            tab_title_names_list.append('Submitter')
 
-        if self.settings_dict.get('display_related_studies') == 'Yes':
-            studiesDict  = self.json_handler.get_relationship_studies(self.json)
-            study_names = self.getListOfNamesFromDictSearch(studiesDict,'Study')
+        if self.settings_dict.get('display_related_people') == 'Yes':
+            people_relationship_people_container = self.createRelationContainer('People','No')
+            container_list.append(people_relationship_people_container)
+            tab_title_names_list.append('Related People')
 
-            study_relation = self.relationship_drop_box(study_names,'Yes')
-            study_relation_people_search_button = self.createRelationSearchWidget(study_relation.value)
-            study_relationship_widget_list  = [
-                study_relation,
-                study_relation_people_search_button
-                            ]
-            study_relationship_people_container = widgets.VBox([study_relationship_widget_list[0], study_relationship_widget_list[1]])
-            container_list.append(study_relationship_people_container)
-            tab_title_names_list.append('Related Studies')
-
-
-        if self.settings_dict.get('display_related_assays') == 'Yes':
-            assaysDict  = self.json_handler.get_relationship_assays(self.json)
-            assay_names = self.getListOfNamesFromDictSearch(assaysDict,'Assay')
-
-            assay_relation = self.relationship_drop_box(assay_names,'Yes')
-            assay_relation_people_search_button = self.createRelationSearchWidget(assay_relation.value)
-            assay_relationship_widget_list  = [
-                assay_relation,
-                assay_relation_people_search_button
-                            ]
-            assay_relationship_people_container = widgets.VBox([assay_relationship_widget_list[0], assay_relationship_widget_list[1]])
-            container_list.append(assay_relationship_people_container)
-            tab_title_names_list.append('Related Assays')
-
-
-
+        #If items are to be displayed, a tab is created for each item
         if container_list:
             related_work_tab = widgets.Tab()
             related_work_tab.children = container_list
@@ -187,57 +120,170 @@ class Search():
                 related_work_tab.set_title(index, tab_title_names_list[index])
             display(related_work_tab)
 
+    def display_work_relations(self):
+        '''
+        Shows all the related Projects / Studies / Assays related to current
+        working document.
+
+        Checks settings list to see which to display, then for each item, a
+        container is created with the name of each related item
+
+        Can be optimised by using multiprocessing
+        '''
+        #list of items to display
+        container_list =[]
+        #name of items to display
+        self.tab_title_names_list =[]
+
+        if self.settings_dict.get('display_related_projects') == 'Yes':
+            project_relationship_container = self.createRelationContainer('Project','Yes')
+            container_list.append(project_relationship_container)
+            self.tab_title_names_list.append('Related Projects')
+
+        if self.settings_dict.get('display_related_studies') == 'Yes':
+            study_relationship_people_container = self.createRelationContainer('Study','Yes')
+            container_list.append(study_relationship_people_container)
+            self.tab_title_names_list.append('Related Studies')
 
 
-    def display_doc_relations(self):
-        projectsDict  = self.json_handler.get_relationship_projects(self.json)
+        if self.settings_dict.get('display_related_assays') == 'Yes':
+            assay_relationship_people_container = self.createRelationContainer('Assay','Yes')
+            container_list.append(assay_relationship_people_container)
+            self.tab_title_names_list.append('Related Assays')
 
 
+        #If items are to be displayed, a tab is created for each item
+        if container_list:
+            self.related_work_tab = widgets.Tab()
+            self.related_work_tab.children = container_list
+            for index in range(len(self.tab_title_names_list)):
+                self.related_work_tab.set_title(index, self.tab_title_names_list[index])
+            display(self.related_work_tab)
 
-        creator_names = self.getListOfNamesFromDict(creatorsDict)
+    def createRelationContainer(self,type,increased_width):
+        '''
+        Creates the container for each item to be displayed
 
-        creator_relation = self.relationship_drop_box(creator_names,'No')
-        creator_relation_people_search_button = self.createRelationSearchWidget(creator_relation.value)
-        creator_relationship_widget_list  = [
-            creator_relation,
-            creator_relation_people_search_button
+        Each item contains a dropbox of the titles of related documents and a#
+        search button
+
+        type            : document type
+        increased_width : binary option for increased_width
+                          if value is Yes then this makes the dropbox width
+                          longer
+        '''
+
+        #Get a dictionary of data that contains ID and type
+        #Iterate over dictionary to get the names from IDs
+        desc = ''
+        if type == 'Project':
+            dict  = self.json_handler.get_relationship_projects(self.json)
+            names = self.getListOfNamesFromDictSearch(dict,type)
+            self.project_names = names
+            self.project_ids =self.temp_list_of_ids
+            desc = 'Title :'
+        elif type == 'Investigation':
+            dict  = self.json_handler.get_relationship_investigations(self.json)
+            names = self.getListOfNamesFromDictSearch(dict,type)
+            self.investigation_names = names
+            self.investigation_ids =self.temp_list_of_ids
+            desc = 'Title :'
+
+        elif type == 'Study':
+            dict  = self.json_handler.get_relationship_studies(self.json)
+            names = self.getListOfNamesFromDictSearch(dict,type)
+            self.study_names = names
+            self.study_ids =self.temp_list_of_ids
+            desc = 'Title :'
+
+        elif type == 'Assay':
+            dict  = self.json_handler.get_relationship_assays(self.json)
+            names = self.getListOfNamesFromDictSearch(dict,type)
+            self.assay_names = names
+            self.assay_ids =self.temp_list_of_ids
+            desc = 'Title :'
+
+        elif type =='Creator':
+            dict  = self.json_handler.get_relationship_creators(self.json)
+            names = self.getListOfNamesFromDict(dict)
+            desc = 'Name :'
+
+        elif type =='Submitter':
+            dict  = self.json_handler.get_relationship_submitters(self.json)
+            names = self.getListOfNamesFromDict(dict)
+            desc = 'Name :'
+
+        elif type =='People':
+            dict  = self.json_handler.get_relationship_people(self.json)
+            names = self.getListOfNamesFromDict(dict)
+            desc = 'Name :'
+
+        relation = self.relationship_drop_box(names,increased_width,desc)
+
+        relation_search_button = self.createRelationSearchWidget(relation.value)
+        if type == 'Project' or type =='Investigation' or type == 'Study' or type == 'Assay':
+            relation_search_button.on_click(self.on_click_search)
+
+
+        relationship_widget_list  = [
+            relation,
+            relation_search_button
                         ]
-        creator_relationship_people_container = widgets.VBox([creator_relationship_widget_list[0], creator_relationship_widget_list[1]])
+        #Sorts positioning of container
+        #dropbox above a search button
+        relationship_people_container = widgets.VBox([relationship_widget_list[0], relationship_widget_list[1]])
 
-        submittersDict  = self.json_handler.get_relationship_submitters(self.json)
-        submitter_names = self.getListOfNamesFromDict(submittersDict)
+        return relationship_people_container
 
-        submitter_relation = self.relationship_drop_box(submitter_names,'No')
-        submitter_relation_people_search_button = self.createRelationSearchWidget(submitter_relation.value)
-        submitter_relationship_widget_list  = [
-            submitter_relation,
-            submitter_relation_people_search_button
-                        ]
-        submitter_relationship_people_container = widgets.VBox([submitter_relationship_widget_list[0], submitter_relationship_widget_list[1]])
+    # def xx(self):
+    #     print(self.related_work_tab)
+    #     return self.related_work_tab
+    #
+    # def x1(self):
+    #     # print(self.related_work_tab.selected_index)
+    #     return self.related_work_tab.selected_index
+    #
+    # def x2(self):
+    #     print(self.related_work_tab.children[self.x1()])
+    #     return self.related_work_tab.children[self.x1()]
+    #
+    # def x3(self):
+    #     print(self.related_work_tab.children[self.x1()].children[0])
+    #     return self.related_work_tab.children[self.x1()].children[0]
+    #
+    # def x4(self):
+    #     print(self.related_work_tab.children[self.x1()].children[0].index[0])
+    #     return self.related_work_tab.children[self.x1()].children[0].index[0]
 
-        peopleDict  = self.json_handler.get_relationship_people(self.json)
-        people_names = self.getListOfNamesFromDict(submittersDict)
+    def on_click_search(self,button):
 
-        people_relation = self.relationship_drop_box(people_names,'No')
-        people_relation_people_search_button = self.createRelationSearchWidget(people_relation.value)
-        people_relationship_widget_list  = [
-            people_relation,
-            people_relation_people_search_button
-                        ]
-        people_relationship_people_container = widgets.VBox([people_relationship_widget_list[0], people_relationship_widget_list[1]])
+        tab_index = self.related_work_tab.selected_index
+        item_index = self.related_work_tab.children[tab_index].children[0].index[0]
+        if self.tab_title_names_list[tab_index] == 'Related Projects':
+            topic = 'Document query'
+            type = 'Project'
+            id = self.project_ids[item_index]
+        elif self.tab_title_names_list[tab_index] == 'Related Studies':
+            topic = 'Document query'
+            type = 'Study'
+            id = self.study_ids[item_index]
 
-        related_info_tab = widgets.Tab()
-        related_info_tab.children =[creator_relationship_people_container,
-                                    submitter_relationship_people_container,
-                                    people_relationship_people_container]
-        related_info_tab.set_title(0, 'Creators')
-        related_info_tab.set_title(1, 'Submitter')
-        related_info_tab.set_title(2, 'People')
+        elif self.tab_title_names_list[tab_index] == 'Related Assays':
+            topic = 'Document query'
+            type = 'Assay'
+            id = self.assay_ids[item_index]
 
+        # topic =
+        # type =
+        settings_dict = self.settings_dict
+        list_of_names = self.list_of_names
+        list_of_ids = self.list_of_ids
+        self.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
+        # print(topic)
+        # print(id)
+        # print(type)
+        self.search()
 
-
-        # relation_people_search_button.on_click(self.related_people_search)
-        display(related_info_tab)
 
     def createRelationSearchWidget(self,value):
         if len(value) == 0 :
@@ -264,11 +310,13 @@ class Search():
     def getListOfNamesFromDictSearch(self,dict,sessionType):
         ids = []
         ids = self.iterate_over_json_list(dict,ids)
+        self.temp_list_of_ids = ids
         names = []
 
         names = self.multiprocess_search(ids,sessionType)
         return names
-    def relationship_drop_box(self,list_of_names,increased_width):
+
+    def relationship_drop_box(self,list_of_names,increased_width,desc):
         x =list_of_names
         default_value =[]
         number_of_rows = 1
@@ -287,7 +335,7 @@ class Search():
             options=x,
             value=default_value,
             rows=number_of_rows,
-            description='Person ID',
+            description=desc,
             disabled=False
         )
         relationship_dropdown_widget.observe(self.change_made_search_related_person,names='value')
@@ -328,53 +376,100 @@ class Search():
         print("Download link: " + download_link + "\n")
         HTML("<a href='"+ download_link + "'>Download + " + filename + "</a>")
 
-    def multiprocess_search(self,idNumbers,sessionType):
 
-        processesBeingRun = Pool(processes = 15)
-        if sessionType == 'people':
-            dataRec = processesBeingRun.map(self.retrieve_person_name,idNumbers)
-        elif sessionType == 'Project':
-            dataRec = processesBeingRun.map(self.retrieve_project_name,idNumbers)
-        elif sessionType == 'Investigation':
-            dataRec = processesBeingRun.map(self.retrieve_investigation_name,idNumbers)
-        elif sessionType == 'Study':
-            dataRec = processesBeingRun.map(self.retrieve_study_name,idNumbers)
-        elif sessionType == 'Assay':
-            dataRec = processesBeingRun.map(self.retrieve_assay_name,idNumbers)
-
-        processesBeingRun.close()
-        return dataRec
-
-    def retrieve_person_name(self,idNumber):
+    def retrieve_person_name(self,idNumber,dictData,pnumber):
         personMetaData = self.json_handler.get_JSON('people',idNumber,'None')
         if not personMetaData:
-            return personMetaData
-        return self.json_handler.get_title(personMetaData)
+            # return personMetaData
+            dictData[idNumber]=personMetaData
+        else:
+        # return self.json_handler.get_title(personMetaData)
+            dictData[idNumber]=self.json_handler.get_title(personMetaData)
 
-    def retrieve_project_name(self,idNumber):
+
+    def retrieve_project_name(self,idNumber,dictData,pnumber):
         metaData = self.json_handler.get_JSON('Project',idNumber,'None')
         if not metaData:
-            return metaData
-        return self.json_handler.get_title(metaData)
+            dictData[idNumber]=metaData
+            # return metaData
+        else:
+        # return self.json_handler.get_title(metaData)
+            dictData[idNumber]=self.json_handler.get_title(metaData)
 
-    def retrieve_investigation_name(self,idNumber):
+
+    def retrieve_investigation_name(self,idNumber,dictData,pnumber):
         metaData = self.json_handler.get_JSON('Investigation',idNumber,'None')
         if not metaData:
-            return metaData
-        return self.json_handler.get_title(metaData)
+            dictData[idNumber]=metaData
+            # return metaData
+        else:
+        # return self.json_handler.get_title(metaData)
+            dictData[idNumber]=self.json_handler.get_title(metaData)
 
-    def retrieve_study_name(self,idNumber):
+
+    def retrieve_study_name(self,idNumber,dictData,pnumber):
         metaData = self.json_handler.get_JSON('Study',idNumber,'None')
         if not metaData:
-            return metaData
-        return self.json_handler.get_title(metaData)
+            dictData[idNumber]=metaData
+            # return metaData
+        else:
+        # return self.json_handler.get_title(metaData)
+            dictData[idNumber]=self.json_handler.get_title(metaData)
 
-    def retrieve_assay_name(self,idNumber):
+
+    def retrieve_assay_name(self,idNumber,dictData,pnumber):
         metaData = self.json_handler.get_JSON('Assay',idNumber,'None')
         if not metaData:
-            return metaData
-        return self.json_handler.get_title(metaData)
+            dictData[idNumber]=metaData
+            # return metaData
+        else:
+        # return self.json_handler.get_title(metaData)
+            dictData[idNumber]=self.json_handler.get_title(metaData)
 
+    def multiprocess_search(self,idNumbers,sessionType):
+        manager = mp.Manager()
+        dict_return_data = manager.dict()
+        processes = []
+        dataRec = []
+        # processesBeingRun = Pool(processes = 8)
+        for counter in range(len(idNumbers)):
+            if sessionType == 'people':
+                process = mp.Process(target=self.retrieve_person_name,
+                                                  args=(idNumbers[counter],dict_return_data,counter))
+
+                # dataRec = processesBeingRun.map(self.retrieve_person_name,idNumbers)
+            elif sessionType == 'Project':
+                process = mp.Process(target=self.retrieve_project_name,
+                                                  args=(idNumbers[counter],dict_return_data,counter))
+                # dataRec = processesBeingRun.map(self.retrieve_project_name,idNumbers)
+            elif sessionType == 'Investigation':
+                process = mp.Process(target=self.retrieve_investigation_name,
+                                                  args=(idNumbers[counter],dict_return_data,counter))
+                # dataRec = processesBeingRun.map(self.retrieve_investigation_name,idNumbers)
+            elif sessionType == 'Study':
+                process = mp.Process(target=self.retrieve_study_name,
+                                                  args=(idNumbers[counter],dict_return_data,counter))
+                # dataRec = processesBeingRun.map(self.retrieve_study_name,idNumbers)
+            elif sessionType == 'Assay':
+                process = mp.Process(target=self.retrieve_assay_name,
+                                                  args=(idNumbers[counter],dict_return_data,counter))
+                # dataRec = processesBeingRun.map(self.retrieve_assay_name,idNumbers)
+
+            processes.append(process)
+            process.start()
+
+        for p in processes:
+            p.join()
+        print('start')
+        print(dict_return_data)
+        print(idNumbers)
+        print('end')
+
+        # processesBeingRun.close()
+        # yield processesBeingRun
+        # processesBeingRun.terminate()
+
+        return dataRec
 
     ## needs comments
     def change_made_search_related_person(self, change):

@@ -174,6 +174,7 @@ class JSON_methods():
 
     def get_relationship_creators(self,json):
         # iterate_over_json_array(json)accordion
+        # print(json)
         return json['data']['relationships']['creators']['data']
 
     def get_relationship_submitters(self,json):
@@ -183,19 +184,39 @@ class JSON_methods():
         return json['data']['relationships']['people']['data']
 
     def get_relationship_projects(self,json):
-        return json['data']['relationships']['projects']['data']
+        bool = self.check_relationship_exists(json,'projects')
+        if bool == True:
+            return json['data']['relationships']['projects']['data']
+        else :
+            return []
 
     def get_relationship_investigations(self,json):
-        return json['data']['relationships']['investigations']['data']
+        bool = self.check_relationship_exists(json,'investigations')
+        if bool == True:
+            return json['data']['relationships']['investigations']['data']
+        else :
+            return []
 
     def get_relationship_assays(self,json):
-        return json['data']['relationships']['assays']['data']
+        bool = self.check_relationship_exists(json,'assays')
+        if bool == True:
+            return json['data']['relationships']['assays']['data']
+        else :
+            return []
 
     def get_relationship_studies(self,json):
-        return json['data']['relationships']['studies']['data']
+        bool = self.check_relationship_exists(json,'studies')
+        if bool == True:
+            return json['data']['relationships']['studies']['data']
+        else :
+            return []
 
-    def get_relationship_investigations(self,json):
-        return json['data']['relationships']['assays']['data']
+    def check_relationship_exists(self,json,type):
+        relations = json['data']['relationships']
+        if type in relations:
+            return True
+        else:
+            return False
 
     def get_ID_from_people_JSON(self,json):
         return json['id']

@@ -37,7 +37,6 @@ class SEEK():
     def search(self):
         list_of_names = self.SEEK_query.return_list_of_user_names()
         list_of_ids = self.SEEK_query.return_list_of_user_ids()
-
         topic = self.SEEK_query.get_topic()
         settings_dict = self.SEEK_query.get_setting_options_dict()
         settings_dict = dict(settings_dict)

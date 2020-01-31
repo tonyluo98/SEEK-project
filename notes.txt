@@ -36,6 +36,61 @@ eg graph -- is it useful
  "jsonapi":{"version":"1.0"}}
 
 
+Tab(
+children=
+  (VBox
+    (children=
+      (SelectMultiple
+        (description='Person ID'
+        , index=(0,)
+        , layout=Layout(width='600px')
+        , options=('FAIRDOM user meeting'
+        , 'FAIRDOM'
+        , 'SysMO DB')
+        , rows=3
+        , value=('FAIRDOM user meeting',))
+        ,
+      Button
+        (description='Search'
+        , style=ButtonStyle()
+        , tooltip='Click me'))),
+    VBox
+      (children=
+        (SelectMultiple
+          (description='Person ID'
+          , index=(0,)
+          , layout=Layout(width='600px')
+          , options=('Creating Templates for Proteomics'
+          , 'Creating Templates for Transcriptomics'
+          , 'Creating template for metabolomics data')
+          , rows=3
+          , value=('Creating Templates for Proteomics',))
+          , Button(description='Search', style=ButtonStyle()
+          , tooltip='Click me')))
+          ,
+
+    VBox
+      (children=
+        (SelectMultiple
+          (description='Person ID'
+          , index=(0,)
+          , layout=Layout(width='600px')
+          , options=('Metabolomics Master Template'
+          , 'Standard-based Excel template for metabolomics data'
+          , 'Proteomics Template (gel electrophoresis)'
+          , 'NimbleGen Transcriptomics Templates'
+          , 'Chip-chip Excel Template'
+          , 'RT-PCR Excel Template'
+          , 'Affy Transcriptomics Templates'
+          , 'Proteomics Templates (Mass spectrometry)'
+          , 'General Transcriptomics Templates')
+          , rows=3, value=('Metabolomics Master Template',))
+        Button
+          (description='Search'
+          , style=ButtonStyle()
+          , tooltip='Click me'))))
+          , _titles={'0': 'Related Projects', '1': 'Related Studies', '2': 'Related Assays'})
+
 INTERVIEW :
 
 What would you call them --- "query" or assets

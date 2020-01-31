@@ -6,6 +6,9 @@ import sys
 import io
 import ipywidgets as widgets
 import functools as ft
+
+
+import time
 # Importing the libraries we need to format the data in a more readable way.
 import pandas as pd
 import query
@@ -140,6 +143,11 @@ class Search():
             container_list.append(project_relationship_container)
             self.tab_title_names_list.append('Related Projects')
 
+        if self.settings_dict.get('display_related_investigations') == 'Yes':
+            investigation_relationship_container = self.createRelationContainer('Investigation','Yes')
+            container_list.append(investigation_relationship_container)
+            self.tab_title_names_list.append('Related Investigation')
+
         if self.settings_dict.get('display_related_studies') == 'Yes':
             study_relationship_people_container = self.createRelationContainer('Study','Yes')
             container_list.append(study_relationship_people_container)
@@ -178,29 +186,42 @@ class Search():
         desc = ''
         if type == 'Project':
             dict  = self.json_handler.get_relationship_projects(self.json)
-            names = self.getListOfNamesFromDictSearch(dict,type)
-            self.project_names = names
-            self.project_ids =self.temp_list_of_ids
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.project_names = self.getValuesOfDict(dictIDAndName)
+            print(self.project_names)
+            names = self.project_names
+            self.project_ids =self.getKeysOfDict(dictIDAndName)
+            print(self.project_ids)
+
             desc = 'Title :'
         elif type == 'Investigation':
             dict  = self.json_handler.get_relationship_investigations(self.json)
-            names = self.getListOfNamesFromDictSearch(dict,type)
-            self.investigation_names = names
-            self.investigation_ids =self.temp_list_of_ids
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.investigation_names = self.getValuesOfDict(dictIDAndName)
+            names = self.investigation_names
+
+            self.investigation_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Title :'
 
         elif type == 'Study':
             dict  = self.json_handler.get_relationship_studies(self.json)
-            names = self.getListOfNamesFromDictSearch(dict,type)
-            self.study_names = names
-            self.study_ids =self.temp_list_of_ids
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.study_names = self.getValuesOfDict(dictIDAndName)
+            names = self.study_names
+
+            self.study_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Title :'
 
         elif type == 'Assay':
             dict  = self.json_handler.get_relationship_assays(self.json)
-            names = self.getListOfNamesFromDictSearch(dict,type)
-            self.assay_names = names
-            self.assay_ids =self.temp_list_of_ids
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.assay_names = self.getValuesOfDict(dictIDAndName)
+            print(self.assay_names)
+            names = self.assay_names
+
+            self.assay_ids =self.getKeysOfDict(dictIDAndName)
+            print(self.assay_ids)
+
             desc = 'Title :'
 
         elif type =='Creator':
@@ -279,11 +300,11 @@ class Search():
         list_of_names = self.list_of_names
         list_of_ids = self.list_of_ids
         self.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
-        # print(topic)
-        # print(id)
-        # print(type)
+        print(topic)
+        print(id)
+        print(type)
+        time.sleep(3)
         self.search()
-
 
     def createRelationSearchWidget(self,value):
         if len(value) == 0 :
@@ -307,14 +328,23 @@ class Search():
             names.append(name)
         return names
 
-    def getListOfNamesFromDictSearch(self,dict,sessionType):
+    def getKeysOfDict(self,dict):
+        keys = dict.keys()
+        return keys
+
+    def getValuesOfDict(self,dict):
+        values = dict.values()
+        return values
+
+
+    def getDictOfIDandNames(self,dict,sessionType):
         ids = []
         ids = self.iterate_over_json_list(dict,ids)
-        self.temp_list_of_ids = ids
-        names = []
+        # self.temp_list_of_ids = ids
+        dictIDAndNames = {}
 
-        names = self.multiprocess_search(ids,sessionType)
-        return names
+        dictIDAndNames = self.multiprocess_search(ids,sessionType)
+        return dictIDAndNames
 
     def relationship_drop_box(self,list_of_names,increased_width,desc):
         x =list_of_names
@@ -460,16 +490,14 @@ class Search():
 
         for p in processes:
             p.join()
-        print('start')
-        print(dict_return_data)
-        print(idNumbers)
-        print('end')
+        # print(dict_return_data)
+        # print(idNumbers)
 
         # processesBeingRun.close()
         # yield processesBeingRun
         # processesBeingRun.terminate()
 
-        return dataRec
+        return dict_return_data
 
     ## needs comments
     def change_made_search_related_person(self, change):

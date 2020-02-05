@@ -159,6 +159,14 @@ class Query():
         self.query_tab.children[2].children[0].children[0].children[1].children[6].value = self.settings_dict_from_file.get('display_related_assays')
         self.query_tab.children[2].children[0].children[0].children[1].children[7].value = self.settings_dict_from_file.get('display_related_publications')
         self.query_tab.children[2].children[0].children[0].children[1].children[8].value = self.settings_dict_from_file.get('display_related_events')
+        self.query_tab.children[2].children[0].children[0].children[1].children[9].value = self.settings_dict_from_file.get('display_project_members')
+        self.query_tab.children[2].children[0].children[0].children[1].children[10].value = self.settings_dict_from_file.get('display_project_administrators')
+        self.query_tab.children[2].children[0].children[0].children[1].children[11].value = self.settings_dict_from_file.get('display_project_asset_housekeepers')
+        self.query_tab.children[2].children[0].children[0].children[1].children[12].value = self.settings_dict_from_file.get('display_project_asset_gatekeepers')
+        self.query_tab.children[2].children[0].children[0].children[1].children[13].value = self.settings_dict_from_file.get('display_project_organisms')
+        self.query_tab.children[2].children[0].children[0].children[1].children[14].value = self.settings_dict_from_file.get('display_project_institutions')
+        self.query_tab.children[2].children[0].children[0].children[1].children[15].value = self.settings_dict_from_file.get('display_project_programmes')
+
 
     def load_default_settings(self):
         '''
@@ -179,6 +187,14 @@ class Query():
         self.settings_dict['display_related_assays'] = 'Yes'
         self.settings_dict['display_related_publications'] = 'Yes'
         self.settings_dict['display_related_events'] = 'Yes'
+
+        self.settings_dict['display_project_members'] = 'Yes'
+        self.settings_dict['display_project_administrators'] = 'Yes'
+        self.settings_dict['display_project_asset_housekeepers'] = 'Yes'
+        self.settings_dict['display_project_asset_gatekeepers'] = 'Yes'
+        self.settings_dict['display_project_organisms'] = 'Yes'
+        self.settings_dict['display_project_institutions'] = 'Yes'
+        self.settings_dict['display_project_programmes'] = 'Yes'
 
     def change_made_name_search(self, change):
         '''
@@ -239,14 +255,17 @@ class Query():
         '''
         option = None
         if change['type'] == 'change' and change['name'] == 'value':
-            if str(change['new']) == 'Investigation':
+            if str(change['new']) == 'Project':
+                option = 'Project'
+            elif str(change['new']) == 'Investigation':
                 option = 'Investigation'
-            elif str(change['new']) == 'Assay':
-                option = 'Assay'
             elif str(change['new']) == 'Study':
                 option = 'Study'
+            elif str(change['new']) == 'Assay':
+                option = 'Assay'
             elif str(change['new']) == 'Data File':
                 option = 'Data File'
+
             #sets the class variable to option
             self.doc_option_selected = option
 
@@ -277,7 +296,7 @@ class Query():
         Creates tab relating to searching for a working document
         '''
         doc_option_widget = widgets.Dropdown(
-            options=['Investigation', 'Assay', 'Study', 'Data File'],
+            options=['Project','Investigation','Study', 'Assay', 'Data File'],
             value='Investigation',
             description='Search Type:',
         )
@@ -358,76 +377,27 @@ class Query():
 
     def general_setting_widgets(self):
 
-        style = {'description_width': '180px'}
+        desc='Display Title:'
+        value = self.settings_dict.get('display_title')
+        title_option = self.create_toggle_button(desc,value)
 
-        layout = {'width': '600px'}
+        desc='Display Description:'
+        value =self.settings_dict.get('display_description')
 
+        description_option = self.create_toggle_button(desc,value)
 
-        title_option = widgets.ToggleButtons(
-            options=['Yes', 'No'],
-            description='Display Title:',
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltips=['', ''],
-            style =style,
-            layout=layout,
-            value = self.settings_dict.get('display_title')
-        #     icons=['check'] * 3
-        )
+        description='Display Model Name:'
+        value = self.settings_dict.get('display_model_name')
 
-        description_option = widgets.ToggleButtons(
-            options=['Yes', 'No'],
-            description='Display Description:',
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltips=['', ''],
-            style =style,
-            layout=layout,
-            value =self.settings_dict.get('display_description')
+        model_name_option = self.create_toggle_button(desc,value)
 
-        #     icons=['check'] * 3
-        )
+        desc='Display Model:'
+        value = self.settings_dict.get('display_model')
+        model_option = self.create_toggle_button(desc,value)
 
-
-        model_name_option = widgets.ToggleButtons(
-            options=['Yes', 'No'],
-            description='Display Model Name:',
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltips=['', ''],
-            style =style,
-            layout=layout,
-            value = self.settings_dict.get('display_model_name')
-
-        #     icons=['check'] * 3
-        )
-
-        model_option = widgets.ToggleButtons(
-            options=['Yes', 'No'],
-            description='Display Model:',
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltips=['', ''],
-            style =style,
-            layout=layout,
-            value = self.settings_dict.get('display_model')
-
-        #     icons=['check'] * 3
-        )
-
-        download_link_option = widgets.ToggleButtons(
-            options=['Yes', 'No'],
-            description='Display Download Link:',
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltips=['', ''],
-            style =style,
-            layout=layout,
-            value = self.settings_dict.get('display_download_link')
-
-        #     icons=['check'] * 3
-        )
-
+        desc='Display Download Link:'
+        value = self.settings_dict.get('display_download_link')
+        download_link_option =self.create_toggle_button(desc,value)
 
         setting_option_widget_list  = [
             title_option,
@@ -447,166 +417,112 @@ class Query():
         return column
 
     def relationship_setting_widgets(self):
-            style = {'description_width': '180px'}
-            layout = {'width': '600px'}
 
-            creators_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display Creator:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_creators')
+        desc='Display Creator:'
+        value = self.settings_dict.get('display_creators')
+        creators_option = self.create_toggle_button(desc,value)
 
-                # value = self.display_title
-            #     icons=['check'] * 3
-            )
+        desc='Display Submitter:'
+        value = self.settings_dict.get('display_submitter')
+        submitter_option = self.create_toggle_button(desc,value)
 
-            submitter_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display Submitter:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_submitter')
+        desc='Display People:'
+        value = self.settings_dict.get('display_related_people')
+        related_people_option = self.create_toggle_button(desc,value)
 
-                # value = self.display_description
+        desc='Display Related Projects:'
+        value = self.settings_dict.get('display_related_projects')
+        related_projects_option = self.create_toggle_button(desc,value)
 
-            #     icons=['check'] * 3
-            )
+        desc='Display Related Investigations:'
+        value = self.settings_dict.get('display_related_investigations')
+        related_investigations_option = self.create_toggle_button(desc,value)
 
-            related_people_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display People:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_related_people')
+        desc='Display Related Studies:'
+        value = self.settings_dict.get('display_related_studies')
+        related_studies_option = self.create_toggle_button(desc,value)
 
-                # value = self.display_model
+        desc='Display Related Assays:'
+        value = self.settings_dict.get('display_related_assays')
+        related_assays_option = self.create_toggle_button(desc,value)
 
-            #     icons=['check'] * 3
-            )
+        desc='Display Related Publications:'
+        value = self.settings_dict.get('display_related_publications')
+        related_publications_option = self.create_toggle_button(desc,value)
 
-            related_projects_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display Related Projects:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_related_projects')
+        desc='Display Related Events:'
+        value = self.settings_dict.get('display_related_events')
+        related_events_option = self.create_toggle_button(desc,value)
 
-                # value = self.display_model_name
+        desc='Display Project Members:'
+        value = self.settings_dict.get('display_project_members')
+        project_members_option = self.create_toggle_button(desc,value)
 
-            #     icons=['check'] * 3
-            )
+        desc='Display Project Admins:'
+        value = self.settings_dict.get('display_project_administrators')
+        project_admins_option = self.create_toggle_button(desc,value)
 
-            related_investigations_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display related investigations:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_related_investigations')
+        desc='Display Project Assest HK:'
+        value = self.settings_dict.get('display_project_asset_housekeepers')
+        project_asset_HK_option = self.create_toggle_button(desc,value)
 
-                # value = self.display_download_link
+        desc='Display Project Assest GK:'
+        value = self.settings_dict.get('display_project_asset_gatekeepers')
+        project_asset_GK_option = self.create_toggle_button(desc,value)
 
-            #     icons=['check'] * 3
-            )
+        desc='Display Project Organisms:'
+        value = self.settings_dict.get('display_project_organisms')
+        project_organisms_option = self.create_toggle_button(desc,value)
 
-            related_studies_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display related studies:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_related_studies')
+        desc='Display Project Institutions:'
+        value = self.settings_dict.get('display_project_institutions')
+        project_institutions_option = self.create_toggle_button(desc,value)
 
-                # value = self.display_download_link
-
-            #     icons=['check'] * 3
-            )
-
-            related_assays_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display related assays:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_related_assays')
-
-                # value = self.display_download_link
-
-            #     icons=['check'] * 3
-            )
-
-            related_publications_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display related publications:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_related_publications')
-
-                # value = self.display_download_link
-
-            #     icons=['check'] * 3
-            )
-
-            related_events_option = widgets.ToggleButtons(
-                options=['Yes', 'No'],
-                description='Display related events:',
-                disabled=False,
-                button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                tooltips=['', ''],
-                style =style,
-                layout=layout,
-                value = self.settings_dict.get('display_related_events')
-
-                # value = self.display_download_link
-
-            #     icons=['check'] * 3
-            )
-            setting_option_widget_list  = [
-                creators_option,
-                submitter_option,
-                related_people_option,
-                related_projects_option,
-                related_investigations_option,
-                related_studies_option,
-                related_assays_option,
-                related_publications_option,
-                related_events_option
-                            ]
-
-            column = widgets.VBox([setting_option_widget_list[0],
-                                   setting_option_widget_list[1],
-                                   setting_option_widget_list[2],
-                                   setting_option_widget_list[3],
-                                   setting_option_widget_list[4],
-                                   setting_option_widget_list[5],
-                                   setting_option_widget_list[6],
-                                   setting_option_widget_list[7],
-                                   setting_option_widget_list[8]])
+        desc='Display Project Programmes:'
+        value = self.settings_dict.get('display_project_programmes')
+        project_institutions_option = self.create_toggle_button(desc,value)
 
 
-            return column
+
+        setting_option_widget_list  = [
+            creators_option,
+            submitter_option,
+            related_people_option,
+            related_projects_option,
+            related_investigations_option,
+            related_studies_option,
+            related_assays_option,
+            related_publications_option,
+            related_events_option,
+            project_members_option,
+            project_admins_option,
+            project_asset_HK_option,
+            project_asset_GK_option,
+            project_organisms_option,
+            project_institutions_option,
+            project_institutions_option
+                        ]
+
+        column = widgets.VBox([setting_option_widget_list[0],
+                               setting_option_widget_list[1],
+                               setting_option_widget_list[2],
+                               setting_option_widget_list[3],
+                               setting_option_widget_list[4],
+                               setting_option_widget_list[5],
+                               setting_option_widget_list[6],
+                               setting_option_widget_list[7],
+                               setting_option_widget_list[8],
+                               setting_option_widget_list[9],
+                               setting_option_widget_list[10],
+                               setting_option_widget_list[11],
+                               setting_option_widget_list[12],
+                               setting_option_widget_list[13],
+                               setting_option_widget_list[14],
+                               setting_option_widget_list[15],
+                               ])
+
+
+        return column
 
     def settings_tab(self):
         '''
@@ -716,6 +632,27 @@ class Query():
         value = self.get_query_tab_children_settings_values('display_related_events')
         self.settings_dict['display_related_events'] = value
 
+        value = self.get_query_tab_children_settings_values('display_project_members')
+        self.settings_dict['display_project_members'] = value
+
+        value = self.get_query_tab_children_settings_values('display_project_administrators')
+        self.settings_dict['display_project_administrators'] = value
+
+        value = self.get_query_tab_children_settings_values('display_project_asset_housekeepers')
+        self.settings_dict['display_project_asset_housekeepers'] = value
+
+        value = self.get_query_tab_children_settings_values('display_project_asset_gatekeepers')
+        self.settings_dict['display_project_asset_gatekeepers'] = value
+
+        value = self.get_query_tab_children_settings_values('display_project_organisms')
+        self.settings_dict['display_project_organisms'] = value
+
+        value = self.get_query_tab_children_settings_values('display_project_institutions')
+        self.settings_dict['display_project_institutions'] = value
+
+        value = self.get_query_tab_children_settings_values('display_project_programmes')
+        self.settings_dict['display_project_programmes'] = value
+
     def get_query_tab_children_settings_values(self,setting):
 
         if setting == 'display_title':
@@ -728,7 +665,6 @@ class Query():
             return self.query_tab.children[2].children[0].children[0].children[0].children[3].value
         elif setting == 'display_download_link':
             return self.query_tab.children[2].children[0].children[0].children[0].children[4].value
-
 
         elif setting == 'display_creators':
             return self.query_tab.children[2].children[0].children[0].children[1].children[0].value
@@ -748,6 +684,20 @@ class Query():
             return self.query_tab.children[2].children[0].children[0].children[1].children[7].value
         elif setting == 'display_related_events':
             return self.query_tab.children[2].children[0].children[0].children[1].children[8].value
+        elif setting == 'display_project_members':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[9].value
+        elif setting == 'display_project_administrators':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[10].value
+        elif setting == 'display_project_asset_housekeepers':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[11].value
+        elif setting == 'display_project_asset_gatekeepers':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[12].value
+        elif setting == 'display_project_organisms':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[13].value
+        elif setting == 'display_project_institutions':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[14].value
+        elif setting == 'display_project_programmes':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[15].value
         else:
             return 'Error'
 
@@ -759,6 +709,24 @@ class Query():
 
     def get_topic(self):
         return self.query_tab._titles.get('0')
+
+    def create_toggle_button(self,desc,val):
+        style = {'description_width': '180px'}
+        layout = {'width': '600px'}
+
+        button = widgets.ToggleButtons(
+            options=['Yes', 'No'],
+            description=desc,
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['', ''],
+            style =style,
+            layout=layout,
+            value = val
+
+        #     icons=['check'] * 3
+        )
+        return button
 
     def get_setting_options_dict(self):
         self.get_updated_setting_options()

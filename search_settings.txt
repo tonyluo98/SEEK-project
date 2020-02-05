@@ -1,8 +1,8 @@
 display_title Yes
 display_description Yes
 display_model_name Yes
-display_download_link Yes
 display_model Yes
+display_download_link Yes
 display_creators Yes
 display_submitter Yes
 display_related_people Yes
@@ -12,3 +12,10 @@ display_related_studies Yes
 display_related_assays Yes
 display_related_publications Yes
 display_related_events Yes
+display_project_members No
+display_project_administrators Yes
+display_project_asset_housekeepers Yes
+display_project_asset_gatekeepers Yes
+display_project_organisms Yes
+display_project_institutions Yes
+display_project_programmes Yes

@@ -91,6 +91,8 @@ children=
           , tooltip='Click me'))))
           , _titles={'0': 'Related Projects', '1': 'Related Studies', '2': 'Related Assays'})
 
+
+
 INTERVIEW :
 
 What would you call them --- "query" or assets
@@ -168,7 +170,7 @@ priorities :
     option to use widgits or not
     programmable settings
 
------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 need to surface the type of the data file into the api itself --- requests
   in report, how hard is this? ask stuart
@@ -178,3 +180,53 @@ rethink - and write what happened
     hack such as do something else
 
 -------------------------------------------------------------------------------
+
+testing - did it do it in time / etc does it work /
+
+feedback - jasper what did i learn etc - formative evaluation agile method
+  evaluated with external users with feedback
+  another user with more feedback
+
+set up tests - test suites / manual testing
+manual testing - depth and coverage - have a collection of what i did
+spend more time capabilities and testing
+
+--------------------------------------------------------------------------------
+munazah next user
+--------------------------------------------------------------------------------
+demo -
+one tab of fairdom , sandbox and Jupyter
+create stuff for sandbox
+use notebook to display capabilities
+upload a notebook
+
+  write up
+    build channel between seek and jupyter
+      jobs
+        find
+        write
+          new version / new?
+          where to put in ISA
+          can i take things out and put back in
+  story board - of what i will display in demo , works as example for the write up
+  eval
+
+search names - localised and whole of the seek
+  question for munazah
+    local --> global and vice versa
+    is it confusing?
+    is it ok?
+    is it useful
+    what do i make searches on ?
+    identify tasks i would do?
+
+  did a bit of everything
+    what i stubbed
+  road map of what i will do eg search the profile of people from query and search
+
+
+  search button for query
+  better names for tabs eg get data, researcher name
+
+autocollapse output
+assuming people know structure, its ok

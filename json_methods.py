@@ -106,6 +106,12 @@ class JSON_methods():
             type = 'assays'
         elif type == 'Data File':
             type = 'data_files'
+        elif type == 'Project Organisms':
+            type = 'organisms'
+        elif type == 'Project Institute':
+            type = 'institutions'
+        elif type == 'Project Program':
+            type = 'programmes'
 
         if session == 'None' and id != 'None':
             return self.json_for_resource_type_id(str(type),
@@ -185,31 +191,77 @@ class JSON_methods():
 
     def get_relationship_projects(self,json):
         bool = self.check_relationship_exists(json,'projects')
+        bool2 = self.check_relationship_exists(json,'project')
         if bool == True:
             return json['data']['relationships']['projects']['data']
+        elif bool2 == True :
+            convertDictToList = []
+            convertDictToList.append(json['data']['relationships']['project']['data'])
+            return convertDictToList
         else :
             return []
 
     def get_relationship_investigations(self,json):
+        '''
+        inconsistent json as investigation has no s
+        '''
         bool = self.check_relationship_exists(json,'investigations')
+        bool2 = self.check_relationship_exists(json,'investigation')
         if bool == True:
             return json['data']['relationships']['investigations']['data']
-        else :
-            return []
-
-    def get_relationship_assays(self,json):
-        bool = self.check_relationship_exists(json,'assays')
-        if bool == True:
-            return json['data']['relationships']['assays']['data']
+        elif bool2 == True :
+            convertDictToList = []
+            convertDictToList.append(json['data']['relationships']['investigation']['data'])
+            return convertDictToList
         else :
             return []
 
     def get_relationship_studies(self,json):
         bool = self.check_relationship_exists(json,'studies')
-        if bool == True:
+        bool2 = self.check_relationship_exists(json,'study')
+
+        if bool == True :
             return json['data']['relationships']['studies']['data']
+        elif bool2 == True :
+            convertDictToList = []
+            convertDictToList.append(json['data']['relationships']['study']['data'])
+            return convertDictToList
         else :
             return []
+
+    def get_relationship_assays(self,json):
+        bool = self.check_relationship_exists(json,'assays')
+        bool2 = self.check_relationship_exists(json,'assay')
+
+        if bool == True:
+            return json['data']['relationships']['assays']['data']
+        elif bool2 == True :
+            convertDictToList = []
+            convertDictToList.append(json['data']['relationships']['assay']['data'])
+            return convertDictToList
+        else :
+            return []
+
+    def get_project_members(self,json):
+        return json['data']['members']['data']
+
+    def get_project_admins(self,json):
+        return json['data']['relationships']['project_administrators']['data']
+
+    def get_asset_HK(self,json):
+        return json['data']['relationships']['asset_housekeepers']['data']
+
+    def get_asset_GK(self,json):
+        return json['data']['relationships']['asset_gatekeepers']['data']
+
+    def get_organisms(self,json):
+        return json['data']['relationships']['organisms']['data']
+
+    def get_project_institutions(self,json):
+        return json['data']['relationships']['institutions']['data']
+
+    def get_project_programmes(self,json):
+        return json['data']['relationships']['programmes']['data']
 
     def check_relationship_exists(self,json,type):
         relations = json['data']['relationships']

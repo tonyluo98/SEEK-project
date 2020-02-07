@@ -112,6 +112,8 @@ class JSON_methods():
             type = 'institutions'
         elif type == 'Project Program':
             type = 'programmes'
+        elif type == 'Person':
+            type = 'people'
 
         if session == 'None' and id != 'None':
             return self.json_for_resource_type_id(str(type),
@@ -243,7 +245,8 @@ class JSON_methods():
             return []
 
     def get_project_members(self,json):
-        return json['data']['members']['data']
+        # print(json['data']['attributes']['members'])
+        return json['data']['attributes']['members']
 
     def get_project_admins(self,json):
         return json['data']['relationships']['project_administrators']['data']

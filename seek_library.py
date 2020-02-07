@@ -35,12 +35,20 @@ class SEEK():
         self.SEEK_query.query()
 
     def search(self):
+        valid = True
         list_of_names = self.SEEK_query.return_list_of_user_names()
         list_of_ids = self.SEEK_query.return_list_of_user_ids()
         topic = self.SEEK_query.get_topic()
-        settings_dict = self.SEEK_query.get_setting_options_dict()
-        settings_dict = dict(settings_dict)
-        id = self.SEEK_query.get_id_to_search()
-        type = self.SEEK_query.get_type_to_search()
-        self.SEEK_search.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
-        self.SEEK_search.search()
+        if topic == 'Document query' or topic == 'Person query':
+            settings_dict = self.SEEK_query.get_setting_options_dict()
+            settings_dict = dict(settings_dict)
+            id = self.SEEK_query.get_id_to_search()
+            if id == '':
+                print('ID is needed')
+                valid = False
+            type = self.SEEK_query.get_type_to_search()
+            if valid == True :
+                self.SEEK_search.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
+                self.SEEK_search.search()
+        else :
+            print('Select Document/Person query tab to search')

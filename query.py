@@ -16,6 +16,8 @@ from IPython.display import HTML
 from IPython.display import clear_output
 
 from json_methods import JSON_methods
+from widget import Widget
+
 
 class Query():
     '''
@@ -42,6 +44,7 @@ class Query():
         use multithreading??
 
         '''
+        self.widget = Widget()
         self.json = None
 
         self.json_handler = JSON_methods()
@@ -57,6 +60,8 @@ class Query():
         self.dict_of_users_and_ids = {}
         self.list_of_user_names=[]
         self.list_of_user_ids=[]
+        self.user_list_alphabet_order= []
+
 
         self.search_person_list = []
         self.max_ID_value=0;
@@ -167,34 +172,33 @@ class Query():
         self.query_tab.children[2].children[0].children[0].children[1].children[14].value = self.settings_dict_from_file.get('display_project_institutions')
         self.query_tab.children[2].children[0].children[0].children[1].children[15].value = self.settings_dict_from_file.get('display_project_programmes')
 
-
     def load_default_settings(self):
         '''
         Default settings for the search options
         '''
 
-        self.settings_dict['display_title'] = 'Yes'
-        self.settings_dict['display_description'] = 'Yes'
-        self.settings_dict['display_model_name'] = 'Yes'
-        self.settings_dict['display_model'] = 'Yes'
-        self.settings_dict['display_download_link'] = 'Yes'
-        self.settings_dict['display_creators'] = 'Yes'
-        self.settings_dict['display_submitter'] = 'Yes'
-        self.settings_dict['display_related_people'] = 'Yes'
-        self.settings_dict['display_related_projects'] = 'Yes'
-        self.settings_dict['display_related_investigations'] = 'Yes'
-        self.settings_dict['display_related_studies'] = 'Yes'
-        self.settings_dict['display_related_assays'] = 'Yes'
-        self.settings_dict['display_related_publications'] = 'Yes'
-        self.settings_dict['display_related_events'] = 'Yes'
+        self.settings_dict['display_title'] = 'True'
+        self.settings_dict['display_description'] = 'True'
+        self.settings_dict['display_model_name'] = 'True'
+        self.settings_dict['display_model'] = 'True'
+        self.settings_dict['display_download_link'] = 'True'
+        self.settings_dict['display_creators'] = 'True'
+        self.settings_dict['display_submitter'] = 'True'
+        self.settings_dict['display_related_people'] = 'True'
+        self.settings_dict['display_related_projects'] = 'True'
+        self.settings_dict['display_related_investigations'] = 'True'
+        self.settings_dict['display_related_studies'] = 'True'
+        self.settings_dict['display_related_assays'] = 'True'
+        self.settings_dict['display_related_publications'] = 'True'
+        self.settings_dict['display_related_events'] = 'True'
 
-        self.settings_dict['display_project_members'] = 'Yes'
-        self.settings_dict['display_project_administrators'] = 'Yes'
-        self.settings_dict['display_project_asset_housekeepers'] = 'Yes'
-        self.settings_dict['display_project_asset_gatekeepers'] = 'Yes'
-        self.settings_dict['display_project_organisms'] = 'Yes'
-        self.settings_dict['display_project_institutions'] = 'Yes'
-        self.settings_dict['display_project_programmes'] = 'Yes'
+        self.settings_dict['display_project_members'] = 'True'
+        self.settings_dict['display_project_administrators'] = 'True'
+        self.settings_dict['display_project_asset_housekeepers'] = 'True'
+        self.settings_dict['display_project_asset_gatekeepers'] = 'True'
+        self.settings_dict['display_project_organisms'] = 'True'
+        self.settings_dict['display_project_institutions'] = 'True'
+        self.settings_dict['display_project_programmes'] = 'True'
 
     def change_made_name_search(self, change):
         '''
@@ -238,6 +242,7 @@ class Query():
         self.name_search_widget.unobserve(self.change_made_name_search)
         if change['new'] =='':
             self.name_search_widget.value = ''
+            self.name_search_widget.options = []
         elif change['type'] == 'change' and change['name'] == 'value':
             ID=str(change['new'])
             #If ID is in database, display the name associated
@@ -246,6 +251,8 @@ class Query():
                 self.name_search_widget.value = name
             else:
                 self.name_search_widget.value = ''
+                # self.name_search_widget.options = self.user_list_alphabet_order
+
         self.name_search_widget.observe(self.change_made_name_search)
 
     def change_made_doc_option(self, change):
@@ -295,36 +302,36 @@ class Query():
         '''
         Creates tab relating to searching for a working document
         '''
-        doc_option_widget = widgets.Dropdown(
-            options=['Project','Investigation','Study', 'Assay', 'Data File'],
-            value='Investigation',
-            description='Search Type:',
-        )
 
+        doc_select_widget_list = []
+        options=['Project','Investigation','Study', 'Assay', 'Data File']
+        desc = 'Search Type:'
+        doc_option_widget = self.widget.dropdown_widget(options,'default',desc)
+        doc_select_widget_list.append(doc_option_widget)
         #calls a function that handles updates in the drop down menu
         doc_option_widget.observe(self.change_made_doc_option)
         self.doc_option_selected = doc_option_widget.value
 
-        doc_id_search_widget= widgets.BoundedIntText(
-            value=1,
-            description='ID number:',
-            disabled=False,
-            min=1,
-            max = sys.maxsize
-        )
+        value=1
+        desc='ID number:'
+        bool=False
+        min=1
+        max = sys.maxsize
+        doc_id_search_widget= self.widget.bounded_int_text_widget(value,desc,bool,min,max)
+        doc_select_widget_list.append(doc_id_search_widget)
+
         #calls a function that handles updates in the int box
         doc_id_search_widget.observe(self.change_made_ID)
 
         self.search_doc_id = doc_id_search_widget.value
-
-        doc_select_widget_list  = [
-            doc_option_widget,
-            doc_id_search_widget
-                        ]
+        desc = 'To Search'
+        save_search = self.widget.button(desc)
+        doc_select_widget_list.append(save_search)
 
         #Formats the widgets into a column
         doc_select_widgets_container = widgets.VBox([doc_select_widget_list[0],
-                                                    doc_select_widget_list[1]])
+                                                     doc_select_widget_list[1],
+                                                     doc_select_widget_list[2]])
         return doc_select_widgets_container
 
     def person_tab(self):
@@ -333,79 +340,74 @@ class Query():
         '''
         #Get the list of users sorted in alphbetical order and removes
         #duplicates
-        user_list_alphabet_order = []
-        user_list_alphabet_order = list(self.list_of_user_names)
+        self.user_list_alphabet_order = []
+        self.user_list_alphabet_order = list(self.list_of_user_names)
         #removes duplicates
-        user_list_alphabet_order = list(dict.fromkeys(user_list_alphabet_order))
+        self.user_list_alphabet_order = list(dict.fromkeys(self.user_list_alphabet_order))
         #sort alphabetically
-        user_list_alphabet_order.sort()
+        self.user_list_alphabet_order.sort()
         #add empty string for when the widget is empty
-        user_list_alphabet_order.append('')
-
-        self.people_search_ID_widget = widgets.Combobox(
-            # value='',
-            placeholder='Enter ID',
-            options=[],
-            description='ID :',
-            ensure_option=False,
-            disabled=False
-        )
+        self.user_list_alphabet_order.append('')
+        people_search_widget_list = []
+        ph='Enter ID'
+        options=[]
+        desc='ID :'
+        ensure_option=False
+        bool_active=False
+        self.people_search_ID_widget = self.widget.combobox(ph,options,desc,ensure_option,bool_active)
+        people_search_widget_list.append(self.people_search_ID_widget)
         #Handles update to ID widget
         self.people_search_ID_widget.observe(self.change_made_people_search_ID)
 
-        self.name_search_widget = widgets.Combobox(
-            # value='',
-            placeholder='Enter Name',
-            options=user_list_alphabet_order,
-            description='Name :',
-            ensure_option=False,
-            disabled=False,
-        )
+        ph='Enter Name'
+        options=[]
+        desc='Name :'
+        ensure_option=False
+        bool_active=False
+        self.name_search_widget = self.widget.combobox(ph,options,desc,ensure_option,bool_active)
+        people_search_widget_list.append(self.name_search_widget)
 
         #Handles update to name widget
         self.name_search_widget.observe(self.change_made_name_search)
-
-        people_search_widget_list  = [
-            self.name_search_widget,
-            self.people_search_ID_widget
-                        ]
-
+        desc = 'To Search'
+        save_search = self.widget.button(desc)
+        people_search_widget_list.append(save_search)
         #Formats the widgets into a column
-        people_search_container = widgets.VBox([people_search_widget_list[0], people_search_widget_list[1]])
+        people_search_container = widgets.VBox([people_search_widget_list[0],
+                                                people_search_widget_list[1],
+                                                people_search_widget_list[2]])
 
         return people_search_container
 
     def general_setting_widgets(self):
-
+        setting_option_widget_list = []
         desc='Display Title:'
         value = self.settings_dict.get('display_title')
-        title_option = self.create_toggle_button(desc,value)
+        title_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(title_option)
 
         desc='Display Description:'
         value =self.settings_dict.get('display_description')
+        description_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(description_option)
 
-        description_option = self.create_toggle_button(desc,value)
 
         description='Display Model Name:'
         value = self.settings_dict.get('display_model_name')
+        model_name_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(model_name_option)
 
-        model_name_option = self.create_toggle_button(desc,value)
 
         desc='Display Model:'
         value = self.settings_dict.get('display_model')
-        model_option = self.create_toggle_button(desc,value)
+        model_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(model_option)
+
 
         desc='Display Download Link:'
         value = self.settings_dict.get('display_download_link')
-        download_link_option =self.create_toggle_button(desc,value)
-
-        setting_option_widget_list  = [
-            title_option,
-            description_option,
-            model_name_option,
-            model_option,
-            download_link_option
-                        ]
+        download_link_option =self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(download_link_option)
 
         column = widgets.VBox([setting_option_widget_list[0],
                                    setting_option_widget_list[1],
@@ -417,91 +419,86 @@ class Query():
         return column
 
     def relationship_setting_widgets(self):
-
+        setting_option_widget_list = []
         desc='Display Creator:'
         value = self.settings_dict.get('display_creators')
-        creators_option = self.create_toggle_button(desc,value)
+        creators_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(creators_option)
 
         desc='Display Submitter:'
         value = self.settings_dict.get('display_submitter')
-        submitter_option = self.create_toggle_button(desc,value)
+        submitter_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(submitter_option)
 
         desc='Display People:'
         value = self.settings_dict.get('display_related_people')
-        related_people_option = self.create_toggle_button(desc,value)
+        related_people_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(related_people_option)
 
         desc='Display Related Projects:'
         value = self.settings_dict.get('display_related_projects')
-        related_projects_option = self.create_toggle_button(desc,value)
+        related_projects_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(related_projects_option)
 
         desc='Display Related Investigations:'
         value = self.settings_dict.get('display_related_investigations')
-        related_investigations_option = self.create_toggle_button(desc,value)
+        related_investigations_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(related_investigations_option)
 
         desc='Display Related Studies:'
         value = self.settings_dict.get('display_related_studies')
-        related_studies_option = self.create_toggle_button(desc,value)
+        related_studies_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(related_studies_option)
 
         desc='Display Related Assays:'
         value = self.settings_dict.get('display_related_assays')
-        related_assays_option = self.create_toggle_button(desc,value)
+        related_assays_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(related_assays_option)
 
         desc='Display Related Publications:'
         value = self.settings_dict.get('display_related_publications')
-        related_publications_option = self.create_toggle_button(desc,value)
+        related_publications_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(related_publications_option)
 
         desc='Display Related Events:'
         value = self.settings_dict.get('display_related_events')
-        related_events_option = self.create_toggle_button(desc,value)
+        related_events_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(related_events_option)
 
         desc='Display Project Members:'
         value = self.settings_dict.get('display_project_members')
-        project_members_option = self.create_toggle_button(desc,value)
+        project_members_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(project_members_option)
 
         desc='Display Project Admins:'
         value = self.settings_dict.get('display_project_administrators')
-        project_admins_option = self.create_toggle_button(desc,value)
+        project_admins_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(project_admins_option)
 
         desc='Display Project Assest HK:'
         value = self.settings_dict.get('display_project_asset_housekeepers')
-        project_asset_HK_option = self.create_toggle_button(desc,value)
+        project_asset_HK_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(project_asset_HK_option)
 
         desc='Display Project Assest GK:'
         value = self.settings_dict.get('display_project_asset_gatekeepers')
-        project_asset_GK_option = self.create_toggle_button(desc,value)
+        project_asset_GK_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(project_asset_GK_option)
 
         desc='Display Project Organisms:'
         value = self.settings_dict.get('display_project_organisms')
-        project_organisms_option = self.create_toggle_button(desc,value)
+        project_organisms_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(project_organisms_option)
 
         desc='Display Project Institutions:'
         value = self.settings_dict.get('display_project_institutions')
-        project_institutions_option = self.create_toggle_button(desc,value)
+        project_institutions_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(project_institutions_option)
 
         desc='Display Project Programmes:'
         value = self.settings_dict.get('display_project_programmes')
-        project_institutions_option = self.create_toggle_button(desc,value)
-
-
-
-        setting_option_widget_list  = [
-            creators_option,
-            submitter_option,
-            related_people_option,
-            related_projects_option,
-            related_investigations_option,
-            related_studies_option,
-            related_assays_option,
-            related_publications_option,
-            related_events_option,
-            project_members_option,
-            project_admins_option,
-            project_asset_HK_option,
-            project_asset_GK_option,
-            project_organisms_option,
-            project_institutions_option,
-            project_institutions_option
-                        ]
+        project_institutions_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(project_institutions_option)
 
         column = widgets.VBox([setting_option_widget_list[0],
                                setting_option_widget_list[1],
@@ -528,44 +525,27 @@ class Query():
         '''
         Creates tab relating to settings used for searching
         '''
+        settings_widget_list=[]
+        desc='Load Settings'
+        load_settings_option = self.widget.button(desc)
+        settings_widget_list.append(load_settings_option)
 
-        layout = {'width': '635px'}
+        desc='Save Settings'
+        save_settings_option = self.widget.button(desc)
+        settings_widget_list.append(save_settings_option)
 
-        load_settings_option = widgets.Button(
-            description='Load Settings',
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltip='Click me',
-            # style =style_right,
-            # layout=layout_right,
-            # icon='check'
-        )
-
-        save_settings_option = widgets.Button(
-            description='Save Settings',
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltip='Click me',
-            # style =style_right,
-            # layout=layout_right,
-            # icon='check'
-        )
 
         load_settings_option.on_click(self.on_click_setting_load_save)
         save_settings_option.on_click(self.on_click_setting_load_save)
 
 
-        # relationship_setting_options_list = self.relationship_setting_widgets()
-        settings_widget_list = [
-            load_settings_option,
-            save_settings_option
-        ]
+        widget_list = []
         general_setting_options_list = self.general_setting_widgets()
+        widget_list.append(general_setting_options_list)
         relation_setting_option_list = self.relationship_setting_widgets()
-        settings_accordion = widgets.Accordion(
-                                    children=[general_setting_options_list,
-                                              relation_setting_option_list],
-                                              layout = layout)
+        widget_list.append(relation_setting_option_list)
+
+        settings_accordion = self.widget.accordion(widget_list)
 
         settings_accordion.set_title(0, 'General settings')
         settings_accordion.set_title(1, 'Relationship settings')
@@ -702,31 +682,27 @@ class Query():
             return 'Error'
 
     def get_id_to_search(self):
-        return self.search_doc_id
+        current_index = self.query_tab.selected_index
+        topic = self.query_tab._titles.get(str(current_index))
+        if topic == 'Document query':
+            id =self.search_doc_id
+        else :
+            id = self.people_search_ID_widget.value
+        return id
 
     def get_type_to_search(self):
-        return self.doc_option_selected
+        current_index = self.query_tab.selected_index
+        topic = self.query_tab._titles.get(str(current_index))
+        if topic == 'Document query':
+            type =self.doc_option_selected
+        else :
+            type = 'Person'
+        return type
 
     def get_topic(self):
-        return self.query_tab._titles.get('0')
-
-    def create_toggle_button(self,desc,val):
-        style = {'description_width': '180px'}
-        layout = {'width': '600px'}
-
-        button = widgets.ToggleButtons(
-            options=['Yes', 'No'],
-            description=desc,
-            disabled=False,
-            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-            tooltips=['', ''],
-            style =style,
-            layout=layout,
-            value = val
-
-        #     icons=['check'] * 3
-        )
-        return button
+        current_index = self.query_tab.selected_index
+        topic = self.query_tab._titles.get(str(current_index))
+        return topic
 
     def get_setting_options_dict(self):
         self.get_updated_setting_options()

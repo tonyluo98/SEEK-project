@@ -19,14 +19,11 @@ from json_methods import JSON_methods
 
 class Widget():
     def __init__(self):
-        self.layout = {'width': '725px'}
+        self.layout = {'width': '750px'}
         self.small_layout = {'width': '400px'}
         self.toggle_button_layout = {'width': '600px'}
         self.toggle_button_style = {'description_width': '180px'}
         self.button_layout = {'width': '635px'}
-
-
-
     def check_list_content(self,list):
         temp_list =list
         default_value =[]

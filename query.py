@@ -17,6 +17,7 @@ from IPython.display import clear_output
 
 from json_methods import JSON_methods
 from widget import Widget
+from call_search import Call_Search
 
 
 class Query():
@@ -89,11 +90,11 @@ class Query():
         temp_list = self.json_handler.get_list_of_user_names()
         self.list_of_user_names = temp_list
 
-    def return_dict_of_user_names_and_ids(self):
+    def get_dict_of_user_names_and_ids(self):
         return self.dict_of_users_and_ids
-    def return_list_of_user_names(self):
+    def get_list_of_user_names(self):
         return self.list_of_user_names
-    def return_list_of_user_ids(self):
+    def get_list_of_user_ids(self):
         return self.list_of_user_ids
 
     def read_settings_file(self):
@@ -297,7 +298,16 @@ class Query():
             self.load_settings()
         elif button.description == 'Save Settings':
             self.save_settings()
-
+    def on_click_search(self, button):
+        call_search = Call_Search()
+        list_of_names = self.list_of_user_names
+        list_of_ids = self.list_of_user_ids
+        topic = self.get_topic()
+        settings_dict =self.get_setting_options_dict()
+        settings_dict = dict(settings_dict)
+        id = self.get_id_to_search()
+        type = self.get_type_to_search()
+        call_search.search(list_of_names,list_of_ids,topic,settings_dict,id,type)
     def document_tab(self):
         '''
         Creates tab relating to searching for a working document
@@ -324,9 +334,10 @@ class Query():
         doc_id_search_widget.observe(self.change_made_ID)
 
         self.search_doc_id = doc_id_search_widget.value
-        desc = 'To Search'
-        save_search = self.widget.button(desc)
-        doc_select_widget_list.append(save_search)
+        desc = 'Search'
+        search = self.widget.button(desc)
+        search.on_click(self.on_click_search)
+        doc_select_widget_list.append(search)
 
         #Formats the widgets into a column
         doc_select_widgets_container = widgets.VBox([doc_select_widget_list[0],
@@ -370,8 +381,9 @@ class Query():
         #Handles update to name widget
         self.name_search_widget.observe(self.change_made_name_search)
         desc = 'To Search'
-        save_search = self.widget.button(desc)
-        people_search_widget_list.append(save_search)
+        search = self.widget.button(desc)
+        search.on_click(self.on_click_search)
+        people_search_widget_list.append(search)
         #Formats the widgets into a column
         people_search_container = widgets.VBox([people_search_widget_list[0],
                                                 people_search_widget_list[1],

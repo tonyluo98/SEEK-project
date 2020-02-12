@@ -230,3 +230,13 @@ search names - localised and whole of the seek
 
 autocollapse output
 assuming people know structure, its ok
+
+
+ask finn : works with workflow hub , using the seek as the platform
+          scripts instead of data files
+          like fairdom but with workflow
+
+jupyter statelesss
+dealing with erros
+how stuff is formatted
+what the project is , waht i did, what i expect ,

@@ -308,6 +308,23 @@ class Query():
         id = self.get_id_to_search()
         type = self.get_type_to_search()
         call_search.search(list_of_names,list_of_ids,topic,settings_dict,id,type)
+
+    def on_click_convert(self, button):
+        tab_index = self.query_tab.selected_index
+        title = self.query_tab._titles.get(str(tab_index))
+        clear_output()
+        print('Query type       : {0}'.format(title))
+        if tab_index == 0 :
+            type = self.query_tab.children[tab_index].children[0].value
+            id =  self.query_tab.children[tab_index].children[1].value
+            print('File search type : {0}'.format(type))
+            print('ID search        : {0}'.format(id))
+        elif tab_index == 1 :
+            id =  self.query_tab.children[tab_index].children[0].value
+            print
+
+
+
     def document_tab(self):
         '''
         Creates tab relating to searching for a working document
@@ -724,16 +741,23 @@ class Query():
         '''
         Displays interactive widgets seperated out into different tabs
         '''
+        tab_list = []
+        title_list = []
         doc_tab = self.document_tab()
+        tab_list.append(doc_tab)
+        title_list.append('Document query')
         person_tab=self.person_tab()
-        settings_tab =self.settings_tab()
+        tab_list.append(person_tab)
+        title_list.append('Person query')
 
-        self.query_tab = widgets.Tab()
-        self.query_tab.children =[doc_tab,
-                                  person_tab,
-                                  settings_tab]
-        self.query_tab.set_title(0, 'Document query')
-        self.query_tab.set_title(1, 'Person query')
-        self.query_tab.set_title(2, 'Search settings')
-        # print(self.query_tab.children[2].children[2].value)
+        settings_tab =self.settings_tab()
+        tab_list.append(settings_tab)
+        title_list.append('Search settings')
+
+        self.query_tab = self.widget.tab(tab_list,title_list)
+
         display(self.query_tab)
+        desc = 'Convert widgets to text'
+        widgets_to_text_button = self.widget.button(desc)
+        widgets_to_text_button.on_click(self.on_click_convert)
+        display(widgets_to_text_button)

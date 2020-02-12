@@ -139,3 +139,6 @@ class Widget():
             disabled=False
         )
         return widget
+
+    def convert_widget_to_text(self):
+        pass

@@ -244,6 +244,14 @@ class JSON_methods():
         else :
             return []
 
+    def get_relationship_data_files(self,json):
+        bool = self.check_relationship_exists(json,'data_files')
+
+        if bool == True:
+            return json['data']['relationships']['assays']['data']
+        else :
+            return []
+
     def get_project_members(self,json):
         # print(json['data']['attributes']['members'])
         return json['data']['attributes']['members']

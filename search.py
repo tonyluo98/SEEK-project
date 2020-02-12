@@ -35,6 +35,9 @@ class Search():
         self.list_of_ids = []
         self.list_of_names = []
         self.related_work_tab = None
+        self.related_people_tab = None
+
+        self.project_meta_data = None
         self.project_tab = None
         self.temp_list_of_ids = []
         self.project_names = []
@@ -45,10 +48,19 @@ class Search():
         self.study_ids = []
         self.assay_names = []
         self.assay_ids = []
-        self.tab_title_names_list =[]
+        self.creator_ids = []
+        self.submitter_ids = []
+        self.people_ids = []
+        self.project_members = []
+        self.project_admins = []
+        self.project_asset_HK = []
+        self.project_asset_GK = []
+        self.project_people = []
+        self.tab_title_names_list_doc =[]
+        self.tab_title_names_list_people =[]
+
         self.project_tab_title_names_list =[]
         self.widget = Widget()
-
 
     def display(self):
         '''
@@ -123,30 +135,30 @@ class Search():
         #list of items to display
         container_list =[]
         #name of items to display
-        tab_title_names_list =[]
+        self.tab_title_names_list_people =[]
 
         if self.settings_dict.get('display_creators') == 'True':
             creator_relationship_people_container = self.createRelationContainer('Creator')
             container_list.append(creator_relationship_people_container)
-            tab_title_names_list.append('Creator')
+            self.tab_title_names_list_people.append('Creator')
 
         if self.settings_dict.get('display_submitter') == 'True':
             submitter_relationship_people_container = self.createRelationContainer('Submitter')
             container_list.append(submitter_relationship_people_container)
-            tab_title_names_list.append('Submitter')
+            self.tab_title_names_list_people.append('Submitter')
 
         if self.settings_dict.get('display_related_people') == 'True':
             people_relationship_people_container = self.createRelationContainer('People')
             container_list.append(people_relationship_people_container)
-            tab_title_names_list.append('Related People')
+            self.tab_title_names_list_people.append('Related People')
 
         #If items are to be displayed, a tab is created for each item
         if container_list:
-            related_work_tab = widgets.Tab()
-            related_work_tab.children = container_list
-            for index in range(len(tab_title_names_list)):
-                related_work_tab.set_title(index, tab_title_names_list[index])
-            display(related_work_tab)
+            self.related_people_tab = widgets.Tab()
+            self.related_people_tab.children = container_list
+            for index in range(len(self.tab_title_names_list_people)):
+                self.related_people_tab.set_title(index, self.tab_title_names_list_people[index])
+            display(self.related_people_tab)
     def display_work_relations(self):
         '''
         Shows all the related Projects / Studies / Assays related to current
@@ -160,33 +172,33 @@ class Search():
         #list of items to display
         container_list =[]
         #name of items to display
-        self.tab_title_names_list =[]
+        self.tab_title_names_list_doc =[]
 
         if self.settings_dict.get('display_related_projects') == 'True':
             project_relationship_container = self.createRelationContainer('Project')
             container_list.append(project_relationship_container)
-            self.tab_title_names_list.append('Related Projects')
+            self.tab_title_names_list_doc.append('Related Projects')
 
         if self.settings_dict.get('display_related_investigations') == 'True':
             investigation_relationship_container = self.createRelationContainer('Investigation')
             container_list.append(investigation_relationship_container)
-            self.tab_title_names_list.append('Related Investigations')
+            self.tab_title_names_list_doc.append('Related Investigations')
 
         if self.settings_dict.get('display_related_studies') == 'True':
             study_relationship_people_container = self.createRelationContainer('Study')
             container_list.append(study_relationship_people_container)
-            self.tab_title_names_list.append('Related Studies')
+            self.tab_title_names_list_doc.append('Related Studies')
 
 
         if self.settings_dict.get('display_related_assays') == 'True':
             assay_relationship_people_container = self.createRelationContainer('Assay')
             container_list.append(assay_relationship_people_container)
-            self.tab_title_names_list.append('Related Assays')
+            self.tab_title_names_list_doc.append('Related Assays')
 
 
         #If items are to be displayed, a tab is created for each item
         if container_list:
-            self.related_work_tab = self.widget.tab(container_list,self.tab_title_names_list)
+            self.related_work_tab = self.widget.tab(container_list,self.tab_title_names_list_doc)
             display(self.related_work_tab)
     def display_project(self):
         container_list =[]
@@ -213,7 +225,7 @@ class Search():
             self.project_tab_title_names_list.append('Project Asset GK')
 
         if self.settings_dict.get('display_related_people') == 'True':
-            people_relationship_people_container = self.createRelationContainer('People')
+            people_relationship_people_container = self.createRelationContainer('Project People')
             container_list.append(people_relationship_people_container)
             self.project_tab_title_names_list.append('Related People')
 
@@ -255,17 +267,18 @@ class Search():
         increased_width = False
         if type =='Creator':
             dict  = self.json_handler.get_relationship_creators(self.json)
-            names = self.getListOfNamesFromDict(dict)
+            names = self.getListOfNamesFromDict(dict,type)
             desc = 'Name :'
             increased_width = False
         elif type =='Submitter':
             dict  = self.json_handler.get_relationship_submitters(self.json)
-            names = self.getListOfNamesFromDict(dict)
+            names = self.getListOfNamesFromDict(dict,type)
             desc = 'Name :'
             increased_width = False
+
         elif type =='People':
             dict  = self.json_handler.get_relationship_people(self.json)
-            names = self.getListOfNamesFromDict(dict)
+            names = self.getListOfNamesFromDict(dict,type)
             desc = 'Name :'
             increased_width = False
         elif type == 'Project':
@@ -307,68 +320,47 @@ class Search():
             increased_width = True
         elif type =='Project Member':
             dict  = self.json_handler.get_project_members(self.json)
-            dictIDAndName = self.getDictOfIDandNamesPerson(dict,type)
-            self.assay_names = self.getValuesOfDict(dictIDAndName)
-            names = self.assay_names
-
-            self.assay_ids =self.getKeysOfDict(dictIDAndName)
-            desc = 'Title :'
+            names = self.getListOfNamesFromDict(dict,type)
+            desc = 'Name :'
             increased_width = False
         elif type =='Project Admin':
             dict  = self.json_handler.get_project_admins(self.json)
-            dictIDAndName = self.getDictOfIDandNames(dict,type)
-            self.assay_names = self.getValuesOfDict(dictIDAndName)
-            names = self.assay_names
-
-            self.assay_ids =self.getKeysOfDict(dictIDAndName)
-            desc = 'Title :'
+            names = self.getListOfNamesFromDict(dict,type)
+            desc = 'Name :'
             increased_width = False
         elif type =='Asset HK':
             dict  = self.json_handler.get_asset_HK(self.json)
-            dictIDAndName = self.getDictOfIDandNames(dict,type)
-            self.assay_names = self.getValuesOfDict(dictIDAndName)
-            names = self.assay_names
-
-            self.assay_ids =self.getKeysOfDict(dictIDAndName)
-            desc = 'Title :'
+            names = self.getListOfNamesFromDict(dict,type)
+            desc = 'Name :'
             increased_width = False
         elif type =='Asset GK':
             dict  = self.json_handler.get_asset_GK(self.json)
-            dictIDAndName = self.getDictOfIDandNames(dict,type)
-            self.assay_names = self.getValuesOfDict(dictIDAndName)
-            names = self.assay_names
-
-            self.assay_ids =self.getKeysOfDict(dictIDAndName)
-            desc = 'Title :'
+            names = self.getListOfNamesFromDict(dict,type)
+            desc = 'Name :'
             increased_width = False
         elif type =='Project Organisms':
             dict  = self.json_handler.get_organisms(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
-            self.assay_names = self.getValuesOfDict(dictIDAndName)
-            names = self.assay_names
-
-            self.assay_ids =self.getKeysOfDict(dictIDAndName)
+            names = self.getValuesOfDict(dictIDAndName)
             desc = 'Title :'
             increased_width = False
         elif type =='Project Institute':
             dict  = self.json_handler.get_project_institutions(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
-            self.assay_names = self.getValuesOfDict(dictIDAndName)
-            names = self.assay_names
-
-            self.assay_ids =self.getKeysOfDict(dictIDAndName)
+            names = self.getValuesOfDict(dictIDAndName)
             desc = 'Title :'
-            increased_width = True
+            increased_width = False
         elif type =='Project Program':
             dict  = self.json_handler.get_project_programmes(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
-            self.assay_names = self.getValuesOfDict(dictIDAndName)
-            names = self.assay_names
-
-            self.assay_ids =self.getKeysOfDict(dictIDAndName)
+            names = self.getValuesOfDict(dictIDAndName)
             desc = 'Title :'
             increased_width = False
-
+        elif type =='Project People':
+            dict  = self.json_handler.get_relationship_people(self.json)
+            names = self.getListOfNamesFromDict(dict,type)
+            desc = 'Name :'
+            increased_width = False
         relationship_widget_list = []
         relationship_people_container =[]
         relation = self.relationship_drop_box(names,increased_width,desc)
@@ -376,7 +368,12 @@ class Search():
         desc = 'Search'
         relation_search_button = self.widget.button_optional(desc,relation.value)
         if type == 'Project' or type =='Investigation' or type == 'Study' or type == 'Assay':
-            relation_search_button.on_click(self.on_click_search)
+            relation_search_button.on_click(self.on_click_search_doc)
+        elif type == 'Creator' or type == 'Submitter' or type == 'People':
+            relation_search_button.on_click(self.on_click_search_person)
+        else:
+            relation_search_button.on_click(self.on_click_search_project_meta_data)
+
         relationship_widget_list.append(relation_search_button)
 
         if type == 'Project Organisms' or type =='Project Institute' or type == 'Project Program':
@@ -388,24 +385,23 @@ class Search():
             relationship_people_container = widgets.VBox([relationship_widget_list[0], relationship_widget_list[1]])
 
         return relationship_people_container
-
-    def on_click_search(self,button):
+    def on_click_search_doc(self,button):
 
         tab_index = self.related_work_tab.selected_index
         item_index = self.related_work_tab.children[tab_index].children[0].index[0]
-        if self.tab_title_names_list[tab_index] == 'Related Projects':
+        if self.tab_title_names_list_doc[tab_index] == 'Related Projects':
             topic = 'Document query'
             type = 'Project'
             id = self.project_ids[item_index]
-        elif self.tab_title_names_list[tab_index] == 'Related Investigations':
+        elif self.tab_title_names_list_doc[tab_index] == 'Related Investigations':
             topic = 'Document query'
             type = 'Investigation'
             id = self.investigation_ids[item_index]
-        elif self.tab_title_names_list[tab_index] == 'Related Studies':
+        elif self.tab_title_names_list_doc[tab_index] == 'Related Studies':
             topic = 'Document query'
             type = 'Study'
             id = self.study_ids[item_index]
-        elif self.tab_title_names_list[tab_index] == 'Related Assays':
+        elif self.tab_title_names_list_doc[tab_index] == 'Related Assays':
             topic = 'Document query'
             type = 'Assay'
             id = self.assay_ids[item_index]
@@ -420,27 +416,22 @@ class Search():
         # print(id)
         # print(type)
         self.search()
-
     def on_click_search_person(self,button):
 
-        tab_index = self.related_work_tab.selected_index
-        item_index = self.related_work_tab.children[tab_index].children[0].index[0]
-        if self.tab_title_names_list[tab_index] == 'Related Projects':
+        tab_index = self.related_people_tab.selected_index
+        item_index = self.related_people_tab.children[tab_index].children[0].index[0]
+        if self.tab_title_names_list_people[tab_index] == 'Creator':
             topic = 'Document query'
-            type = 'Project'
-            id = self.project_ids[item_index]
-        elif self.tab_title_names_list[tab_index] == 'Related Investigations':
+            type = 'Person'
+            id = self.creator_ids[item_index]
+        elif self.tab_title_names_list_people[tab_index] == 'Submitter':
             topic = 'Document query'
-            type = 'Investigation'
-            id = self.investigation_ids[item_index]
-        elif self.tab_title_names_list[tab_index] == 'Related Studies':
+            type = 'Person'
+            id = self.submitter_ids[item_index]
+        elif self.tab_title_names_list_people[tab_index] == 'Related People':
             topic = 'Document query'
-            type = 'Study'
-            id = self.study_ids[item_index]
-        elif self.tab_title_names_list[tab_index] == 'Related Assays':
-            topic = 'Document query'
-            type = 'Assay'
-            id = self.assay_ids[item_index]
+            type = 'Person'
+            id = self.people_ids[item_index]
 
         # topic =
         # type =
@@ -449,14 +440,67 @@ class Search():
         list_of_ids = self.list_of_ids
         self.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
         self.search()
+    def on_click_search_project_meta_data(self,button):
 
-    def getListOfNamesFromDict(self,dict):
+        tab_index = self.project_tab.selected_index
+        item_index = self.project_tab.children[tab_index].children[0].index[0]
+
+        if self.project_tab_title_names_list[tab_index] == 'Project Members':
+            topic = 'Document query'
+            type = 'Person'
+            id = self.project_members[item_index]
+        elif self.project_tab_title_names_list[tab_index] == 'Project Admins':
+            topic = 'Document query'
+            type = 'Person'
+            id = self.project_admins[item_index]
+        elif self.project_tab_title_names_list[tab_index] == 'Project Asset HK':
+            topic = 'Document query'
+            type = 'Person'
+            id = self.project_asset_HK[item_index]
+        elif self.project_tab_title_names_list[tab_index] == 'Project Asset GK':
+            topic = 'Document query'
+            type = 'Person'
+            id = self.project_asset_GK[item_index]
+        elif self.project_tab_title_names_list[tab_index] == 'Related People':
+            topic = 'Document query'
+            type = 'Person'
+            id = self.project_people[item_index]
+        # topic =
+        # type =
+        settings_dict = self.settings_dict
+        list_of_names = self.list_of_names
+        list_of_ids = self.list_of_ids
+        self.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
+        self.search()
+
+    def getListOfNamesFromDict(self,dict,type):
+
         ids = []
-        ids = self.iterate_over_json_list(dict,ids)
+        if type == 'Project Member':
+            ids = self.iterate_over_json_list_person(dict,ids)
+        else:
+            ids = self.iterate_over_json_list(dict,ids)
         names = []
         for id in ids:
             name = self.list_of_names[self.list_of_ids.index(id)]
             names.append(name)
+            if type == 'Creator':
+                self.creator_ids.append(id)
+            elif type == 'Submitter':
+                self.submitter_ids.append(id)
+            elif type == 'People':
+                self.people_ids.append(id)
+            elif type == 'Project Member':
+                self.project_members.append(id)
+            elif type == 'Project Admin':
+                self.project_admins.append(id)
+            elif type == 'Asset HK':
+                self.project_asset_HK.append(id)
+            elif type == 'Asset GK':
+                self.project_asset_GK.append(id)
+            elif type == 'Project People':
+                self.project_people.append(id)
+
         return names
 
     def getKeysOfDict(self,dict):
@@ -535,10 +579,15 @@ class Search():
         if self.settings_dict.get('display_model') =='True':
             headers = { "Accept": "text/csv" }
             r = requests.get(link, headers=headers, params={'sheet':'1'})
-            r.raise_for_status()
-            #gets spreadsheet from data file
-            csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
-            display(csv)
+            if r.status_code == 200:
+                r.raise_for_status()
+                #gets spreadsheet from data file
+                csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
+                display(csv)
+            else :
+                print('Can not display file ')
+                print('Reason could be permission is not allowed ')
+
 
         if self.settings_dict.get('display_download_link') == 'True':
             self.download_link()
@@ -693,6 +742,15 @@ class Search():
         self.search_person_list = change['new']
 
     def search_parameters(self,topic,id ,type ,settings_dict,list_of_names,list_of_ids):
+        self.creator_ids = []
+        self.submitter_ids = []
+        self.people_ids = []
+        self.project_members = []
+        self.project_admins = []
+        self.project_asset_HK = []
+        self.project_asset_GK = []
+        self.project_people = []
+
         self.topic = topic
         self.search_id = id
         self.search_type = type

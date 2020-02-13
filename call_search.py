@@ -28,8 +28,11 @@ To run
 x= s.SEEK()
 '''
 class Call_Search():
-    def __init__(self):
-        self.SEEK_search = Search()
+    def __init__(self,json_handler):
+        self.SEEK_search = Search(json_handler)
+
+    def set_json_handler(self,json_handler):
+        self.SEEK_search.set_json_handler(json_handler)
 
     def search(self,names,ids,search_topic,settings,search_id,search_type):
         valid = True

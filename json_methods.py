@@ -27,6 +27,13 @@ class JSON_methods():
         self.list_of_user_ids =[]
         self.list_of_user_names =[]
         self.people_JSON = None
+        self.urls = []
+        self.urls.append('https://www.fairdomhub.org')
+        self.urls.append('https://sandbox3.fairdomhub.org')
+        self.chosen_url = self.urls[0]
+
+    def change_url(self,url_index):
+        self.chosen_url = self.urls[int(url_index)-1]
 
     def check_webpage_status(self,r):
 
@@ -40,7 +47,8 @@ class JSON_methods():
         Helper method for receiving JSON response given an id, type of data and
         session
         '''
-        base_url = 'https://www.fairdomhub.org'
+        base_url = self.chosen_url
+
         #base_url = 'https://testing.sysmo-db.org'
         #base_url = 'https://sandbox3.fairdomhub.org'
 
@@ -60,9 +68,9 @@ class JSON_methods():
         '''
         Helper method for receiving JSON response given an id and type of data
         '''
-        base_url = 'https://www.fairdomhub.org'
+        base_url = self.chosen_url
         #base_url = 'https://testing.sysmo-db.org'
-        #base_url = 'https://sandbox3.fairdomhub.org'
+        #base_url =
         headers = {"Accept": "application/vnd.api+json",
                "Accept-Charset": "ISO-8859-1"}
         r = requests.get(base_url + "/" + type + "/" + str(id), headers=headers)
@@ -82,7 +90,7 @@ class JSON_methods():
         '''
         Helper method for receiving JSON response given just the type of data
         '''
-        base_url = 'https://www.fairdomhub.org'
+        base_url = self.chosen_url
 
         headers = {
           "Accept": "application/vnd.api+json",
@@ -113,6 +121,8 @@ class JSON_methods():
         elif type == 'Project Program':
             type = 'programmes'
         elif type == 'Person':
+            type = 'people'
+        elif type == 'Project People':
             type = 'people'
 
         if session == 'None' and id != 'None':

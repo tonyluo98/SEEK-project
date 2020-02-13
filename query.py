@@ -32,7 +32,7 @@ class Query():
         x.search()
 
     '''
-    def __init__(self):
+    def __init__(self,json_handler):
         '''
         Sets up varaiables for class
         Contains details on what the search items are
@@ -48,7 +48,9 @@ class Query():
         self.widget = Widget()
         self.json = None
 
-        self.json_handler = JSON_methods()
+        self.json_handler = json_handler
+        self.call_search = Call_Search(self.json_handler)
+
         # self.search_and_display_handler =  search_and_display()
         self.search_doc_id = None
         self.doc_option_selected = None
@@ -75,6 +77,10 @@ class Query():
 
         self.load_default_settings()
         self.get_all_FAIRDOM_user_names_and_ID()
+
+    def set_json_handler(self,json_handler):
+        self.json_handler = json_handler
+        self.call_search.set_json_handler(json_handler)
 
     def get_all_FAIRDOM_user_names_and_ID(self):
         '''
@@ -299,7 +305,6 @@ class Query():
         elif button.description == 'Save Settings':
             self.save_settings()
     def on_click_search(self, button):
-        call_search = Call_Search()
         list_of_names = self.list_of_user_names
         list_of_ids = self.list_of_user_ids
         topic = self.get_topic()
@@ -307,7 +312,7 @@ class Query():
         settings_dict = dict(settings_dict)
         id = self.get_id_to_search()
         type = self.get_type_to_search()
-        call_search.search(list_of_names,list_of_ids,topic,settings_dict,id,type)
+        self.call_search.search(list_of_names,list_of_ids,topic,settings_dict,id,type)
 
     def on_click_convert(self, button):
         tab_index = self.query_tab.selected_index
@@ -322,8 +327,6 @@ class Query():
         elif tab_index == 1 :
             id =  self.query_tab.children[tab_index].children[0].value
             print
-
-
 
     def document_tab(self):
         '''

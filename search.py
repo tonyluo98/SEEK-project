@@ -23,14 +23,14 @@ from widget import Widget
 
 
 class Search():
-    def __init__(self):
+    def __init__(self,json_handler):
         self.topic = None
         self.search_id = None
         self.search_type = None
         self.settings_dict = {}
         self.json = None
         self.current_blob = None
-        self.json_handler = JSON_methods()
+        self.json_handler = json_handler
         self.relationship_person_id =[]
         self.list_of_ids = []
         self.list_of_names = []
@@ -48,20 +48,29 @@ class Search():
         self.study_ids = []
         self.assay_names = []
         self.assay_ids = []
+        self.creator_names = []
         self.creator_ids = []
+        self.submitter_names = []
         self.submitter_ids = []
+        self.people_names = []
         self.people_ids = []
-        self.project_members = []
-        self.project_admins = []
-        self.project_asset_HK = []
-        self.project_asset_GK = []
-        self.project_people = []
+        self.project_members_names = []
+        self.project_members_ids = []
+        self.project_admins_names = []
+        self.project_admins_ids = []
+        self.project_asset_HK_names = []
+        self.project_asset_HK_ids = []
+        self.project_asset_GK_names = []
+        self.project_asset_GK_ids = []
+        self.project_people_names = []
+        self.project_people_ids = []
         self.tab_title_names_list_doc =[]
         self.tab_title_names_list_people =[]
 
         self.project_tab_title_names_list =[]
         self.widget = Widget()
-
+    def set_json_handler(self,json_handler):
+        self.json_handler = json_handler
     def display(self):
         '''
         displays the file by getting the appropriate data from the JSON tags
@@ -267,18 +276,28 @@ class Search():
         increased_width = False
         if type =='Creator':
             dict  = self.json_handler.get_relationship_creators(self.json)
-            names = self.getListOfNamesFromDict(dict,type)
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.creator_names = self.getValuesOfDict(dictIDAndName)
+            names = self.creator_names
+            self.creator_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
             increased_width = False
         elif type =='Submitter':
             dict  = self.json_handler.get_relationship_submitters(self.json)
-            names = self.getListOfNamesFromDict(dict,type)
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.submitter_names = self.getValuesOfDict(dictIDAndName)
+            names = self.submitter_names
+            self.submitter_ids =self.getKeysOfDict(dictIDAndName)
+
             desc = 'Name :'
             increased_width = False
 
         elif type =='People':
             dict  = self.json_handler.get_relationship_people(self.json)
-            names = self.getListOfNamesFromDict(dict,type)
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.people_names = self.getValuesOfDict(dictIDAndName)
+            names = self.people_names
+            self.people_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
             increased_width = False
         elif type == 'Project':
@@ -320,22 +339,39 @@ class Search():
             increased_width = True
         elif type =='Project Member':
             dict  = self.json_handler.get_project_members(self.json)
-            names = self.getListOfNamesFromDict(dict,type)
+
+            dictIDAndName = self.getDictOfIDandNamesPerson(dict,type)
+            self.project_members_names = self.getValuesOfDict(dictIDAndName)
+            names = self.project_members_names
+
+            self.project_members_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
             increased_width = False
         elif type =='Project Admin':
             dict  = self.json_handler.get_project_admins(self.json)
-            names = self.getListOfNamesFromDict(dict,type)
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.project_admins_names = self.getValuesOfDict(dictIDAndName)
+            names = self.project_admins_names
+
+            self.project_admins_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
             increased_width = False
         elif type =='Asset HK':
             dict  = self.json_handler.get_asset_HK(self.json)
-            names = self.getListOfNamesFromDict(dict,type)
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.project_asset_HK_names = self.getValuesOfDict(dictIDAndName)
+            names = self.project_asset_HK_names
+
+            self.project_asset_HK_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
             increased_width = False
         elif type =='Asset GK':
             dict  = self.json_handler.get_asset_GK(self.json)
-            names = self.getListOfNamesFromDict(dict,type)
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.project_asset_GK_names = self.getValuesOfDict(dictIDAndName)
+            names = self.project_asset_GK_names
+
+            self.project_asset_GK_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
             increased_width = False
         elif type =='Project Organisms':
@@ -358,7 +394,11 @@ class Search():
             increased_width = False
         elif type =='Project People':
             dict  = self.json_handler.get_relationship_people(self.json)
-            names = self.getListOfNamesFromDict(dict,type)
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.project_people_names = self.getValuesOfDict(dictIDAndName)
+            names = self.project_people_names
+
+            self.project_people_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
             increased_width = False
         relationship_widget_list = []
@@ -433,6 +473,10 @@ class Search():
             type = 'Person'
             id = self.people_ids[item_index]
 
+        print(topic)
+        print(type)
+        print(id)
+
         # topic =
         # type =
         settings_dict = self.settings_dict
@@ -448,23 +492,23 @@ class Search():
         if self.project_tab_title_names_list[tab_index] == 'Project Members':
             topic = 'Document query'
             type = 'Person'
-            id = self.project_members[item_index]
+            id = self.project_members_ids[item_index]
         elif self.project_tab_title_names_list[tab_index] == 'Project Admins':
             topic = 'Document query'
             type = 'Person'
-            id = self.project_admins[item_index]
+            id = self.project_admins_ids[item_index]
         elif self.project_tab_title_names_list[tab_index] == 'Project Asset HK':
             topic = 'Document query'
             type = 'Person'
-            id = self.project_asset_HK[item_index]
+            id = self.project_asset_HK_ids[item_index]
         elif self.project_tab_title_names_list[tab_index] == 'Project Asset GK':
             topic = 'Document query'
             type = 'Person'
-            id = self.project_asset_GK[item_index]
+            id = self.project_asset_GK_ids[item_index]
         elif self.project_tab_title_names_list[tab_index] == 'Related People':
             topic = 'Document query'
             type = 'Person'
-            id = self.project_people[item_index]
+            id = self.project_people_ids[item_index]
         # topic =
         # type =
         settings_dict = self.settings_dict
@@ -668,12 +712,22 @@ class Search():
         else:
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
+    def retrieve_project_people_name(self,idNumber,dictData,pnumber):
+        metaData = self.json_handler.get_JSON('Project People',idNumber,'None')
+        if not metaData:
+            dictData[idNumber]=metaData
+            # return metaData
+        else:
+        # return self.json_handler.get_title(metaData)
+            dictData[idNumber]=self.json_handler.get_title(metaData)
     def multiprocess_search(self,idNumbers,sessionType):
         manager = mp.Manager()
         dict_return_data = manager.dict()
         processes = []
         # dataRec = []
         # processesBeingRun = Pool(processes = 8)
+        if sessionType == 'Submitter' or sessionType == 'Creator' or sessionType == 'People':
+            sessionType ='people'
         for counter in range(len(idNumbers)):
             if sessionType == 'people':
                 process = mp.Process(target=self.retrieve_person_name,
@@ -716,6 +770,9 @@ class Search():
                                                   args=(idNumbers[counter],dict_return_data,counter))
             elif sessionType == 'Project Program':
                 process = mp.Process(target=self.retrieve_program_name,
+                                                  args=(idNumbers[counter],dict_return_data,counter))
+            elif sessionType == 'Project People':
+                process = mp.Process(target=self.retrieve_project_people_name,
                                                   args=(idNumbers[counter],dict_return_data,counter))
 
 

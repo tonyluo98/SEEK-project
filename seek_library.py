@@ -31,11 +31,14 @@ x= s.SEEK()
 '''
 class SEEK():
     def __init__(self):
-        self.SEEK_query = Query()
+        self.json_handler = JSON_methods()
+        self.SEEK_query = Query(self.json_handler)
+
         self.SEEK_query.query()
 
     def search(self):
-        self.SEEK_search = Search()
+        self.SEEK_search = Search(self.json_handler)
+
         valid = True
         list_of_names = self.SEEK_query.get_list_of_user_names()
         list_of_ids = self.SEEK_query.get_list_of_user_ids()
@@ -53,3 +56,12 @@ class SEEK():
                 self.SEEK_search.search()
         else :
             print('Select Document/Person query tab to search')
+
+    def change_url(self):
+        print('1: https://www.fairdomhub.org')
+        print('2: https://sandbox3.fairdomhub.org')
+        choice = input("Please choose url 1 or 2:\n")
+        print('You entered {0}'.format(choice))
+        self.json_handler.change_url(choice)
+        self.SEEK_search.set_json_handler(self.json_handler)
+        self.SEEK_query.set_json_handler(self.json_handler)

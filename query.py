@@ -169,15 +169,17 @@ class Query():
         self.query_tab.children[2].children[0].children[0].children[1].children[4].value = self.settings_dict_from_file.get('display_related_investigations')
         self.query_tab.children[2].children[0].children[0].children[1].children[5].value = self.settings_dict_from_file.get('display_related_studies')
         self.query_tab.children[2].children[0].children[0].children[1].children[6].value = self.settings_dict_from_file.get('display_related_assays')
-        self.query_tab.children[2].children[0].children[0].children[1].children[7].value = self.settings_dict_from_file.get('display_related_publications')
-        self.query_tab.children[2].children[0].children[0].children[1].children[8].value = self.settings_dict_from_file.get('display_related_events')
-        self.query_tab.children[2].children[0].children[0].children[1].children[9].value = self.settings_dict_from_file.get('display_project_members')
-        self.query_tab.children[2].children[0].children[0].children[1].children[10].value = self.settings_dict_from_file.get('display_project_administrators')
-        self.query_tab.children[2].children[0].children[0].children[1].children[11].value = self.settings_dict_from_file.get('display_project_asset_housekeepers')
-        self.query_tab.children[2].children[0].children[0].children[1].children[12].value = self.settings_dict_from_file.get('display_project_asset_gatekeepers')
-        self.query_tab.children[2].children[0].children[0].children[1].children[13].value = self.settings_dict_from_file.get('display_project_organisms')
-        self.query_tab.children[2].children[0].children[0].children[1].children[14].value = self.settings_dict_from_file.get('display_project_institutions')
-        self.query_tab.children[2].children[0].children[0].children[1].children[15].value = self.settings_dict_from_file.get('display_project_programmes')
+        self.query_tab.children[2].children[0].children[0].children[1].children[7].value = self.settings_dict_from_file.get('display_related_data_files')
+
+        self.query_tab.children[2].children[0].children[0].children[1].children[8].value = self.settings_dict_from_file.get('display_related_publications')
+        self.query_tab.children[2].children[0].children[0].children[1].children[9].value = self.settings_dict_from_file.get('display_related_events')
+        self.query_tab.children[2].children[0].children[0].children[1].children[10].value = self.settings_dict_from_file.get('display_project_members')
+        self.query_tab.children[2].children[0].children[0].children[1].children[11].value = self.settings_dict_from_file.get('display_project_administrators')
+        self.query_tab.children[2].children[0].children[0].children[1].children[12].value = self.settings_dict_from_file.get('display_project_asset_housekeepers')
+        self.query_tab.children[2].children[0].children[0].children[1].children[13].value = self.settings_dict_from_file.get('display_project_asset_gatekeepers')
+        self.query_tab.children[2].children[0].children[0].children[1].children[14].value = self.settings_dict_from_file.get('display_project_organisms')
+        self.query_tab.children[2].children[0].children[0].children[1].children[15].value = self.settings_dict_from_file.get('display_project_institutions')
+        self.query_tab.children[2].children[0].children[0].children[1].children[16].value = self.settings_dict_from_file.get('display_project_programmes')
 
     def load_default_settings(self):
         '''
@@ -196,6 +198,8 @@ class Query():
         self.settings_dict['display_related_investigations'] = 'True'
         self.settings_dict['display_related_studies'] = 'True'
         self.settings_dict['display_related_assays'] = 'True'
+        self.settings_dict['display_related_data_files'] = 'True'
+
         self.settings_dict['display_related_publications'] = 'True'
         self.settings_dict['display_related_events'] = 'True'
 
@@ -326,8 +330,7 @@ class Query():
             print('ID search        : {0}'.format(id))
         elif tab_index == 1 :
             id =  self.query_tab.children[tab_index].children[0].value
-            print
-
+            print('ID search        : {0}'.format(id))
     def document_tab(self):
         '''
         Creates tab relating to searching for a working document
@@ -487,6 +490,11 @@ class Query():
         related_assays_option = self.widget.toggle_button(desc,value)
         setting_option_widget_list.append(related_assays_option)
 
+        desc='Display Related Data Files:'
+        value = self.settings_dict.get('display_related_data_files')
+        related_data_files_option = self.widget.toggle_button(desc,value)
+        setting_option_widget_list.append(related_data_files_option)
+
         desc='Display Related Publications:'
         value = self.settings_dict.get('display_related_publications')
         related_publications_option = self.widget.toggle_button(desc,value)
@@ -548,6 +556,7 @@ class Query():
                                setting_option_widget_list[13],
                                setting_option_widget_list[14],
                                setting_option_widget_list[15],
+                               setting_option_widget_list[16],
                                ])
 
 
@@ -638,6 +647,9 @@ class Query():
         value = self.get_query_tab_children_settings_values('display_related_assays')
         self.settings_dict['display_related_assays'] = value
 
+        value = self.get_query_tab_children_settings_values('display_related_data_files')
+        self.settings_dict['display_related_data_files'] = value
+
         value = self.get_query_tab_children_settings_values('display_related_publications')
         self.settings_dict['display_related_publications'] = value
 
@@ -692,24 +704,26 @@ class Query():
             return self.query_tab.children[2].children[0].children[0].children[1].children[5].value
         elif setting == 'display_related_assays':
             return self.query_tab.children[2].children[0].children[0].children[1].children[6].value
-        elif setting == 'display_related_publications':
+        elif setting == 'display_related_data_files':
             return self.query_tab.children[2].children[0].children[0].children[1].children[7].value
-        elif setting == 'display_related_events':
+        elif setting == 'display_related_publications':
             return self.query_tab.children[2].children[0].children[0].children[1].children[8].value
-        elif setting == 'display_project_members':
+        elif setting == 'display_related_events':
             return self.query_tab.children[2].children[0].children[0].children[1].children[9].value
-        elif setting == 'display_project_administrators':
+        elif setting == 'display_project_members':
             return self.query_tab.children[2].children[0].children[0].children[1].children[10].value
-        elif setting == 'display_project_asset_housekeepers':
+        elif setting == 'display_project_administrators':
             return self.query_tab.children[2].children[0].children[0].children[1].children[11].value
-        elif setting == 'display_project_asset_gatekeepers':
+        elif setting == 'display_project_asset_housekeepers':
             return self.query_tab.children[2].children[0].children[0].children[1].children[12].value
-        elif setting == 'display_project_organisms':
+        elif setting == 'display_project_asset_gatekeepers':
             return self.query_tab.children[2].children[0].children[0].children[1].children[13].value
-        elif setting == 'display_project_institutions':
+        elif setting == 'display_project_organisms':
             return self.query_tab.children[2].children[0].children[0].children[1].children[14].value
-        elif setting == 'display_project_programmes':
+        elif setting == 'display_project_institutions':
             return self.query_tab.children[2].children[0].children[0].children[1].children[15].value
+        elif setting == 'display_project_programmes':
+            return self.query_tab.children[2].children[0].children[0].children[1].children[16].value
         else:
             return 'Error'
 

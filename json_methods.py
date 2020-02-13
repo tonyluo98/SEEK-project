@@ -258,7 +258,7 @@ class JSON_methods():
         bool = self.check_relationship_exists(json,'data_files')
 
         if bool == True:
-            return json['data']['relationships']['assays']['data']
+            return json['data']['relationships']['data_files']['data']
         else :
             return []
 

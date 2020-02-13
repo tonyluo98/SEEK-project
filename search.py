@@ -48,6 +48,8 @@ class Search():
         self.study_ids = []
         self.assay_names = []
         self.assay_ids = []
+        self.data_file_names = []
+        self.data_file_ids = []
         self.creator_names = []
         self.creator_ids = []
         self.submitter_names = []
@@ -66,9 +68,14 @@ class Search():
         self.project_people_ids = []
         self.tab_title_names_list_doc =[]
         self.tab_title_names_list_people =[]
-
         self.project_tab_title_names_list =[]
         self.widget = Widget()
+        self.list_of_top_level_widgets = []
+        self.title = None
+        self.desc = None
+        self.model_name = None
+        self.csv = None
+        self.download_link = None
     def set_json_handler(self,json_handler):
         self.json_handler = json_handler
     def display(self):
@@ -110,9 +117,11 @@ class Search():
                        value = title
         )
         display(title_widget)
+        self.title = title
     def display_description(self):
         description = self.json_handler.get_description(self.json)
         print(description)
+        self.desc = description
     def display_institution(self):
         #list of items to display
         container_list =[]
@@ -168,6 +177,7 @@ class Search():
             for index in range(len(self.tab_title_names_list_people)):
                 self.related_people_tab.set_title(index, self.tab_title_names_list_people[index])
             display(self.related_people_tab)
+            self.list_of_top_level_widgets.append(self.related_people_tab)
     def display_work_relations(self):
         '''
         Shows all the related Projects / Studies / Assays related to current
@@ -194,21 +204,26 @@ class Search():
             self.tab_title_names_list_doc.append('Related Investigations')
 
         if self.settings_dict.get('display_related_studies') == 'True':
-            study_relationship_people_container = self.createRelationContainer('Study')
-            container_list.append(study_relationship_people_container)
+            study_relationship_container = self.createRelationContainer('Study')
+            container_list.append(study_relationship_container)
             self.tab_title_names_list_doc.append('Related Studies')
 
 
         if self.settings_dict.get('display_related_assays') == 'True':
-            assay_relationship_people_container = self.createRelationContainer('Assay')
-            container_list.append(assay_relationship_people_container)
+            assay_relationship_container = self.createRelationContainer('Assay')
+            container_list.append(assay_relationship_container)
             self.tab_title_names_list_doc.append('Related Assays')
 
+        if self.settings_dict.get('display_related_data_files') == 'True':
+            data_file_relationship_container = self.createRelationContainer('Data File')
+            container_list.append(data_file_relationship_container)
+            self.tab_title_names_list_doc.append('Related Data Files')
 
         #If items are to be displayed, a tab is created for each item
         if container_list:
             self.related_work_tab = self.widget.tab(container_list,self.tab_title_names_list_doc)
             display(self.related_work_tab)
+            self.list_of_top_level_widgets.append(self.related_work_tab)
     def display_project(self):
         container_list =[]
         #name of items to display
@@ -256,6 +271,7 @@ class Search():
         if container_list:
             self.project_tab = self.widget.tab(container_list,self.project_tab_title_names_list)
             display(self.project_tab)
+            self.list_of_top_level_widgets.append(self.project_tab)
 
     def createRelationContainer(self,type):
         '''
@@ -337,6 +353,16 @@ class Search():
             self.assay_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Title :'
             increased_width = True
+
+        elif type == 'Data File':
+            dict  = self.json_handler.get_relationship_data_files(self.json)
+            dictIDAndName = self.getDictOfIDandNames(dict,type)
+            self.data_file_names = self.getValuesOfDict(dictIDAndName)
+            names = self.data_file_names
+
+            self.data_file_ids =self.getKeysOfDict(dictIDAndName)
+            desc = 'Title :'
+            increased_width = True
         elif type =='Project Member':
             dict  = self.json_handler.get_project_members(self.json)
 
@@ -407,7 +433,7 @@ class Search():
         relationship_widget_list.append(relation)
         desc = 'Search'
         relation_search_button = self.widget.button_optional(desc,relation.value)
-        if type == 'Project' or type =='Investigation' or type == 'Study' or type == 'Assay':
+        if type == 'Project' or type =='Investigation' or type == 'Study' or type == 'Assay' or type == 'Data File':
             relation_search_button.on_click(self.on_click_search_doc)
         elif type == 'Creator' or type == 'Submitter' or type == 'People':
             relation_search_button.on_click(self.on_click_search_person)
@@ -445,6 +471,10 @@ class Search():
             topic = 'Document query'
             type = 'Assay'
             id = self.assay_ids[item_index]
+        elif self.tab_title_names_list_doc[tab_index] == 'Related Data Files':
+            topic = 'Document query'
+            type = 'Data File'
+            id = self.data_file_ids[item_index]
 
         # topic =
         # type =
@@ -472,11 +502,6 @@ class Search():
             topic = 'Document query'
             type = 'Person'
             id = self.people_ids[item_index]
-
-        print(topic)
-        print(type)
-        print(id)
-
         # topic =
         # type =
         settings_dict = self.settings_dict
@@ -516,6 +541,27 @@ class Search():
         list_of_ids = self.list_of_ids
         self.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
         self.search()
+
+    def on_click_convert(self, button):
+        clear_output()
+
+        if self.settings_dict.get('display_title') == 'True':
+            print(self.title)
+        if self.settings_dict.get('display_description') == 'True':
+            print(self.desc)
+        if self.settings_dict.get('display_model_name') == 'True':
+            print(self.model_name)
+        if self.settings_dict.get('display_model') == 'True':
+            display(self.csv)
+        if self.settings_dict.get('display_download_link') == 'True':
+            print(self.download_link)
+        # for index in len(self.list_of_top_level_widgets):
+        #     tab_index = self.list_of_top_level_widgets[index].selected_index
+        #     tab_title = self.list_of_top_level_widgets[index]._titles.get(str(tab_index))
+        #     item_title = self.list_of_top_level_widgets[tab_index].children[0].value
+        #     print('Query type       : {0}'.format(tab_title))
+        #     print('Title of file    : {0}'.format(id))
+
 
     def getListOfNamesFromDict(self,dict,type):
 
@@ -619,6 +665,7 @@ class Search():
         if self.settings_dict.get('display_model_name') =='True':
             filename = self.json_handler.get_filename(self.current_blob)
             display(HTML('<h4>File Name: {0}</h4>'.format(filename)))
+            self.model_name = filename
         # display(filename)
         if self.settings_dict.get('display_model') =='True':
             headers = { "Accept": "text/csv" }
@@ -628,6 +675,7 @@ class Search():
                 #gets spreadsheet from data file
                 csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
                 display(csv)
+                self.csv = csv
             else :
                 print('Can not display file ')
                 print('Reason could be permission is not allowed ')
@@ -642,6 +690,7 @@ class Search():
         download_link = link+"/download"
         print("Download link: " + download_link + "\n")
         HTML("<a href='"+ download_link + "'>Download + " + filename + "</a>")
+        self.download_link = download_link
 
     def retrieve_person_name(self,idNumber,dictData,pnumber):
         personMetaData = self.json_handler.get_JSON('people',idNumber,'None')
@@ -688,6 +737,14 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
+    def retrieve_data_file_name(self,idNumber,dictData,pnumber):
+        metaData = self.json_handler.get_JSON('Data File',idNumber,'None')
+        if not metaData:
+            dictData[idNumber]=metaData
+            # return metaData
+        else:
+        # return self.json_handler.get_title(metaData)
+            dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_organism_name(self,idNumber,dictData,pnumber):
         metaData = self.json_handler.get_JSON('Project Organisms',idNumber,'None')
         if not metaData:
@@ -748,6 +805,9 @@ class Search():
                 # dataRec = processesBeingRun.map(self.retrieve_study_name,idNumbers)
             elif sessionType == 'Assay':
                 process = mp.Process(target=self.retrieve_assay_name,
+                                                  args=(idNumbers[counter],dict_return_data,counter))
+            elif sessionType == 'Data File':
+                process = mp.Process(target=self.retrieve_data_file_name,
                                                   args=(idNumbers[counter],dict_return_data,counter))
             elif sessionType == 'Project Member':
                 process = mp.Process(target=self.retrieve_person_name,
@@ -831,3 +891,8 @@ class Search():
             self.display()
         elif self.topic ==  'To be implemented':
             pass
+
+        desc = 'Convert widgets to text'
+        widgets_to_text_button = self.widget.button(desc)
+        widgets_to_text_button.on_click(self.on_click_convert)
+        display(widgets_to_text_button)

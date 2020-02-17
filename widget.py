@@ -21,6 +21,7 @@ class Widget():
     def __init__(self):
         self.layout = {'width': '750px'}
         self.small_layout = {'width': '400px'}
+        self.big_button_layout = {'width': '800px'}
         self.toggle_button_layout = {'width': '600px'}
         self.toggle_button_style = {'description_width': '180px'}
         self.button_layout = {'width': '635px'}
@@ -72,6 +73,22 @@ class Widget():
 
         widget = widgets.ToggleButtons(
             options=['True', 'False'],
+            description=desc,
+            disabled=False,
+            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+            tooltips=['', ''],
+            style =self.toggle_button_style,
+            layout=self.toggle_button_layout,
+            value = val
+
+        #     icons=['check'] * 3
+        )
+        return widget
+
+    def toggle_button(self,desc,val,options):
+
+        widget = widgets.ToggleButtons(
+            options=options,
             description=desc,
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''

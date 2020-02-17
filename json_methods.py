@@ -6,6 +6,7 @@ import sys
 import io
 import ipywidgets as widgets
 import functools as ft
+
 # Importing the libraries we need to format the data in a more readable way.
 import pandas as pd
 import query
@@ -32,17 +33,47 @@ class JSON_methods():
         self.urls.append('https://sandbox3.fairdomhub.org')
         self.chosen_url = self.urls[0]
 
+        self.headers  = {"Accept": "application/vnd.api+json",
+                         "Connection": "close",
+                         "Accept-Charset": "ISO-8859-1"}
+        self.write_headers = {"Content-type": "application/vnd.api+json",
+                              "Accept": "application/vnd.api+json",
+                              "Accept-Charset": "ISO-8859-1"}
+        self.session = None
+
+    def auth_request(self):
+        self.session = requests.Session()
+        self.session.headers.update(self.headers)
+        self.session.auth = (input('Username:'), getpass.getpass('Password'))
+
+    def new_session(self,auth = None):
+        request = requests.Session()
+        request.headers.update(self.headers)
+        if auth != None :
+            request.auth = auth
+        return(request)
     def change_url(self,url_index):
         self.chosen_url = self.urls[int(url_index)-1]
 
     def check_webpage_status(self,r):
-
-        if r.status_code != 200:
+        if r.status_code == 403:
+            print('Not visible for you as you do not have access')
+            return False
+        elif r.status_code == 422:
+            print('No permission to post at this url')
+            return False
+        elif r.status_code != 200:
+            print(r.status_code)
             print('Web site does not exist')
+            print('or web site is down')
+            try:
+                sys.exit(1)
+            except Exception as e:
+                raise
             return False
         return True
 
-    def json_for_resource_type_id_session(self,type, id, session):
+    def json_for_resource_type_id_session(self,type, id):
         '''
         Helper method for receiving JSON response given an id, type of data and
         session
@@ -52,17 +83,33 @@ class JSON_methods():
         #base_url = 'https://testing.sysmo-db.org'
         #base_url = 'https://sandbox3.fairdomhub.org'
 
-        headers = {"Accept": "application/vnd.api+json",
-                   "Accept-Charset": "ISO-8859-1"}
+        # headers = {"Accept": "application/vnd.api+json",
+        #            "Accept-Charset": "ISO-8859-1"}
 
+        if self.session == None:
+            requester = self.new_session()
+        else :
+            requester = self.new_session(self.session.auth)
+        r = requester.get(base_url + "/" + type + "/" + str(id),headers=self.headers)
+        # if self.session == None:
+        #     r = requests.get(base_url + "/" + type + "/" + str(id),
+        #                          headers=self.headers)
+        # else :
+        #     r = self.session.get(base_url + "/" + type + "/" + str(id),
+        #                          headers=self.headers)
+        r.close()
 
-        r = session.get(base_url + "/" + type + "/" + str(id), headers=headers)
+        valid = self.check_webpage_status(r)
 
-        if (r.status_code != 200):
-            print(r.json())
+        if valid:
+            if (r.status_code != 200):
 
-        r.raise_for_status()
-        return r.json()
+                r.raise_for_status()
+
+            return r.json()
+        else:
+            return []
+
 
     def json_for_resource_type_id(self,type, id):
         '''
@@ -71,16 +118,28 @@ class JSON_methods():
         base_url = self.chosen_url
         #base_url = 'https://testing.sysmo-db.org'
         #base_url =
-        headers = {"Accept": "application/vnd.api+json",
-               "Accept-Charset": "ISO-8859-1"}
-        r = requests.get(base_url + "/" + type + "/" + str(id), headers=headers)
+        # headers = {"Accept": "application/vnd.api+json",
+        #        "Accept-Charset": "ISO-8859-1"}
+        if self.session == None:
+            requester = self.new_session()
+        else :
+            requester = self.new_session(self.session.auth)
+        r = requester.get(base_url + "/" + type + "/" + str(id), headers=self.headers)
+        # if self.session == None:
+        #     r = requests.get(base_url + "/" + type + "/" + str(id),
+        #                      headers=self.headers)
+        # else :
+        #     r = self.session.get(base_url + "/" + type + "/" + str(id),
+        #                          headers=self.headers)
+        r.close()
+
         valid = self.check_webpage_status(r)
 
         if valid:
             r.raise_for_status()
             return r.json()
         else:
-            print('invalid for {} type {}'.format(id,type))
+            print('invalid for {} {}'.format(type,id))
             return []
 
 
@@ -97,13 +156,55 @@ class JSON_methods():
           "Accept-Charset": "ISO-8859-1"
         }
 
-        r = requests.get(base_url + "/" + type, headers=headers)
-        r.raise_for_status()
-        return r.json()
+        if self.session == None:
+            requester = self.new_session()
+        else :
+            requester = self.new_session(self.session.auth)
+
+        r = requester.get(base_url + "/" + type, headers=self.headers)
+
+        # if self.session == None:
+        #     r = requests.get(base_url + "/" + type, headers=self.headers)
+        # else :
+        #     r = self.session.get(base_url + "/" + type, headers=self.headers)
+        r.close()
+        valid = self.check_webpage_status(r)
+
+        if valid:
+            r.raise_for_status()
+            return r.json()
+        else:
+            return []
+
+    def post_json(self,type,hash):
+        base_url = 'https://sandbox3.fairdomhub.org'
+        if type == 'Investigation':
+            url = base_url +'/investigations'
+        elif type == 'Study':
+            url = base_url +'/studies'
+        elif type == 'Assay':
+            url = base_url +'/assays'
+        if self.session == None:
+            self.auth_request()
+        requester = self.new_session(self.session.auth)
+        requester.headers.update(self.write_headers)
+        r = requester.post(url, json=hash)
+        valid = self.check_webpage_status(r)
+        if valid:
+            r.raise_for_status()
+            # print('END')
+            # print()
+            # print(r.json())
+            json_posted =r.json()
+            print(json_posted)
+            id = json_posted['data']['id']
+            return id
+        else:
+            # return []
+            pass
+
 
     def get_JSON(self,type,id,session):
-
-
         if type == 'Project':
             type = 'projects'
         elif type == 'Investigation':
@@ -139,35 +240,37 @@ class JSON_methods():
         '''
         returns names and corresponding ID of all users
         '''
-        self.people_JSON = self.get_data(self.get_JSON('people','None','None'))
-        dict_of_users_and_ids = {}
-        for value in self.people_JSON:
-            list_of_ID =[]
-            name_key=self.get_name_from_people_JSON(value)
-            id_value=self.get_ID_from_people_JSON(value)
-            #Find out the biggest ID number of users
-            if int(id_value) > self.max_ID_value:
-                self.max_ID_value = int(id_value)
+        people_meta_data_json = self.get_JSON('people','None','None')
+        if people_meta_data_json != []:
+            self.people_JSON = self.get_data(people_meta_data_json)
+            dict_of_users_and_ids = {}
+            for value in self.people_JSON:
+                list_of_ID =[]
+                name_key=self.get_name_from_people_JSON(value)
+                id_value=self.get_ID_from_people_JSON(value)
+                #Find out the biggest ID number of users
+                if int(id_value) > self.max_ID_value:
+                    self.max_ID_value = int(id_value)
 
-            #This checks if the user name is a duplicate
-            #If the name is a duplicate, then the value in the dictionary will
-            #be a list of different IDs, corresponding to different users with
-            #the same name
-            if name_key in dict_of_users_and_ids:
-                list_of_ID = dict_of_users_and_ids.get(name_key)
-            list_of_ID.append(id_value)
+                #This checks if the user name is a duplicate
+                #If the name is a duplicate, then the value in the dictionary will
+                #be a list of different IDs, corresponding to different users with
+                #the same name
+                if name_key in dict_of_users_and_ids:
+                    list_of_ID = dict_of_users_and_ids.get(name_key)
+                list_of_ID.append(id_value)
 
-            #Add details to dictionary
-            #   key = user name
-            #   value = ID
-            dict_of_users_and_ids[name_key] =list_of_ID
+                #Add details to dictionary
+                #   key = user name
+                #   value = ID
+                dict_of_users_and_ids[name_key] =list_of_ID
 
-            #List of names and IDs
-            self.list_of_user_ids.append(id_value)
-            self.list_of_user_names.append(name_key)
-
-
-        return dict_of_users_and_ids
+                #List of names and IDs
+                self.list_of_user_ids.append(id_value)
+                self.list_of_user_names.append(name_key)
+            return dict_of_users_and_ids
+        else:
+            return {}
 
     def get_list_of_user_ids(self):
         temp_list = list(self.list_of_user_ids)

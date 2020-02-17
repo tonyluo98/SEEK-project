@@ -13,6 +13,7 @@ from search import Search
 from write import Write
 from json_methods import JSON_methods
 
+
 from pandas.io.json import json_normalize
 
 from multiprocessing import Pool
@@ -32,9 +33,16 @@ x= s.SEEK()
 class SEEK():
     def __init__(self):
         self.json_handler = JSON_methods()
-        self.SEEK_query = Query(self.json_handler)
+        self.SEEK_query = None
+        self.SEEK_search = None
+        self.SEEK_write = None
 
+    def query(self):
+        self.SEEK_query = Query(self.json_handler)
         self.SEEK_query.query()
+
+    def post(self):
+        self.SEEK_write = Write(self.json_handler)
 
     def search(self):
         self.SEEK_search = Search(self.json_handler)
@@ -63,5 +71,13 @@ class SEEK():
         choice = input("Please choose url 1 or 2:\n")
         print('You entered {0}'.format(choice))
         self.json_handler.change_url(choice)
-        self.SEEK_search.set_json_handler(self.json_handler)
+        if self.SEEK_query != None:
+            self.SEEK_query.set_json_handler(self.json_handler)
+        if self.SEEK_search != None:
+            self.SEEK_search.set_json_handler(self.json_handler)
+
+    def auth(self):
+        self.json_handler.auth_request()
         self.SEEK_query.set_json_handler(self.json_handler)
+        if self.SEEK_search != None:
+            self.SEEK_search.set_json_handler(self.json_handler)

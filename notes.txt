@@ -240,3 +240,12 @@ jupyter statelesss
 dealing with erros
 how stuff is formatted
 what the project is , waht i did, what i expect ,
+
+
+finn :
+    add template for uploading data ,
+        eg if someone wants to upload assay, but investigation and study
+        doesnt exist, then make the queries associated
+    remove empty tabs
+    may have issue uploading jupyter notebooks -- ALAN, issue may be fixed, may not be
+    

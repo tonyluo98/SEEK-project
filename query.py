@@ -427,7 +427,7 @@ class Query():
         setting_option_widget_list.append(description_option)
 
 
-        description='Display Model Name:'
+        desc='Display Model Name:'
         value = self.settings_dict.get('display_model_name')
         model_name_option = self.widget.toggle_button(desc,value)
         setting_option_widget_list.append(model_name_option)

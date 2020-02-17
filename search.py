@@ -75,7 +75,7 @@ class Search():
         self.desc = None
         self.model_name = None
         self.csv = None
-        self.download_link = None
+        self.download_link_text = None
     def set_json_handler(self,json_handler):
         self.json_handler = json_handler
     def display(self):
@@ -111,13 +111,14 @@ class Search():
                 # display(HTML('<h1><u>{0}</u></h1>'.format(title)))
 
         title = self.json_handler.get_title(self.json)
+        self.title = title + '\n'
         title = ('<h1><u>{0}</u></h1>'.format(title))
 
         title_widget = widgets.HTML(
                        value = title
         )
         display(title_widget)
-        self.title = title
+
     def display_description(self):
         description = self.json_handler.get_description(self.json)
         print(description)
@@ -546,15 +547,20 @@ class Search():
         clear_output()
 
         if self.settings_dict.get('display_title') == 'True':
-            print(self.title)
+            if self.title is not None:
+                print(self.title)
         if self.settings_dict.get('display_description') == 'True':
-            print(self.desc)
+            if self.desc is not None:
+                print(self.desc)
         if self.settings_dict.get('display_model_name') == 'True':
-            print(self.model_name)
+            if self.model_name is not None:
+                print(self.model_name)
         if self.settings_dict.get('display_model') == 'True':
-            display(self.csv)
+            if self.csv is not None:
+                display(self.csv)
         if self.settings_dict.get('display_download_link') == 'True':
-            print(self.download_link)
+            if self.download_link_text is not None:
+                print(self.download_link_text)
         # for index in len(self.list_of_top_level_widgets):
         #     tab_index = self.list_of_top_level_widgets[index].selected_index
         #     tab_title = self.list_of_top_level_widgets[index]._titles.get(str(tab_index))
@@ -678,7 +684,9 @@ class Search():
                 self.csv = csv
             else :
                 print('Can not display file ')
-                print('Reason could be permission is not allowed ')
+                print('Reason could be : permission is not allowed ')
+                print('                  file is not a excel sheet ')
+
 
 
         if self.settings_dict.get('display_download_link') == 'True':
@@ -690,7 +698,7 @@ class Search():
         download_link = link+"/download"
         print("Download link: " + download_link + "\n")
         HTML("<a href='"+ download_link + "'>Download + " + filename + "</a>")
-        self.download_link = download_link
+        self.download_link_text = download_link
 
     def retrieve_person_name(self,idNumber,dictData,pnumber):
         personMetaData = self.json_handler.get_JSON('people',idNumber,'None')
@@ -789,7 +797,6 @@ class Search():
             if sessionType == 'people':
                 process = mp.Process(target=self.retrieve_person_name,
                                                   args=(idNumbers[counter],dict_return_data,counter))
-
                 # dataRec = processesBeingRun.map(self.retrieve_person_name,idNumbers)
             elif sessionType == 'Project':
                 process = mp.Process(target=self.retrieve_project_name,

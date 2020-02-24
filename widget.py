@@ -23,7 +23,11 @@ class Widget():
         self.small_layout = {'width': '400px'}
         self.big_button_layout = {'width': '800px'}
         self.toggle_button_layout = {'width': '600px'}
+        self.big_toggle_button_layout = {'width': '900px'}
+
         self.toggle_button_style = {'description_width': '180px'}
+        self.small_toggle_button_style = {'description_width': '110px'}
+
         self.button_layout = {'width': '635px'}
     def check_list_content(self,list):
         temp_list =list
@@ -85,7 +89,7 @@ class Widget():
         )
         return widget
 
-    def toggle_button(self,desc,val,options):
+    def toggle_with_options_button(self,desc,val,options):
 
         widget = widgets.ToggleButtons(
             options=options,
@@ -93,11 +97,40 @@ class Widget():
             disabled=False,
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
-            style =self.toggle_button_style,
-            layout=self.toggle_button_layout,
+            style =self.small_toggle_button_style,
+            layout=self.big_toggle_button_layout,
             value = val
 
         #     icons=['check'] * 3
+        )
+        return widget
+
+    def text_widget(self,val,desc,increased_width = False):
+        if increased_width == True:
+            layout = self.layout
+        else:
+            layout = self.small_layout
+        widget = widgets.Text(
+            value=val,
+            placeholder='',
+            description=desc,
+            disabled=False,
+            layout=self.toggle_button_layout
+            
+        )
+        return widget
+
+    def text_area_widget(self,val,desc,increased_width=False):
+        if increased_width == True:
+            layout = self.layout
+        else:
+            layout = self.small_layout
+        widget = widgets.Textarea(
+            value=val,
+            placeholder='',
+            description=desc,
+            disabled=False,
+            layout=self.toggle_button_layout
         )
         return widget
 

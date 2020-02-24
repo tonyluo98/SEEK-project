@@ -18,7 +18,6 @@ from IPython.display import HTML
 from IPython.display import clear_output
 
 
-
 class JSON_methods():
     '''
     Functions that associate with JSON data
@@ -56,11 +55,26 @@ class JSON_methods():
         self.chosen_url = self.urls[int(url_index)-1]
 
     def check_webpage_status(self,r):
+        print('Status code is')
+        print(r.status_code)
+        # if r == None:
+        #     print('222222222222222222222')
+        # elif r == '':
+            # print('9yy')
         if r.status_code == 403:
             print('Not visible for you as you do not have access')
             return False
+        elif r.status_code ==401 :
+            print('Login details wrong')
+            return False
         elif r.status_code == 422:
             print('No permission to post at this url')
+            return False
+        elif r.status_code == 406:
+            print('Not acceptable')
+            return False
+        elif r.status_code == 404:
+            print('Web Page does not exist')
             return False
         elif r.status_code != 200:
             print(r.status_code)
@@ -109,7 +123,6 @@ class JSON_methods():
             return r.json()
         else:
             return []
-
 
     def json_for_resource_type_id(self,type, id):
         '''
@@ -184,8 +197,13 @@ class JSON_methods():
             url = base_url +'/studies'
         elif type == 'Assay':
             url = base_url +'/assays'
+        else :
+            print('NEW TYPE UNEXPECTED')
+
         if self.session == None:
             self.auth_request()
+        # print('----------------------------------')
+        r = None
         requester = self.new_session(self.session.auth)
         requester.headers.update(self.write_headers)
         r = requester.post(url, json=hash)
@@ -201,8 +219,38 @@ class JSON_methods():
             return id
         else:
             # return []
+            print('fail')
             pass
 
+    def get_user_id(self):
+        '''
+        Helper method for receiving JSON response given just the type of data
+        '''
+        base_url = self.chosen_url
+
+        if self.session == None:
+            requester = self.new_session()
+        else :
+            requester = self.new_session(self.session.auth)
+
+        requester = self.new_session(self.session.auth)
+
+        r = requester.get(base_url + "/whoami?format=json", headers=self.headers)
+        urlTest = base_url+"/whoami?format=json"
+        print(urlTest)
+        print(r)
+        # if self.session == None:
+        #     r = requests.get(base_url + "/" + type, headers=self.headers)
+        # else :
+        #     r = self.session.get(base_url + "/" + type, headers=self.headers)
+        r.close()
+        valid = self.check_webpage_status(r)
+
+        if valid:
+            r.raise_for_status()
+            return r.json()
+        else:
+            return []
 
     def get_JSON(self,type,id,session):
         if type == 'Project':

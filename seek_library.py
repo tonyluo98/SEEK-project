@@ -12,6 +12,7 @@ from query import Query
 from search import Search
 from write import Write
 from json_methods import JSON_methods
+from requester import Requester
 
 
 from pandas.io.json import json_normalize
@@ -42,7 +43,10 @@ class SEEK():
         self.SEEK_query.query()
 
     def post(self):
+        # if self.json_handler.session == None:
+        #     self.auth()
         self.SEEK_write = Write(self.json_handler)
+        self.SEEK_write.create()
 
     def search(self):
         self.SEEK_search = Search(self.json_handler)
@@ -78,6 +82,8 @@ class SEEK():
 
     def auth(self):
         self.json_handler.auth_request()
-        self.SEEK_query.set_json_handler(self.json_handler)
+        # self.SEEK_query.set_json_handler(self.json_handler)
+        if self.SEEK_query != None:
+            self.SEEK_query.set_json_handler(self.json_handler)
         if self.SEEK_search != None:
             self.SEEK_search.set_json_handler(self.json_handler)

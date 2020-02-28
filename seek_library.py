@@ -43,10 +43,9 @@ class SEEK():
         self.SEEK_query.query()
 
     def post(self):
-        # if self.json_handler.session == None:
-        #     self.auth()
-        self.SEEK_write = Write(self.json_handler)
-        self.SEEK_write.create()
+        if self.SEEK_write == None :
+            self.SEEK_write = Write(self.json_handler)
+        self.SEEK_write.post_choice()
 
     def search(self):
         self.SEEK_search = Search(self.json_handler)
@@ -87,3 +86,5 @@ class SEEK():
             self.SEEK_query.set_json_handler(self.json_handler)
         if self.SEEK_search != None:
             self.SEEK_search.set_json_handler(self.json_handler)
+        if self.SEEK_write != None:
+            self.SEEK_write.set_json_handler(self.json_handler)

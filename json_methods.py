@@ -55,8 +55,8 @@ class JSON_methods():
         self.chosen_url = self.urls[int(url_index)-1]
 
     def check_webpage_status(self,r):
-        print('Status code is')
-        print(r.status_code)
+        # print('Status code is')
+        # print(r.status_code)
         # if r == None:
         #     print('222222222222222222222')
         # elif r == '':

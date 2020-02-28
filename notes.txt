@@ -248,4 +248,71 @@ finn :
         doesnt exist, then make the queries associated
     remove empty tabs
     may have issue uploading jupyter notebooks -- ALAN, issue may be fixed, may not be
-    
+
+
+
+
+
+
+
+
+
+
+
+What did i use
+what is the api like - its changing
+What fairdom is and what seek is
+Why is this project not trivial
+get across that the project includes real users with feedback
+Have structure in the demo
+  beginning middle end
+gk decides what comes in and out what items are allowed to be visible
+  stop people seeing things before they are published
+hk tidying and cleaning curating
+
+demonstrate private and public functionality
+  requires login and permissions
+
+monolithic
+
+Begin
+what is Fairdom seek
+
+how to use via browser
+all the feedback and user requests
+
+display demo
+
+what i am going to do in the future
+
+real eu product - going into several projects using seek
+user base
+testing
+technologys used
+struggles
+compared to other similar products before i started working on it
+what cons were there
+
+What does the project require me to learn
+
+what is the project about, what will he see
+
+A script on what i am covering from beginning to end
+Be direct - I am going
+            We will do this bit and then this bit
+            Be firm
+            Explain everything
+            This is my learning outcomes
+              challenging -- what was
+              organisiation
+            Make a difference between simple and simple to use
+            vibe of a jupyter notebook
+            good interaction
+            converted complex json to clear and seperated out information
+              scalability
+              edge cases
+            two user communities
+              widgety bit and command line bit
+              functionality is there for displaying / finding and putting info
+                my job is not editing data files
+                Not my job to run model in notebook

@@ -121,14 +121,18 @@ class Write():
         parent_id_widget = self.widget.bounded_int_text_widget(val,desc,bool,
                                                              min ,max)
         post_query_widget_list.append(parent_id_widget)
-        desc = 'Load details'
-        load_button = self.widget.button(desc)
-        load_button.on_click(self.on_click_load_update)
-        post_query_widget_list.append(load_button)
-        #Formats the widgets into a column
-        self.post_query_container = widgets.VBox([post_query_widget_list[0],
-                                                  post_query_widget_list[1],
-                                                  post_query_widget_list[2]])
+        if type == 'Create':
+            self.post_query_container = widgets.VBox([post_query_widget_list[0],
+                                                      post_query_widget_list[1]])
+        else :
+            desc = 'Load details'
+            load_button = self.widget.button(desc)
+            load_button.on_click(self.on_click_load_update)
+            post_query_widget_list.append(load_button)
+            #Formats the widgets into a column
+            self.post_query_container = widgets.VBox([post_query_widget_list[0],
+                                                      post_query_widget_list[1],
+                                                      post_query_widget_list[2]])
         tab_list.append(self.post_query_container)
         title_list.append('Post details')
         self.create_tab = self.widget.tab(tab_list,title_list)
@@ -144,7 +148,7 @@ class Write():
         # self.doc_write_optional_tab = self.optional_fields()
         # widget_list.append(self.doc_write_optional_tab)
 
-        self.post_accordion = self.widget.accordion(widget_list)
+        self.post_accordion = self.widget.accordion(widget_list,3)
 
         self.post_accordion.set_title(0, 'Compulsory')
         self.post_accordion.selected_index = 0
@@ -159,12 +163,12 @@ class Write():
 
         desc = 'Title :'
         val = ''
-        title_input = self.widget.text_widget(val,desc)
+        title_input = self.widget.text_widget(val,desc,2)
         doc_write_widget_list.append(title_input)
 
         desc = 'Description :'
         val = ''
-        desc_input = self.widget.text_area_widget(val,desc)
+        desc_input = self.widget.text_area_widget(val,desc,2)
         doc_write_widget_list.append(desc_input)
 
         desc = 'Post'
@@ -203,14 +207,19 @@ class Write():
     def on_click_load_update(self,button):
         type =self.post_query_container.children[0].value
         id =self.post_query_container.children[1].value
-        session = None
-        self.json  = self.json_handler.get_JSON(type,id,session)
-        print(self.json)
+        self.json  = self.json_handler.get_JSON(type,id)
+        self.fill_form()
+
+    def fill_form(self):
+        self.doc_write_compulsory_tab.children[0].value =\
+                                        self.json_handler.get_title(self.json)
+        self.doc_write_compulsory_tab.children[1].value =\
+                                        self.json_handler.get_description(self.json)
     def on_click_post(self,button):
         create_doc = self.create_tab.children[0].children[0].value
         parent_id = self.create_tab.children[0].children[1].value
-        title = self.doc_write_tab.children[0].children[0].value
-        desc = self.doc_write_tab.children[0].children[1].value
+        title = self.doc_write_tab.children[0].children[0].children[0].value
+        desc = self.doc_write_tab.children[0].children[0].children[1].value
 
         if title == '':
             print('Title can not be left empty')

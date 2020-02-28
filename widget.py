@@ -19,16 +19,23 @@ from json_methods import JSON_methods
 
 class Widget():
     def __init__(self):
-        self.layout = {'width': '750px'}
-        self.small_layout = {'width': '400px'}
-        self.big_button_layout = {'width': '800px'}
-        self.toggle_button_layout = {'width': '600px'}
-        self.big_toggle_button_layout = {'width': '900px'}
+        self.layout0 = {'width': '400px'}
+        self.layout1 = {'width': '750px'}
+        self.layout2 = {'width': '850px'}
+        self.layout3 = {'width': '925px'}
+
+
+        self.button_layout0 = {'width': '455px'}
+        self.button_layout1 = {'width': '635px'}
+        self.button_layout2 = {'width': '800px'}
+
+        self.toggle_button_layout0 = {'width': '400px'}
+        self.toggle_button_layout1 = {'width': '600px'}
+        self.toggle_button_layout2 = {'width': '900px'}
 
         self.toggle_button_style = {'description_width': '180px'}
         self.small_toggle_button_style = {'description_width': '110px'}
 
-        self.button_layout = {'width': '635px'}
     def check_list_content(self,list):
         temp_list =list
         default_value =[]
@@ -82,7 +89,7 @@ class Widget():
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
             style =self.toggle_button_style,
-            layout=self.toggle_button_layout,
+            layout=self.toggle_button_layout1,
             value = val
 
         #     icons=['check'] * 3
@@ -98,7 +105,7 @@ class Widget():
             button_style='', # 'success', 'info', 'warning', 'danger' or ''
             tooltips=['', ''],
             style =self.small_toggle_button_style,
-            layout=self.big_toggle_button_layout,
+            layout=self.toggle_button_layout2,
             value = val
 
         #     icons=['check'] * 3
@@ -106,31 +113,35 @@ class Widget():
         return widget
 
     def text_widget(self,val,desc,increased_width = False):
-        if increased_width == True:
-            layout = self.layout
-        else:
-            layout = self.small_layout
+        if increased_width == 0:
+            layout = self.layout0
+        elif increased_width == 1:
+            layout = self.layout1
+        else :
+            layout = self.layout2
         widget = widgets.Text(
             value=val,
             placeholder='',
             description=desc,
             disabled=False,
-            layout=self.toggle_button_layout
-            
+            layout=layout
+
         )
         return widget
 
-    def text_area_widget(self,val,desc,increased_width=False):
-        if increased_width == True:
-            layout = self.layout
-        else:
-            layout = self.small_layout
+    def text_area_widget(self,val,desc,increased_width=1):
+        if increased_width == 0:
+            layout = self.layout0
+        elif increased_width == 1:
+            layout = self.layout1
+        else :
+            layout = self.layout2
         widget = widgets.Textarea(
             value=val,
             placeholder='',
             description=desc,
             disabled=False,
-            layout=self.toggle_button_layout
+            layout=layout
         )
         return widget
 
@@ -160,11 +171,21 @@ class Widget():
         )
         return widget
 
-    def accordion(self,list):
+    def accordion(self,list,increased_width =1):
+        if increased_width == 0:
+            layout = self.layout0
+        elif increased_width == 1:
+            layout = self.layout1
+        elif increased_width == 2:
+            layout = self.layout2
+        else :
+            layout = self.layout3
         children = list
+
         widget = widgets.Accordion(
             children=children,
-            layout = self.layout)
+            layout = layout
+            )
         return widget
 
     def tab(self,children,tab_names):
@@ -175,11 +196,14 @@ class Widget():
         return widget
 
     def select_multiple(self,increased_width,options,default_val,rows,desc):
-        if increased_width == True:
-            layout = self.layout
-        else:
-            layout = self.small_layout
-
+        if increased_width == 0:
+            layout = self.layout0
+        elif increased_width == 1:
+            layout = self.layout1
+        elif increased_width == 2:
+            layout = self.layout2
+        else :
+            layout = self.layout3
         widget =  widgets.SelectMultiple(
             layout = layout,
             options= options,

@@ -86,7 +86,7 @@ class Search():
         id = self.search_id
         # File type
         type = self.search_type
-        self.json =self.json_handler.get_JSON(type,id,'None')
+        self.json =self.json_handler.get_JSON(type,id)
         # print(self.json)
         #title and description of file
         if self.json != []:
@@ -282,15 +282,16 @@ class Search():
         search button
 
         type            : document type
-        increased_width : binary option for increased_width
-                          if value is Yes then this makes the dropbox width
-                          longer
+        increased_width : option for increased_width
+                          0 = small
+                          1 = medium
+                          2 = large
         '''
 
         #Get a dictionary of data that contains ID amnd type
         #Iterate over dictionary to get the names from IDs
         desc = ''
-        increased_width = False
+        increased_width = 1
         if type =='Creator':
             dict  = self.json_handler.get_relationship_creators(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -298,7 +299,7 @@ class Search():
             names = self.creator_names
             self.creator_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
-            increased_width = False
+            increased_width = 0
         elif type =='Submitter':
             dict  = self.json_handler.get_relationship_submitters(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -307,7 +308,7 @@ class Search():
             self.submitter_ids =self.getKeysOfDict(dictIDAndName)
 
             desc = 'Name :'
-            increased_width = False
+            increased_width = 0
 
         elif type =='People':
             dict  = self.json_handler.get_relationship_people(self.json)
@@ -316,7 +317,7 @@ class Search():
             names = self.people_names
             self.people_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
-            increased_width = False
+            increased_width = 0
         elif type == 'Project':
             dict  = self.json_handler.get_relationship_projects(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -327,7 +328,7 @@ class Search():
             # print(self.project_ids)
 
             desc = 'Title :'
-            increased_width = True
+            increased_width = 2
         elif type == 'Investigation':
             dict  = self.json_handler.get_relationship_investigations(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -335,7 +336,7 @@ class Search():
             names = self.investigation_names
             self.investigation_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Title :'
-            increased_width = True
+            increased_width = 2
         elif type == 'Study':
             dict  = self.json_handler.get_relationship_studies(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -344,7 +345,7 @@ class Search():
 
             self.study_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Title :'
-            increased_width = True
+            increased_width = 2
         elif type == 'Assay':
             dict  = self.json_handler.get_relationship_assays(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -353,7 +354,7 @@ class Search():
 
             self.assay_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Title :'
-            increased_width = True
+            increased_width = 2
 
         elif type == 'Data File':
             dict  = self.json_handler.get_relationship_data_files(self.json)
@@ -363,7 +364,7 @@ class Search():
 
             self.data_file_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Title :'
-            increased_width = True
+            increased_width = 2
         elif type =='Project Member':
             dict  = self.json_handler.get_project_members(self.json)
 
@@ -373,7 +374,7 @@ class Search():
 
             self.project_members_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
-            increased_width = False
+            increased_width = 0
         elif type =='Project Admin':
             dict  = self.json_handler.get_project_admins(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -382,7 +383,7 @@ class Search():
 
             self.project_admins_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
-            increased_width = False
+            increased_width = 0
         elif type =='Asset HK':
             dict  = self.json_handler.get_asset_HK(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -391,7 +392,7 @@ class Search():
 
             self.project_asset_HK_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
-            increased_width = False
+            increased_width = 0
         elif type =='Asset GK':
             dict  = self.json_handler.get_asset_GK(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -400,25 +401,25 @@ class Search():
 
             self.project_asset_GK_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
-            increased_width = False
+            increased_width = 0
         elif type =='Project Organisms':
             dict  = self.json_handler.get_organisms(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
             names = self.getValuesOfDict(dictIDAndName)
             desc = 'Title :'
-            increased_width = False
+            increased_width = 0
         elif type =='Project Institute':
             dict  = self.json_handler.get_project_institutions(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
             names = self.getValuesOfDict(dictIDAndName)
             desc = 'Title :'
-            increased_width = False
+            increased_width = 0
         elif type =='Project Program':
             dict  = self.json_handler.get_project_programmes(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
             names = self.getValuesOfDict(dictIDAndName)
             desc = 'Title :'
-            increased_width = False
+            increased_width = 0
         elif type =='Project People':
             dict  = self.json_handler.get_relationship_people(self.json)
             dictIDAndName = self.getDictOfIDandNames(dict,type)
@@ -427,7 +428,7 @@ class Search():
 
             self.project_people_ids =self.getKeysOfDict(dictIDAndName)
             desc = 'Name :'
-            increased_width = False
+            increased_width = 0
         relationship_widget_list = []
         relationship_people_container =[]
         relation = self.relationship_drop_box(names,increased_width,desc)
@@ -701,7 +702,7 @@ class Search():
         self.download_link_text = download_link
 
     def retrieve_person_name(self,idNumber,dictData,pnumber):
-        personMetaData = self.json_handler.get_JSON('people',idNumber,'None')
+        personMetaData = self.json_handler.get_JSON('people',idNumber)
         if not personMetaData:
             # return personMetaData
             dictData[idNumber]=personMetaData
@@ -710,7 +711,7 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(personMetaData)
 
     def retrieve_project_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Project',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Project',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData
@@ -719,7 +720,7 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
     def retrieve_investigation_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Investigation',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Investigation',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData
@@ -728,7 +729,7 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
     def retrieve_study_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Study',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Study',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData
@@ -737,7 +738,7 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
     def retrieve_assay_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Assay',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Assay',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData
@@ -746,7 +747,7 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
     def retrieve_data_file_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Data File',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Data File',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData
@@ -754,7 +755,7 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_organism_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Project Organisms',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Project Organisms',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData
@@ -762,7 +763,7 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_institute_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Project Institute',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Project Institute',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData
@@ -770,7 +771,7 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_program_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Project Program',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Project Program',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData
@@ -778,7 +779,7 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_project_people_name(self,idNumber,dictData,pnumber):
-        metaData = self.json_handler.get_JSON('Project People',idNumber,'None')
+        metaData = self.json_handler.get_JSON('Project People',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
             # return metaData

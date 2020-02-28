@@ -252,7 +252,7 @@ class JSON_methods():
         else:
             return []
 
-    def get_JSON(self,type,id,session):
+    def get_JSON(self,type,id):
         if type == 'Project':
             type = 'projects'
         elif type == 'Investigation':
@@ -274,21 +274,17 @@ class JSON_methods():
         elif type == 'Project People':
             type = 'people'
 
-        if session == 'None' and id != 'None':
+        if id != 'None':
             return self.json_for_resource_type_id(str(type),
-                                             str(id))
+                                                  str(id))
         elif id == 'None':
             return self.json_for_resource_type(str(type))
-        else:
-            return self.json_for_resource_type_id_session(str(type),
-                                                     str(id),
-                                                     str(session))
 
     def get_dictionary_of_user_and_id(self):
         '''
         returns names and corresponding ID of all users
         '''
-        people_meta_data_json = self.get_JSON('people','None','None')
+        people_meta_data_json = self.get_JSON('people','None')
         if people_meta_data_json != []:
             self.people_JSON = self.get_data(people_meta_data_json)
             dict_of_users_and_ids = {}

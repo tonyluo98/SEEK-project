@@ -318,3 +318,69 @@ Be direct - I am going
                 Not my job to run model in notebook
 
           diagram showing refactoring stages
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Scale ?
+  what happens with lots of results
+
+TAkes long time to get onto demo
+    too long intro
+    get rid of plan
+
+new api extension -- current
+    - i drove the idea of a current - because of project
+      --needed changes to get the info i needed
+      -part of design
+        -had an impact
+    - ibsba - deploy here
+
+implement set all button for settings
+make demo look less bare
+show real world use
+Have a proper notebook with science / data /models
+      use my api to get data to add to notebook
+
+make a notebook up
+      like making coffee
+
+essentially navigate isa structure via notebook
+use login stuff

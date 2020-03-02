@@ -6,11 +6,11 @@ display_download_link False
 display_creators False
 display_submitter False
 display_related_people False
-display_related_projects True
-display_related_investigations True
-display_related_studies True
-display_related_assays True
-display_related_data_files True
+display_related_projects False
+display_related_investigations False
+display_related_studies False
+display_related_assays False
+display_related_data_files False
 display_related_publications False
 display_related_events False
 display_project_members False

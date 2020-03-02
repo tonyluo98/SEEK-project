@@ -112,7 +112,7 @@ class Widget():
         )
         return widget
 
-    def text_widget(self,val,desc,increased_width = False):
+    def text_widget(self,val,desc,increased_width = 0):
         if increased_width == 0:
             layout = self.layout0
         elif increased_width == 1:
@@ -125,7 +125,6 @@ class Widget():
             description=desc,
             disabled=False,
             layout=layout
-
         )
         return widget
 
@@ -209,6 +208,25 @@ class Widget():
             options= options,
             value=default_val,
             rows=rows,
+            description=desc,
+            disabled=False
+        )
+        return widget
+
+    def select(self,desc,options,increased_width = 1):
+        if increased_width == 0:
+            layout = self.layout0
+        elif increased_width == 1:
+            layout = self.layout1
+        elif increased_width == 2:
+            layout = self.layout2
+        else :
+            layout = self.layout3
+        widget =  widgets.Select(
+            layout = layout,
+            options= options,
+            value=options[0],
+            rows=2,
             description=desc,
             disabled=False
         )

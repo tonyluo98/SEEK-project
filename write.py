@@ -47,6 +47,8 @@ class Write():
         self.choice_button = None
         self.choice_confirm_button = None
         self.choice = None
+    def set_json_handler(self,json_handler):
+        self.json_handler = json_handler
     def post_choice(self):
         options = ['Create','Update']
         desc = 'Type'
@@ -146,9 +148,9 @@ class Write():
         self.doc_write_compulsory_tab = self.compulsory_fields()
         accordion_widget_list.append(self.doc_write_compulsory_tab)
 
-        if type == 'Update':
-            self.doc_write_optional_tab = self.optional_fields()
-            accordion_widget_list.append(self.doc_write_optional_tab)
+        # if type == 'Update':
+        self.doc_write_optional_tab = self.optional_fields()
+        accordion_widget_list.append(self.doc_write_optional_tab)
 
         self.post_accordion = self.widget.accordion(accordion_widget_list,3)
 
@@ -156,12 +158,12 @@ class Write():
         self.post_accordion.selected_index = 0
         vbox_widget_list.append(self.post_accordion)
 
+        self.post_accordion.set_title(1, 'Optional')
+
         if type == 'Create':
             desc = 'Create'
         else :
             desc = 'Update'
-            self.post_accordion.set_title(1, 'Optional')
-
 
         post_button = self.widget.button(desc)
         post_button.on_click(self.on_click_post)
@@ -198,15 +200,20 @@ class Write():
 
     def optional_fields(self):
         doc_write_widget_list= []
-
         ver = ''
-        version = ('<h1><u>Version : {0}</u></h1>'.format(ver))
-        version_widget = widgets.HTML(
-                       value = version
-        )
+        desc = 'Version :'
+        version_widget = self.widget.text_widget(ver,desc)
+        version_widget.disabled = True
+        version_widget.value = '1.0'
         doc_write_widget_list.append(version_widget)
 
-        optional_container = widgets.VBox([doc_write_widget_list[0]])
+        desc = 'Access :'
+        options = ['no_access','view']
+        access_widget = self.widget.select(desc,options)
+        doc_write_widget_list.append(access_widget)
+
+        optional_container = widgets.VBox([doc_write_widget_list[0],
+                                           doc_write_widget_list[1]])
         return optional_container
 
     def on_click_load_update(self,button):
@@ -224,12 +231,14 @@ class Write():
                                         self.json_handler.get_description(self.json)
         self.doc_write_optional_tab.children[0].value =\
                                         self.json_handler.get_version(self.json)
+        self.doc_write_optional_tab.children[1].value =\
+                                        self.json_handler.get_public_access(self.json)
     def on_click_post(self,button):
         create_doc = self.create_tab.children[0].children[0].value
         id = self.create_tab.children[0].children[1].value
         title = self.doc_write_tab.children[0].children[0].children[0].children[0].value
         desc = self.doc_write_tab.children[0].children[0].children[0].children[1].value
-
+        access = self.doc_write_optional_tab.children[1].value
         if self.choice == 'Update':
             current_id = str(id)
             id = self.get_parent_id()
@@ -239,20 +248,18 @@ class Write():
             if create_doc == 'Project':
                 pass
             elif create_doc == 'Investigation':
-                hash = self.investigation_hash(title,desc,id)
+                hash = self.investigation_hash(title,desc,access,id)
                 type = 'Investigation'
             elif create_doc == 'Study':
                 type = 'Study'
-                hash = self.study_hash(title,desc,id)
+                hash = self.study_hash(title,desc,access,id)
             elif create_doc == 'Assay':
                 type = 'Assay'
-                hash = self.assay_hash(title,desc,id)
+                hash = self.assay_hash(title,desc,access,id)
             if self.choice == 'Update':
                 id_returned = self.json_handler.post_json(type,hash,self.choice,current_id)
             else :
                 id_returned = self.json_handler.post_json(type,hash,self.choice)
-
-
 
         # print(id)
     def get_parent_id(self):
@@ -277,7 +284,7 @@ class Write():
             self.user_id = None
             print('Need Correct login details')
 
-    def investigation_hash(self,title,desc,id):
+    def investigation_hash(self,title,desc,access,id):
         type = 'Investigation'
         investigation = {}
         investigation['data'] = {}
@@ -285,13 +292,16 @@ class Write():
         investigation['data']['attributes'] = {}
         investigation['data']['attributes']['title'] = title
         investigation['data']['attributes']['description'] = desc
+        investigation['data']['attributes']['policy']= {}
+
+        investigation['data']['attributes']['policy']['access'] = access
         investigation['data']['relationships'] = {}
         investigation['data']['relationships']['projects'] = {}
         investigation['data']['relationships']['projects']['data'] = [{'id' : id, 'type' : 'projects'}]
         # id = self.json_handler.post_json(type,investigation)
         return investigation
 
-    def study_hash(self,title,desc,id):
+    def study_hash(self,title,desc,id,access):
         type = 'Study'
         study = {}
         study['data'] = {}
@@ -299,14 +309,17 @@ class Write():
         study['data']['attributes'] = {}
         study['data']['attributes']['title'] = title
         study['data']['attributes']['description'] =desc
-        study['data']['attributes']['policy'] = {'access':'view', 'permissions': [{'resource': {'id': '1','type': 'people'},'access': 'manage'}]}
+        study['data']['attributes']['policy']= {}
+
+        study['data']['attributes']['policy']['access'] = access
+        # study['data']['attributes']['policy'] = {'access':'view', 'permissions': [{'resource': {'id': '1','type': 'people'},'access': 'manage'}]}
         study['data']['relationships'] = {}
         study['data']['relationships']['investigation'] = {}
         study['data']['relationships']['investigation']['data'] = {'id' : id, 'type' : 'investigations'}
         # id = self.json_handler.post_json(type,study)
         return study
 
-    def assay_hash(self,title,desc,id):
+    def assay_hash(self,title,desc,id,access):
         type = 'Assay'
         assay = {}
         assay['data'] = {}
@@ -314,7 +327,9 @@ class Write():
         assay['data']['attributes'] = {}
         assay['data']['attributes']['title'] = title
         assay['data']['attributes']['description'] =desc
-        assay['data']['attributes']['policy'] = {'access':'view', 'permissions': []}
+        assay['data']['attributes']['policy']= {}
+        assay['data']['attributes']['policy']['access'] = access
+        # assay['data']['attributes']['policy'] = {'access':'view', 'permissions': []}
         assay['data']['attributes']['assay_class'] = {'key' : 'EXP'}
         assay['data']['attributes']['assay_type'] = {'uri' : 'http://jermontology.org/ontology/JERMOntology#Metabolomics'}
         assay['data']['attributes']['technology_type'] = {'uri' : 'http://jermontology.org/ontology/JERMOntology#Electrophoresis'}

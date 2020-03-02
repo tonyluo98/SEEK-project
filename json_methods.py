@@ -20,7 +20,11 @@ from IPython.display import clear_output
 
 class JSON_methods():
     '''
-    Functions that associate with JSON data
+    Functions that associate with:
+            Splitting JSON data
+            Getting JSON from FAIRDOM
+            Sending JSON to FAIRDOM
+            Stores authorisation of user if provided
     '''
     def __init__(self):
         self.max_ID_value = 0
@@ -28,6 +32,7 @@ class JSON_methods():
         self.list_of_user_names =[]
         self.people_JSON = None
         self.urls = []
+        # URL for sandbox and official website
         self.urls.append('https://www.fairdomhub.org')
         self.urls.append('https://sandbox3.fairdomhub.org')
         self.chosen_url = self.urls[0]
@@ -41,26 +46,40 @@ class JSON_methods():
         self.session = None
 
     def auth_request(self):
+        '''
+        Get user login details
+
+        RETURNS N/A
+        '''
         self.session = requests.Session()
         self.session.headers.update(self.headers)
         self.session.auth = (input('Username:'), getpass.getpass('Password'))
 
     def new_session(self,auth = None):
+        '''
+        Create new session
+
+        RETURNS session
+        '''
         request = requests.Session()
         request.headers.update(self.headers)
         if auth != None :
             request.auth = auth
         return(request)
     def change_url(self,url_index):
+        '''
+        Changes URL for getting and sending JSON to
+
+        RETURNS N/A
+        '''
         self.chosen_url = self.urls[int(url_index)-1]
 
     def check_webpage_status(self,r):
-        # print('Status code is')
-        # print(r.status_code)
-        # if r == None:
-        #     print('222222222222222222222')
-        # elif r == '':
-            # print('9yy')
+        '''
+        Check if response is valid or not
+
+        RETURNS boolean
+        '''
         if r.status_code == 403:
             print('Not visible for you as you do not have access')
             return False
@@ -87,67 +106,22 @@ class JSON_methods():
             return False
         return True
 
-    def json_for_resource_type_id_session(self,type, id):
-        '''
-        Helper method for receiving JSON response given an id, type of data and
-        session
-        '''
-        base_url = self.chosen_url
-
-        #base_url = 'https://testing.sysmo-db.org'
-        #base_url = 'https://sandbox3.fairdomhub.org'
-
-        # headers = {"Accept": "application/vnd.api+json",
-        #            "Accept-Charset": "ISO-8859-1"}
-
-        if self.session == None:
-            requester = self.new_session()
-        else :
-            requester = self.new_session(self.session.auth)
-        r = requester.get(base_url + "/" + type + "/" + str(id),headers=self.headers)
-        # if self.session == None:
-        #     r = requests.get(base_url + "/" + type + "/" + str(id),
-        #                          headers=self.headers)
-        # else :
-        #     r = self.session.get(base_url + "/" + type + "/" + str(id),
-        #                          headers=self.headers)
-        r.close()
-
-        valid = self.check_webpage_status(r)
-
-        if valid:
-            if (r.status_code != 200):
-
-                r.raise_for_status()
-
-            return r.json()
-        else:
-            return []
-
     def json_for_resource_type_id(self,type, id):
         '''
         Helper method for receiving JSON response given an id and type of data
         '''
         base_url = self.chosen_url
-        #base_url = 'https://testing.sysmo-db.org'
-        #base_url =
-        # headers = {"Accept": "application/vnd.api+json",
-        #        "Accept-Charset": "ISO-8859-1"}
+        # Create a new session
         if self.session == None:
             requester = self.new_session()
         else :
             requester = self.new_session(self.session.auth)
+        # Get JSON of that type and id
         r = requester.get(base_url + "/" + type + "/" + str(id), headers=self.headers)
-        # if self.session == None:
-        #     r = requests.get(base_url + "/" + type + "/" + str(id),
-        #                      headers=self.headers)
-        # else :
-        #     r = self.session.get(base_url + "/" + type + "/" + str(id),
-        #                          headers=self.headers)
+        # Close session
         r.close()
-
+        # Check response
         valid = self.check_webpage_status(r)
-
         if valid:
             r.raise_for_status()
             return r.json()
@@ -156,41 +130,37 @@ class JSON_methods():
             return []
 
 
-            # sys.exit(0)
-
     def json_for_resource_type(self,type):
         '''
         Helper method for receiving JSON response given just the type of data
         '''
         base_url = self.chosen_url
-
-        headers = {
-          "Accept": "application/vnd.api+json",
-          "Accept-Charset": "ISO-8859-1"
-        }
-
+        # Create a new session
         if self.session == None:
             requester = self.new_session()
         else :
             requester = self.new_session(self.session.auth)
-
+        # Get JSON of that type and id
         r = requester.get(base_url + "/" + type, headers=self.headers)
-
-        # if self.session == None:
-        #     r = requests.get(base_url + "/" + type, headers=self.headers)
-        # else :
-        #     r = self.session.get(base_url + "/" + type, headers=self.headers)
+        # Close session
         r.close()
+        # Check response
         valid = self.check_webpage_status(r)
-
         if valid:
             r.raise_for_status()
             return r.json()
         else:
+            print('invalid for {}'.format(type))
             return []
 
     def post_json(self,type,hash,post_type,id = None):
+        '''
+        Post JSON to Fairdom
+        JSON posted is either for a new post or to update a existing post
+        '''
+        # Sandbox url is used for project purposes
         base_url = 'https://sandbox3.fairdomhub.org'
+        # URL based on file type
         if type == 'Investigation':
             url = base_url +'/investigations'
         elif type == 'Study':
@@ -199,37 +169,30 @@ class JSON_methods():
             url = base_url +'/assays'
         else :
             print('NEW TYPE UNEXPECTED')
-
+        # Requires user login details
         if self.session == None:
             self.auth_request()
-        # print('----------------------------------')
+        # Set Headers for upload
         r = None
         requester = self.new_session(self.session.auth)
         requester.headers.update(self.write_headers)
-        # print(url)
-        # print(post_type)
-
+        # POST command for putting new data
+        # PUT command for updating data
         if post_type == 'Create':
             r = requester.post(url, json=hash)
         else :
             url = url +'/'+id
-            # print(url)
             r = requester.put(url, json=hash)
-
+        # Check valid
         valid = self.check_webpage_status(r)
         if valid:
             r.raise_for_status()
-            # print('END')
-            # print()
-            # print(r.json())
             json_posted =r.json()
-            # print(json_posted)
             id = json_posted['data']['id']
-
+            print('SUCCESSFULLY POSTED')
+            # Returns ID of posted JSON
             return id
         else:
-            # return []
-            print('fail')
             pass
 
     def get_user_id(self):
@@ -462,6 +425,9 @@ class JSON_methods():
 
     def get_version(self,json):
         return json['jsonapi']['version']
+
+    def get_public_access(self,json):
+        return json['data']['attributes']['policy']['access']
 
     def get_blob(self,json):
         return json['data']['attributes']['content_blobs']

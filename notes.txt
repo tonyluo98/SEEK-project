@@ -316,3 +316,5 @@ Be direct - I am going
               functionality is there for displaying / finding and putting info
                 my job is not editing data files
                 Not my job to run model in notebook
+
+          diagram showing refactoring stages

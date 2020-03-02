@@ -44,25 +44,25 @@ class Write():
 
         self.post_accordion = None
         # self.json
+        self.choice_button = None
+        self.choice_confirm_button = None
         self.choice = None
-        self.choice_confirm = None
-
     def post_choice(self):
         options = ['Create','Update']
         desc = 'Type'
         val = options[0]
-        self.choice = self.widget.toggle_with_options_button(desc,val,options)
-        display(self.choice)
+        self.choice_button = self.widget.toggle_with_options_button(desc,val,options)
+        display(self.choice_button)
         desc = 'Select'
-        self.choice_confirm = self.widget.button(desc)
-        self.choice_confirm.on_click(self.on_click_select)
-        display(self.choice_confirm)
+        self.choice_confirm_button = self.widget.button(desc)
+        self.choice_confirm_button.on_click(self.on_click_select)
+        display(self.choice_confirm_button)
 
 
     def on_click_select(self,button):
-        choice = self.choice.value
+        self.choice = self.choice_button.value
         clear_output()
-        if choice == 'Create':
+        if self.choice == 'Create':
             self.create()
         else :
             self.update()
@@ -76,7 +76,7 @@ class Write():
             type = 'Create'
 
             self.post_tab_creation(desc,type)
-            self.doc_write()
+            self.doc_write(type)
 
     def update(self):
         # self.get_user_id()
@@ -87,7 +87,7 @@ class Write():
             type = 'Update'
             self.post_tab_creation(desc,type)
 
-            self.doc_write()
+            self.doc_write(type)
 
         # title = 'test: 1 via api'
         # desc = 'test 1 via api at making a investigation'
@@ -138,22 +138,38 @@ class Write():
         self.create_tab = self.widget.tab(tab_list,title_list)
         display(self.create_tab)
 
-    def doc_write(self):
+    def doc_write(self,type):
         tab_list = []
         title_list =[]
-        widget_list = []
+        accordion_widget_list = []
+        vbox_widget_list = []
         self.doc_write_compulsory_tab = self.compulsory_fields()
-        widget_list.append(self.doc_write_compulsory_tab)
+        accordion_widget_list.append(self.doc_write_compulsory_tab)
 
-        # self.doc_write_optional_tab = self.optional_fields()
-        # widget_list.append(self.doc_write_optional_tab)
+        if type == 'Update':
+            self.doc_write_optional_tab = self.optional_fields()
+            accordion_widget_list.append(self.doc_write_optional_tab)
 
-        self.post_accordion = self.widget.accordion(widget_list,3)
+        self.post_accordion = self.widget.accordion(accordion_widget_list,3)
 
         self.post_accordion.set_title(0, 'Compulsory')
         self.post_accordion.selected_index = 0
+        vbox_widget_list.append(self.post_accordion)
 
-        tab_list.append(self.post_accordion)
+        if type == 'Create':
+            desc = 'Create'
+        else :
+            desc = 'Update'
+            self.post_accordion.set_title(1, 'Optional')
+
+
+        post_button = self.widget.button(desc)
+        post_button.on_click(self.on_click_post)
+
+        vbox_widget_list.append(post_button)
+        doc_container= widgets.VBox([vbox_widget_list[0],
+                                     vbox_widget_list[1]])
+        tab_list.append(doc_container)
         title_list.append('Document Details')
         self.doc_write_tab = self.widget.tab(tab_list,title_list)
         display(self.doc_write_tab)
@@ -171,70 +187,89 @@ class Write():
         desc_input = self.widget.text_area_widget(val,desc,2)
         doc_write_widget_list.append(desc_input)
 
-        desc = 'Post'
-        post_button = self.widget.button(desc)
-        post_button.on_click(self.on_click_post)
-        doc_write_widget_list.append(post_button)
+        # desc = 'Post'
+        # post_button = self.widget.button(desc)
+        # post_button.on_click(self.on_click_post)
+        # doc_write_widget_list.append(post_button)
 
         compulsory_container = widgets.VBox([doc_write_widget_list[0],
-                                             doc_write_widget_list[1],
-                                             doc_write_widget_list[2]])
+                                             doc_write_widget_list[1]])
         return compulsory_container
 
     def optional_fields(self):
         doc_write_widget_list= []
 
-        desc = '  :'
-        val = ''
-        title_input = self.widget.text_widget(val,desc)
-        doc_write_widget_list.append(title_input)
+        ver = ''
+        version = ('<h1><u>Version : {0}</u></h1>'.format(ver))
+        version_widget = widgets.HTML(
+                       value = version
+        )
+        doc_write_widget_list.append(version_widget)
 
-        desc = 'Description :'
-        val = ''
-        desc_input = self.widget.text_area_widget(val,desc)
-        doc_write_widget_list.append(desc_input)
-
-        desc = 'Post'
-        post_button = self.widget.button(desc)
-        post_button.on_click(self.on_click_post)
-        doc_write_widget_list.append(post_button)
-
-        optional_container = widgets.VBox([doc_write_widget_list[0],
-                                           doc_write_widget_list[1],
-                                           doc_write_widget_list[2]])
+        optional_container = widgets.VBox([doc_write_widget_list[0]])
         return optional_container
 
     def on_click_load_update(self,button):
         type =self.post_query_container.children[0].value
         id =self.post_query_container.children[1].value
         self.json  = self.json_handler.get_JSON(type,id)
-        self.fill_form()
+
+        if self.json :
+            self.fill_form()
 
     def fill_form(self):
         self.doc_write_compulsory_tab.children[0].value =\
                                         self.json_handler.get_title(self.json)
         self.doc_write_compulsory_tab.children[1].value =\
                                         self.json_handler.get_description(self.json)
+        self.doc_write_optional_tab.children[0].value =\
+                                        self.json_handler.get_version(self.json)
     def on_click_post(self,button):
         create_doc = self.create_tab.children[0].children[0].value
-        parent_id = self.create_tab.children[0].children[1].value
-        title = self.doc_write_tab.children[0].children[0].children[0].value
-        desc = self.doc_write_tab.children[0].children[0].children[1].value
+        id = self.create_tab.children[0].children[1].value
+        title = self.doc_write_tab.children[0].children[0].children[0].children[0].value
+        desc = self.doc_write_tab.children[0].children[0].children[0].children[1].value
 
+        if self.choice == 'Update':
+            current_id = str(id)
+            id = self.get_parent_id()
         if title == '':
             print('Title can not be left empty')
         else:
             if create_doc == 'Project':
                 pass
             elif create_doc == 'Investigation':
-                id = self.investigation_hash(title,desc,parent_id)
+                hash = self.investigation_hash(title,desc,id)
+                type = 'Investigation'
             elif create_doc == 'Study':
-                id = self.study_hash(title,desc,parent_id)
+                type = 'Study'
+                hash = self.study_hash(title,desc,id)
             elif create_doc == 'Assay':
-                id = self.assay_hash(title,desc,parent_id)
+                type = 'Assay'
+                hash = self.assay_hash(title,desc,id)
+            if self.choice == 'Update':
+                id_returned = self.json_handler.post_json(type,hash,self.choice,current_id)
+            else :
+                id_returned = self.json_handler.post_json(type,hash,self.choice)
+
 
 
         # print(id)
+    def get_parent_id(self):
+        doc_type = self.json_handler.get_type(self.json)
+        if doc_type == 'investigations':
+            parent_dict = self.json_handler.get_relationship_projects(self.json)
+        elif doc_type == 'studies':
+            parent_dict = self.json_handler.get_relationship_investigations(self.json)
+        elif doc_type == 'assays':
+            parent_dict = self.json_handler.get_relationship_studies(self.json)
+        id = self.iterate_over_json_list(parent_dict)
+        return id
+
+    def iterate_over_json_list(self,data):
+        for value in data:
+            id = value.get('id')
+        return id
 
     def get_user_id(self):
         self.user_id = self.json_handler.get_user_id()
@@ -253,8 +288,8 @@ class Write():
         investigation['data']['relationships'] = {}
         investigation['data']['relationships']['projects'] = {}
         investigation['data']['relationships']['projects']['data'] = [{'id' : id, 'type' : 'projects'}]
-        id = self.json_handler.post_json(type,investigation)
-        return id
+        # id = self.json_handler.post_json(type,investigation)
+        return investigation
 
     def study_hash(self,title,desc,id):
         type = 'Study'
@@ -268,8 +303,8 @@ class Write():
         study['data']['relationships'] = {}
         study['data']['relationships']['investigation'] = {}
         study['data']['relationships']['investigation']['data'] = {'id' : id, 'type' : 'investigations'}
-        id = self.json_handler.post_json(type,study)
-        return id
+        # id = self.json_handler.post_json(type,study)
+        return study
 
     def assay_hash(self,title,desc,id):
         type = 'Assay'
@@ -286,5 +321,5 @@ class Write():
         assay['data']['relationships'] = {}
         assay['data']['relationships']['study'] = {}
         assay['data']['relationships']['study']['data'] = {'id' : id, 'type' : 'studies'}
-        id = self.json_handler.post_json(type,assay)
-        return id
+        # id = self.json_handler.post_json(type,assay)
+        return assay

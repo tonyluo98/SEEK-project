@@ -189,7 +189,7 @@ class JSON_methods():
         else:
             return []
 
-    def post_json(self,type,hash):
+    def post_json(self,type,hash,post_type,id = None):
         base_url = 'https://sandbox3.fairdomhub.org'
         if type == 'Investigation':
             url = base_url +'/investigations'
@@ -206,7 +206,16 @@ class JSON_methods():
         r = None
         requester = self.new_session(self.session.auth)
         requester.headers.update(self.write_headers)
-        r = requester.post(url, json=hash)
+        # print(url)
+        # print(post_type)
+
+        if post_type == 'Create':
+            r = requester.post(url, json=hash)
+        else :
+            url = url +'/'+id
+            # print(url)
+            r = requester.put(url, json=hash)
+
         valid = self.check_webpage_status(r)
         if valid:
             r.raise_for_status()
@@ -214,8 +223,9 @@ class JSON_methods():
             # print()
             # print(r.json())
             json_posted =r.json()
-            print(json_posted)
+            # print(json_posted)
             id = json_posted['data']['id']
+
             return id
         else:
             # return []
@@ -328,6 +338,9 @@ class JSON_methods():
 
     def get_data(self,json):
         return json['data']
+
+    def get_type(self,json):
+        return json['data']['type']
 
     def get_title(self,json):
         # print(data.attributes.title)
@@ -446,6 +459,9 @@ class JSON_methods():
 
     def get_person_name(self,json):
         return json['data']['attributes']['title']
+
+    def get_version(self,json):
+        return json['jsonapi']['version']
 
     def get_blob(self,json):
         return json['data']['attributes']['content_blobs']

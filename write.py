@@ -41,6 +41,7 @@ class Write():
         self.post_query_container = None
         self.doc_write_compulsory_tab = None
         self.doc_write_optional_tab = None
+        self.doc_write_data_file_tab = None
 
         self.post_accordion = None
         # self.json
@@ -148,17 +149,20 @@ class Write():
         self.doc_write_compulsory_tab = self.compulsory_fields()
         accordion_widget_list.append(self.doc_write_compulsory_tab)
 
-        # if type == 'Update':
+        self.doc_write_data_file_tab = self.data_file_fields()
+        accordion_widget_list.append(self.doc_write_data_file_tab)
+
         self.doc_write_optional_tab = self.optional_fields()
         accordion_widget_list.append(self.doc_write_optional_tab)
 
         self.post_accordion = self.widget.accordion(accordion_widget_list,3)
 
         self.post_accordion.set_title(0, 'Compulsory')
+        self.post_accordion.set_title(1, 'Data File')
+        self.post_accordion.set_title(2, 'Optional')
         self.post_accordion.selected_index = 0
         vbox_widget_list.append(self.post_accordion)
 
-        self.post_accordion.set_title(1, 'Optional')
 
         if type == 'Create':
             desc = 'Create'
@@ -189,14 +193,68 @@ class Write():
         desc_input = self.widget.text_area_widget(val,desc,2)
         doc_write_widget_list.append(desc_input)
 
-        # desc = 'Post'
-        # post_button = self.widget.button(desc)
-        # post_button.on_click(self.on_click_post)
-        # doc_write_widget_list.append(post_button)
 
         compulsory_container = widgets.VBox([doc_write_widget_list[0],
                                              doc_write_widget_list[1]])
         return compulsory_container
+
+    def data_file_fields(self):
+        doc_write_widget_list= []
+
+        desc = 'URL :'
+        val = ''
+        url_input = self.widget.text_widget(val,desc,2)
+        doc_write_widget_list.append(url_input)
+
+        desc = 'Filename :'
+        val = ''
+        filename_input = self.widget.text_widget(val,desc,2)
+        doc_write_widget_list.append(filename_input)
+
+        desc = 'Licences :'
+        options = ['CC0-1.0','CC-BY-4.0','CC-BY-SA-4.0','ODC-BY-1.0','ODbL-1.0',
+                   'ODC-PDDL-1.0','notspecified','other-at','other-open',
+                   'other-pd','AFL-3.0','Against-DRM','CC-BY-NC-4.0','DSL',
+                   'FAL-1.3','GFDL-1.3-no-cover-texts-no-invariant-sections',
+                   'geogratis','hesa-withrights','localauth-withrights',
+                   'MirOS','NPOSL-3.0','OGL-UK-1.0','OGL-UK-2.0','OGL-UK-3.0',
+                   'OGL-Canada-2.0','OSL-3.0','dli-model-use','Talis',
+                   'ukclickusepsi','ukcrown-withrights','ukpsi']
+        url_input = self.widget.select(desc,options,1,4)
+        doc_write_widget_list.append(url_input)
+
+        desc = 'Assay ID :'
+        val = 1
+        max = sys.maxsize
+        min  =1
+        assay_id_input = self.widget.bounded_int_text_widget(val,desc,False,min,max)
+        doc_write_widget_list.append(assay_id_input)
+
+        desc = 'Add :'
+        add_button = self.widget.button(desc)
+        add_button.on_click(self.on_click_add)
+        doc_write_widget_list.append(add_button)
+
+        desc = 'Assay list:'
+        int_options = []
+        default_value =[]
+        assay_ids_select = self.widget.select_multiple(0,int_options,default_value,3,desc)
+        doc_write_widget_list.append(assay_ids_select)
+
+        desc = 'Remove :'
+        remove_button = self.widget.button(desc)
+        remove_button.on_click(self.on_click_remove)
+        doc_write_widget_list.append(remove_button)
+
+
+        data_file_info_container = widgets.VBox([doc_write_widget_list[0],
+                                                 doc_write_widget_list[1],
+                                                 doc_write_widget_list[2],
+                                                 doc_write_widget_list[3],
+                                                 doc_write_widget_list[4],
+                                                 doc_write_widget_list[5],
+                                                 doc_write_widget_list[6]])
+        return data_file_info_container
 
     def optional_fields(self):
         doc_write_widget_list= []
@@ -222,9 +280,32 @@ class Write():
         self.json  = self.json_handler.get_JSON(type,id)
 
         if self.json :
-            self.fill_form()
+            self.fill_form(type)
 
-    def fill_form(self):
+    def on_click_add(self,button):
+        id =self.doc_write_data_file_tab.children[3].value
+        options = self.doc_write_data_file_tab.children[5].options
+        # remove duplicates
+        options = list(options)
+        options.append(id)
+        options = list(dict.fromkeys(options))
+        # options.remove('None')
+        self.doc_write_data_file_tab.children[5].options = options
+
+
+    def on_click_remove(self,button):
+        id =self.doc_write_data_file_tab.children[5].value
+        id = list(id)
+        id = id[0]
+        options = self.doc_write_data_file_tab.children[5].options
+        options = list(options)
+
+        options.remove(id)
+        # if not options:
+        #     options.append('None')
+        self.doc_write_data_file_tab.children[5].options = options
+
+    def fill_form(self,type):
         self.doc_write_compulsory_tab.children[0].value =\
                                         self.json_handler.get_title(self.json)
         self.doc_write_compulsory_tab.children[1].value =\
@@ -233,18 +314,41 @@ class Write():
                                         self.json_handler.get_version(self.json)
         self.doc_write_optional_tab.children[1].value =\
                                         self.json_handler.get_public_access(self.json)
+
+        if type == 'Data File':
+            blob = self.json_handler.get_blob(self.json)
+            self.doc_write_data_file_tab.children[0].value =\
+                                            self.json_handler.get_link(blob)
+            self.doc_write_data_file_tab.children[1].value =\
+                                            self.json_handler.get_filename(blob)
+            self.doc_write_data_file_tab.children[2].value =\
+                                            self.json_handler.get_license(self.json)
     def on_click_post(self,button):
         create_doc = self.create_tab.children[0].children[0].value
         id = self.create_tab.children[0].children[1].value
         title = self.doc_write_tab.children[0].children[0].children[0].children[0].value
         desc = self.doc_write_tab.children[0].children[0].children[0].children[1].value
         access = self.doc_write_optional_tab.children[1].value
+        url = self.doc_write_data_file_tab.children[0].value
+        filename =self.doc_write_data_file_tab.children[1].value
+        license = self.doc_write_data_file_tab.children[2].value
         if self.choice == 'Update':
             current_id = str(id)
             id = self.get_parent_id()
+        valid = True
         if title == '':
+            valid = False
             print('Title can not be left empty')
-        else:
+
+        if create_doc == 'Data File':
+            if url == '':
+                valid = False
+                print('URL can not be left empty')
+            if filename == '':
+                valid = False
+                print('Filename can not be left empty')
+
+        if valid == True:
             if create_doc == 'Project':
                 pass
             elif create_doc == 'Investigation':
@@ -256,6 +360,9 @@ class Write():
             elif create_doc == 'Assay':
                 type = 'Assay'
                 hash = self.assay_hash(title,desc,access,id)
+            elif create_doc == 'Data File':
+                type = 'Data File'
+                hash = self.data_file_hash(title,desc,access,id,license,url,filename)
             if self.choice == 'Update':
                 id_returned = self.json_handler.post_json(type,hash,self.choice,current_id)
             else :
@@ -270,6 +377,8 @@ class Write():
             parent_dict = self.json_handler.get_relationship_investigations(self.json)
         elif doc_type == 'assays':
             parent_dict = self.json_handler.get_relationship_studies(self.json)
+        elif doc_type == 'data_files':
+            parent_dict = self.json_handler.get_relationship_projects(self.json)
         id = self.iterate_over_json_list(parent_dict)
         return id
 
@@ -301,7 +410,7 @@ class Write():
         # id = self.json_handler.post_json(type,investigation)
         return investigation
 
-    def study_hash(self,title,desc,id,access):
+    def study_hash(self,title,desc,access,id):
         type = 'Study'
         study = {}
         study['data'] = {}
@@ -319,7 +428,7 @@ class Write():
         # id = self.json_handler.post_json(type,study)
         return study
 
-    def assay_hash(self,title,desc,id,access):
+    def assay_hash(self,title,desc,access,id):
         type = 'Assay'
         assay = {}
         assay['data'] = {}
@@ -338,3 +447,24 @@ class Write():
         assay['data']['relationships']['study']['data'] = {'id' : id, 'type' : 'studies'}
         # id = self.json_handler.post_json(type,assay)
         return assay
+
+    def data_file_hash(self,title,desc,access,id,license,url,filename):
+        data_file = {}
+        data_file['data'] = {}
+        data_file['data']['type'] = 'data_files'
+        data_file['data']['attributes'] = {}
+        data_file['data']['attributes']['title'] = title
+        data_file['data']['attributes']['description'] =desc
+        data_file['data']['attributes']['license'] = license
+        data_file['data']['attributes']['policy']= {}
+        data_file['data']['attributes']['policy']['access'] = access
+        data_file['data']['relationships'] = {}
+        data_file['data']['relationships']['projects'] = {}
+        data_file['data']['relationships']['projects']['data'] = [{'id' : id, 'type' : 'projects'}]
+
+        remote_blob = {'url' : url, 'original_filename':filename}
+        data_file['data']['attributes']['content_blobs'] = [remote_blob]
+        return(data_file)
+
+    def link_data_files_to_assays(self):
+        pass

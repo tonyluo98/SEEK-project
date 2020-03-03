@@ -12,7 +12,6 @@ from query import Query
 from search import Search
 from write import Write
 from json_methods import JSON_methods
-from requester import Requester
 
 
 from pandas.io.json import json_normalize

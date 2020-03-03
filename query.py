@@ -37,12 +37,6 @@ class Query():
         Sets up varaiables for class
         Contains details on what the search items are
         Gets all the user names and IDs of all FAIRDOM users
-        '''
-
-        '''
-        Will program ability to get json of item in query so that search wont
-        need to Wait
-        use multithreading??
 
         '''
         self.widget = Widget()
@@ -79,6 +73,10 @@ class Query():
         self.get_all_FAIRDOM_user_names_and_ID()
 
     def set_json_handler(self,json_handler):
+        '''
+        Sets the json_handler to the most recent changed version
+        This is so that the requests made are the most recent type
+        '''
         self.json_handler = json_handler
         self.call_search.set_json_handler(json_handler)
 
@@ -97,15 +95,25 @@ class Query():
         self.list_of_user_names = temp_list
 
     def get_dict_of_user_names_and_ids(self):
+        '''
+        RETURNS Dictionary of names and ids
+        '''
         return self.dict_of_users_and_ids
     def get_list_of_user_names(self):
+        '''
+        RETURNS List of names
+        '''
         return self.list_of_user_names
     def get_list_of_user_ids(self):
+        '''
+        RETURNS List of ids
+        '''
         return self.list_of_user_ids
 
     def read_settings_file(self):
         '''
         Get the saved settings for the search options
+        Gets the information from a file named 'search_settings.txt'
         '''
         fn = 'search_settings.txt'
         try:
@@ -129,6 +137,7 @@ class Query():
     def save_settings(self):
         '''
         Save the search options to a file
+        Options are taken from the widgets
         '''
         self.get_updated_setting_options()
         fn = 'search_settings.txt'
@@ -309,6 +318,10 @@ class Query():
         elif button.description == 'Save Settings':
             self.save_settings()
     def on_click_search(self, button):
+        '''
+        When search button is pressed, the item to search for is saved
+        The item is then searched
+        '''
         list_of_names = self.list_of_user_names
         list_of_ids = self.list_of_user_ids
         topic = self.get_topic()
@@ -319,6 +332,9 @@ class Query():
         self.call_search.search(list_of_names,list_of_ids,topic,settings_dict,id,type)
 
     def on_click_convert(self, button):
+        '''
+        Converts widget buttons ( with info to be displayed ) to text format
+        '''
         tab_index = self.query_tab.selected_index
         title = self.query_tab._titles.get(str(tab_index))
         clear_output()
@@ -333,7 +349,8 @@ class Query():
             print('ID search        : {0}'.format(id))
     def document_tab(self):
         '''
-        Creates tab relating to searching for a working document
+        Creates widgets relating to searching for a working document
+        RETURNS container of widgets
         '''
 
         doc_select_widget_list = []
@@ -370,7 +387,8 @@ class Query():
 
     def person_tab(self):
         '''
-        Creates tab relating to searching for a person
+        Creates widgets relating to searching for a person
+        RETURNS container of widgets
         '''
         #Get the list of users sorted in alphbetical order and removes
         #duplicates
@@ -415,6 +433,10 @@ class Query():
         return people_search_container
 
     def general_setting_widgets(self):
+        '''
+        Creates widgets relating to setting options
+        RETURNS container of widgets
+        '''
         setting_option_widget_list = []
         desc='Display Title:'
         value = self.settings_dict.get('display_title')
@@ -454,6 +476,10 @@ class Query():
         return column
 
     def relationship_setting_widgets(self):
+        '''
+        Creates widgets relating to relationship setting options
+        RETURNS container of widgets
+        '''
         setting_option_widget_list = []
         desc='Display Creator:'
         value = self.settings_dict.get('display_creators')
@@ -558,7 +584,6 @@ class Query():
                                setting_option_widget_list[15],
                                setting_option_widget_list[16],
                                ])
-
 
         return column
 
@@ -678,7 +703,10 @@ class Query():
         self.settings_dict['display_project_programmes'] = value
 
     def get_query_tab_children_settings_values(self,setting):
-
+        '''
+        Get the newest values of the setting options from the widgets in the
+        settings tab
+        '''
         if setting == 'display_title':
             return self.query_tab.children[2].children[0].children[0].children[0].children[0].value
         elif setting == 'display_description':
@@ -728,6 +756,10 @@ class Query():
             return 'Error'
 
     def get_id_to_search(self):
+        '''
+        Get the ID to search based on the current selected tab
+        RETURNS ID
+        '''
         current_index = self.query_tab.selected_index
         topic = self.query_tab._titles.get(str(current_index))
         if topic == 'Document query':
@@ -737,6 +769,10 @@ class Query():
         return id
 
     def get_type_to_search(self):
+        '''
+        Get the TYPE to search based on the current selected tab
+        RETURNS TYPE
+        '''
         current_index = self.query_tab.selected_index
         topic = self.query_tab._titles.get(str(current_index))
         if topic == 'Document query':
@@ -746,11 +782,19 @@ class Query():
         return type
 
     def get_topic(self):
+        '''
+        Get the topic to search based on the current selected tab
+        RETURNS topic
+        '''
         current_index = self.query_tab.selected_index
         topic = self.query_tab._titles.get(str(current_index))
         return topic
 
     def get_setting_options_dict(self):
+        '''
+        get the settings
+        RETURNS settings
+        '''
         self.get_updated_setting_options()
         return self.settings_dict
 

@@ -59,7 +59,7 @@ class Widget():
         )
         return widget
 
-    def bounded_int_text_widget(self,val,desc,boolean,min,max):
+    def bounded_int_text_widget(self,val,desc,boolean,min ,max ):
         widget = widgets.BoundedIntText(
             value=val,
             description=desc,
@@ -213,7 +213,7 @@ class Widget():
         )
         return widget
 
-    def select(self,desc,options,increased_width = 1):
+    def select(self,desc,options,increased_width = 1,rows = 2):
         if increased_width == 0:
             layout = self.layout0
         elif increased_width == 1:
@@ -226,7 +226,7 @@ class Widget():
             layout = layout,
             options= options,
             value=options[0],
-            rows=2,
+            rows=rows,
             description=desc,
             disabled=False
         )

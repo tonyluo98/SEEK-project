@@ -668,27 +668,17 @@ class Search():
         '''
         self.current_blob = self.json_handler.get_blob(self.json)
         link = self.json_handler.get_link(self.current_blob)
-
         if self.settings_dict.get('display_model_name') =='True':
             filename = self.json_handler.get_filename(self.current_blob)
             display(HTML('<h4>File Name: {0}</h4>'.format(filename)))
             self.model_name = filename
         # display(filename)
         if self.settings_dict.get('display_model') =='True':
-            headers = { "Accept": "text/csv" }
-            r = requests.get(link, headers=headers, params={'sheet':'1'})
-            if r.status_code == 200:
-                r.raise_for_status()
-                #gets spreadsheet from data file
-                csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
-                display(csv)
-                self.csv = csv
-            else :
-                print('Can not display file ')
-                print('Reason could be : permission is not allowed ')
-                print('                  file is not a excel sheet ')
-
-
+            self.csv = self.json_handler.get_csv_sheet(link)
+            try:
+                display(self.csv)
+            except Exception as e:
+                print('Could not display csv')
 
         if self.settings_dict.get('display_download_link') == 'True':
             self.download_link()

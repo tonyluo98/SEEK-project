@@ -202,10 +202,40 @@ class JSON_methods():
             json_posted =r.json()
             id = json_posted['data']['id']
             print('SUCCESSFULLY POSTED')
+            if post_type == 'Create':
+                url = url +'/'+id
+                print(url)
+            else :
+                print(url)
             # Returns ID of posted JSON
             return id
         else:
-            pass
+            return None
+
+    def get_csv_sheet(self,link):
+        headers = { "Accept": "text/csv" }
+        # Create a new session
+        if self.session == None:
+            requester = self.new_session()
+        else :
+            requester = self.new_session(self.session.auth)
+        # Get JSON of that type and id
+        r = requester.get(link, headers=headers, params={'sheet':'1'})
+        # Close session
+        r.close()
+        # Check response
+        valid = self.check_webpage_status(r)
+        if valid:
+            r.raise_for_status()
+            csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
+            return csv
+        else:
+            print('invalid for {}'.format(type))
+            print('Can not display file ')
+            print('Reason could be : permission is not allowed ')
+            print('                  file is not a excel sheet ')
+
+
 
     def get_user_id(self):
         '''
@@ -594,6 +624,12 @@ class JSON_methods():
     def get_link(self,blob):
         '''
         RETURNS 'link' of json
+        '''
+        return blob[0]['link']
+
+    def get_url(self,blob):
+        '''
+        RETURNS 'url' of json
         '''
         return blob[0]['url']
 

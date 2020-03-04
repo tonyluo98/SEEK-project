@@ -107,7 +107,7 @@ class Write():
         title_list =[]
         post_query_widget_list= []
         desc = desc
-        options = ['Project', 'Investigation', 'Study', 'Assay', 'Data File']
+        options = ['Investigation', 'Study', 'Assay', 'Data File']
         val = options[0]
         create_options_dropdown = self.widget.dropdown_widget(
                                                  options,val,desc)
@@ -121,9 +121,9 @@ class Write():
         min=1
         max = sys.maxsize
         val = min
-        parent_id_widget = self.widget.bounded_int_text_widget(val,desc,bool,
+        id_widget = self.widget.bounded_int_text_widget(val,desc,bool,
                                                              min ,max)
-        post_query_widget_list.append(parent_id_widget)
+        post_query_widget_list.append(id_widget)
         if type == 'Create':
             self.post_query_container = widgets.VBox([post_query_widget_list[0],
                                                       post_query_widget_list[1]])
@@ -318,7 +318,7 @@ class Write():
         if type == 'Data File':
             blob = self.json_handler.get_blob(self.json)
             self.doc_write_data_file_tab.children[0].value =\
-                                            self.json_handler.get_link(blob)
+                                            self.json_handler.get_url(blob)
             self.doc_write_data_file_tab.children[1].value =\
                                             self.json_handler.get_filename(blob)
             self.doc_write_data_file_tab.children[2].value =\
@@ -372,6 +372,10 @@ class Write():
                 id_returned = self.json_handler.post_json(type,hash,self.choice,current_id)
             else :
                 id_returned = self.json_handler.post_json(type,hash,self.choice)
+            if id_returned != None:
+                if create_doc =='Data File':
+                    self.link_data_files_to_assays(id_returned)
+
 
         # print(id)
     def get_parent_id(self):
@@ -446,7 +450,6 @@ class Write():
         assay['data']['attributes']['description'] =desc
         assay['data']['attributes']['policy']= {}
         assay['data']['attributes']['policy']['access'] = access
-        # assay['data']['attributes']['policy'] = {'access':'view', 'permissions': []}
         assay['data']['attributes']['assay_class'] = {'key' : 'EXP'}
         assay['data']['attributes']['assay_type'] = {'uri' : 'http://jermontology.org/ontology/JERMOntology#Metabolomics'}
         assay['data']['attributes']['technology_type'] = {'uri' : 'http://jermontology.org/ontology/JERMOntology#Electrophoresis'}
@@ -474,5 +477,25 @@ class Write():
         data_file['data']['attributes']['content_blobs'] = [remote_blob]
         return(data_file)
 
-    def link_data_files_to_assays(self):
-        pass
+    def link_data_files_to_assays(self,id):
+        assay_ids = self.doc_write_data_file_tab.children[5].options
+        # assay['data']['relationships']['data_files'] = {}
+        # dict_of_
+        for item in assay_ids:
+            assay_json = self.json_handler.get_JSON('Assay',item)
+            assay_data_files =  self.json_handler.get_relationship_data_files(assay_json)
+            id_list = self.iterate_over_json_list(assay_data_files)
+            # Create a dict so that it can check if that id already exists
+            id_dict = {id_list[item_ID]: 'id' for item_ID in range(0, len(id_list))}
+            assay = {}
+            assay['data'] = {}
+            assay['data']['type'] = 'assays'
+            assay['data']['relationships'] = {}
+            assay['data']['relationships']['data_files'] = {}
+
+            if item not in id_dict:
+                new_relation_data_file = {}
+                new_relation_data_file = {'id' : id, 'type' : 'data_files'}
+                assay_data_files.append(new_relation_data_file)
+                assay['data']['relationships']['data_files']['data'] = assay_data_files
+                id_returned = self.json_handler.post_json('Assay',assay,'Update',str(item))

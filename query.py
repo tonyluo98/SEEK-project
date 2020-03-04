@@ -220,6 +220,56 @@ class Query():
         self.settings_dict['display_project_institutions'] = 'True'
         self.settings_dict['display_project_programmes'] = 'True'
 
+    def change_settings_quick(self,value):
+        '''
+        Default settings for the search options
+        '''
+
+        self.settings_dict['display_title'] = value
+        self.query_tab.children[2].children[0].children[0].children[0].children[0].value = value
+        self.settings_dict['display_description'] = value
+        self.query_tab.children[2].children[0].children[0].children[0].children[1].value = value
+        self.settings_dict['display_model_name'] = value
+        self.query_tab.children[2].children[0].children[0].children[0].children[2].value = value
+        self.settings_dict['display_model'] = value
+        self.query_tab.children[2].children[0].children[0].children[0].children[3].value = value
+        self.settings_dict['display_download_link'] = value
+        self.query_tab.children[2].children[0].children[0].children[0].children[4].value = value
+        self.settings_dict['display_creators'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[0].value = value
+        self.settings_dict['display_submitter'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[1].value = value
+        self.settings_dict['display_related_people'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[2].value = value
+        self.settings_dict['display_related_projects'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[3].value = value
+        self.settings_dict['display_related_investigations'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[4].value = value
+        self.settings_dict['display_related_studies'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[5].value = value
+        self.settings_dict['display_related_assays'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[6].value = value
+        self.settings_dict['display_related_data_files'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[7].value = value
+        self.settings_dict['display_related_publications'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[8].value = value
+        self.settings_dict['display_related_events'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[9].value = value
+        self.settings_dict['display_project_members'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[10].value = value
+        self.settings_dict['display_project_administrators'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[11].value = value
+        self.settings_dict['display_project_asset_housekeepers'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[12].value = value
+        self.settings_dict['display_project_asset_gatekeepers'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[13].value = value
+        self.settings_dict['display_project_organisms'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[14].value = value
+        self.settings_dict['display_project_institutions'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[15].value = value
+        self.settings_dict['display_project_programmes'] = value
+        self.query_tab.children[2].children[0].children[0].children[1].children[16].value = value
+
     def change_made_name_search(self, change):
         '''
         Deals with any updates in the combo box widget for name in person tab
@@ -347,6 +397,20 @@ class Query():
         elif tab_index == 1 :
             id =  self.query_tab.children[tab_index].children[0].value
             print('ID search        : {0}'.format(id))
+
+    def on_click_select_all(self, button):
+        current_index = self.query_tab.selected_index
+        topic = self.query_tab._titles.get(str(current_index))
+        if topic == 'Search settings':
+            self.change_settings_quick('True')
+
+    def on_click_deselect_all(self, button):
+        current_index = self.query_tab.selected_index
+        topic = self.query_tab._titles.get(str(current_index))
+        if topic == 'Search settings':
+            self.change_settings_quick('False')
+
+
     def document_tab(self):
         '''
         Creates widgets relating to searching for a working document
@@ -595,15 +659,22 @@ class Query():
         desc='Load Settings'
         load_settings_option = self.widget.button(desc)
         settings_widget_list.append(load_settings_option)
+        load_settings_option.on_click(self.on_click_setting_load_save)
 
         desc='Save Settings'
         save_settings_option = self.widget.button(desc)
         settings_widget_list.append(save_settings_option)
-
-
-        load_settings_option.on_click(self.on_click_setting_load_save)
         save_settings_option.on_click(self.on_click_setting_load_save)
 
+        desc='Select all :'
+        select_all_button =self.widget.button(desc)
+        settings_widget_list.append(select_all_button)
+        select_all_button.on_click(self.on_click_select_all)
+
+        desc='Deselect all :'
+        deselect_all_button =self.widget.button(desc)
+        settings_widget_list.append(deselect_all_button)
+        deselect_all_button.on_click(self.on_click_deselect_all)
 
         widget_list = []
         general_setting_options_list = self.general_setting_widgets()
@@ -624,7 +695,9 @@ class Query():
 
         #right column widgets are for saving and loading the options
         right_column = widgets.VBox([settings_widget_list[0],
-                                    settings_widget_list[1]])
+                                     settings_widget_list[1],
+                                     settings_widget_list[2],
+                                     settings_widget_list[3]])
 
         #formatted in two columns
         settings_container = widgets.HBox([left_column,right_column])

@@ -323,6 +323,11 @@ class Write():
                                             self.json_handler.get_filename(blob)
             self.doc_write_data_file_tab.children[2].value =\
                                             self.json_handler.get_license(self.json)
+            assays_list = self.json_handler.get_relationship_assays(self.json)
+            assay_ids= self.iterate_over_json_list(assays_list)
+
+            self.doc_write_data_file_tab.children[5].options = assay_ids
+
     def on_click_post(self,button):
         create_doc = self.create_tab.children[0].children[0].value
         id = self.create_tab.children[0].children[1].value
@@ -383,9 +388,12 @@ class Write():
         return id
 
     def iterate_over_json_list(self,data):
+        ids = []
         for value in data:
-            id = value.get('id')
-        return id
+            ids.append(value.get('id'))
+        return ids
+
+
 
     def get_user_id(self):
         self.user_id = self.json_handler.get_user_id()

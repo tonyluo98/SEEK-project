@@ -595,7 +595,7 @@ class JSON_methods():
         '''
         RETURNS 'link' of json
         '''
-        return blob[0]['link']
+        return blob[0]['url']
 
     def get_filename(self,blob):
         '''

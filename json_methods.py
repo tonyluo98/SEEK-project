@@ -181,45 +181,49 @@ class JSON_methods():
             print('NEW TYPE UNEXPECTED')
         # Requires user login details
         if self.session == None:
-            self.auth_request()
-        # Set Headers for upload
-        r = None
-        requester = self.new_session(self.session.auth)
-        requester.headers.update(self.write_headers)
-        # POST command for putting new data
-        # PUT command for updating data
-        if post_type == 'Create':
-            r = requester.post(url, json=hash)
+            print('Login details required')
         else :
-            url = url +'/'+id
-            r = requester.put(url, json=hash)
-        # Check valid
-        # print(url)
-        # print(hash)
-        valid = self.check_webpage_status(r)
-        if valid:
-            r.raise_for_status()
-            json_posted =r.json()
-            id = json_posted['data']['id']
-            print('SUCCESSFULLY POSTED')
+            # Set Headers for upload
+            r = None
+            requester = self.new_session(self.session.auth)
+            requester.headers.update(self.write_headers)
+            # POST command for putting new data
+            # PUT command for updating data
             if post_type == 'Create':
-                url = url +'/'+id
-                print(url)
+                r = requester.post(url, json=hash)
             else :
-                print(url)
-            # Returns ID of posted JSON
-            return id
-        else:
-            return None
+                url = url +'/'+id
+                r = requester.put(url, json=hash)
+            # Check valid
+            # print(url)
+            # print(hash)
+            valid = self.check_webpage_status(r)
+            if valid:
+                r.raise_for_status()
+                json_posted =r.json()
+                id = json_posted['data']['id']
+                print('SUCCESSFULLY POSTED')
+                if post_type == 'Create':
+                    url = url +'/'+id
+                    print(url)
+                else :
+                    print(url)
+                # Returns ID of posted JSON
+                return id
+            else:
+                return None
 
     def get_csv_sheet(self,link):
+        '''
+        Gets the excel sheet and converts to csvv and returns the first sheet
+        '''
         headers = { "Accept": "text/csv" }
         # Create a new session
         if self.session == None:
             requester = self.new_session()
         else :
             requester = self.new_session(self.session.auth)
-        # Get JSON of that type and id
+        # get excel sheet
         r = requester.get(link, headers=headers, params={'sheet':'1'})
         # Close session
         r.close()
@@ -227,6 +231,7 @@ class JSON_methods():
         valid = self.check_webpage_status(r)
         if valid:
             r.raise_for_status()
+            # convert to csv
             csv = pd.read_csv(io.StringIO(r.content.decode('utf-8')))
             return csv
         else:
@@ -234,8 +239,6 @@ class JSON_methods():
             print('Can not display file ')
             print('Reason could be : permission is not allowed ')
             print('                  file is not a excel sheet ')
-
-
 
     def get_user_id(self):
         '''
@@ -381,6 +384,36 @@ class JSON_methods():
             return ''
         else :
             return desc
+
+    def get_assay_class(self,json):
+        '''
+        RETURNS 'assay_class' of JSON [data]['attributes']
+        '''
+        return json['data']['attributes']['assay_class']
+
+    def get_assay_type(self,json):
+        '''
+        RETURNS 'assay_type' of JSON [data]['attributes']
+        '''
+        return json['data']['attributes']['assay_type']
+
+    def get_assay_type_uri(self,json):
+        '''
+        RETURNS 'assay_type' of JSON [data]['attributes']
+        '''
+        return json['data']['attributes']['assay_type']['uri']
+
+    def get_assay_tech_type(self,json):
+        '''
+        RETURNS 'technology_type' of JSON [data]['attributes']
+        '''
+        return json['data']['attributes']['technology_type']
+
+    def get_assay_tech_type_uri(self,json):
+        '''
+        RETURNS 'technology_type' of JSON [data]['attributes']
+        '''
+        return json['data']['attributes']['technology_type']['uri']
 
     def get_relationship_creators(self,json):
         '''
@@ -570,6 +603,7 @@ class JSON_methods():
             return True
         else:
             return False
+
     def check_policy_exists(self,json):
         '''
         Check if a relation exists in the JSON
@@ -631,13 +665,22 @@ class JSON_methods():
         '''
         RETURNS 'url' of json
         '''
-        return blob[0]['url']
+        try:
+            url = blob[0]['url']
+            if url == None :
+                url = ''
+            return url
+        except Exception as e:
+
+            url = ''
+            return url
 
     def get_filename(self,blob):
         '''
         RETURNS 'original_filename' of json
         '''
         return blob[0]['original_filename']
+
     def get_license(self,json):
         '''
         RETURNS 'license' of json['data']['attributes']

@@ -22,8 +22,8 @@ from call_search import Call_Search
 
 class Query():
     '''
-    Class used to search/browse data on the FairdomHub website
-    (https://www.fairdomhub.org)
+    Class used to set search data for a file on the FAIRDOMHUB website :
+                (https://www.fairdomhub.org)
 
     To use :
         import seek_library as s
@@ -75,7 +75,7 @@ class Query():
     def set_json_handler(self,json_handler):
         '''
         Sets the json_handler to the most recent changed version
-        This is so that the requests made are the most recent type
+        This allows users to login and access private data
         '''
         self.json_handler = json_handler
         self.call_search.set_json_handler(json_handler)
@@ -194,7 +194,6 @@ class Query():
         '''
         Default settings for the search options
         '''
-
         self.settings_dict['display_title'] = 'True'
         self.settings_dict['display_description'] = 'True'
         self.settings_dict['display_model_name'] = 'True'
@@ -208,10 +207,8 @@ class Query():
         self.settings_dict['display_related_studies'] = 'True'
         self.settings_dict['display_related_assays'] = 'True'
         self.settings_dict['display_related_data_files'] = 'True'
-
         self.settings_dict['display_related_publications'] = 'True'
         self.settings_dict['display_related_events'] = 'True'
-
         self.settings_dict['display_project_members'] = 'True'
         self.settings_dict['display_project_administrators'] = 'True'
         self.settings_dict['display_project_asset_housekeepers'] = 'True'
@@ -222,9 +219,8 @@ class Query():
 
     def change_settings_quick(self,value):
         '''
-        Default settings for the search options
+        Set all settings value to one value
         '''
-
         self.settings_dict['display_title'] = value
         self.query_tab.children[2].children[0].children[0].children[0].children[0].value = value
         self.settings_dict['display_description'] = value
@@ -399,17 +395,22 @@ class Query():
             print('ID search        : {0}'.format(id))
 
     def on_click_select_all(self, button):
+        '''
+        Sets all the settings to be true
+        '''
         current_index = self.query_tab.selected_index
         topic = self.query_tab._titles.get(str(current_index))
         if topic == 'Search settings':
             self.change_settings_quick('True')
 
     def on_click_deselect_all(self, button):
+        '''
+        Sets all the settings to be False
+        '''
         current_index = self.query_tab.selected_index
         topic = self.query_tab._titles.get(str(current_index))
         if topic == 'Search settings':
             self.change_settings_quick('False')
-
 
     def document_tab(self):
         '''

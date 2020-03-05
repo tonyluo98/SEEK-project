@@ -30,6 +30,10 @@ To run
 x= s.SEEK()
 '''
 class Write():
+    '''
+    Class handles posting json data to the SEEK database via FAIRDOM api
+    Can either post new files or update existing ones
+    '''
     def __init__(self,json_handler):
         self.json_handler = json_handler
         self.json = None
@@ -40,29 +44,41 @@ class Write():
         self.parent_id = None
         self.post_query_container = None
         self.doc_write_compulsory_tab = None
-        self.doc_write_optional_tab = None
+        self.doc_write_assay_tab = None
         self.doc_write_data_file_tab = None
-
+        self.doc_write_optional_tab = None
         self.post_accordion = None
         # self.json
         self.choice_button = None
         self.choice_confirm_button = None
         self.choice = None
+        self.lock = False
     def set_json_handler(self,json_handler):
+        '''
+        Sets the json handler so that if there exists login details, it can be used
+        '''
         self.json_handler = json_handler
     def post_choice(self):
+        '''
+        Displays a option menu that lets the user decide to update / create a
+        file
+        '''
+        # Choice option toggle button
         options = ['Create','Update']
         desc = 'Type'
         val = options[0]
         self.choice_button = self.widget.toggle_with_options_button(desc,val,options)
         display(self.choice_button)
+        # Confirmation button
         desc = 'Select'
         self.choice_confirm_button = self.widget.button(desc)
         self.choice_confirm_button.on_click(self.on_click_select)
         display(self.choice_confirm_button)
 
-
     def on_click_select(self,button):
+        '''
+        Sets the choice made by user between Create / Update
+        '''
         self.choice = self.choice_button.value
         clear_output()
         if self.choice == 'Create':
@@ -71,44 +87,37 @@ class Write():
             self.update()
 
     def create(self):
-        # self.get_user_id()
-
+        '''
+        Sets tab for creating a json
+        '''
         self.user_id =0
         if self.user_id != None:
             desc = 'Create :'
             type = 'Create'
-
             self.post_tab_creation(desc,type)
             self.doc_write(type)
 
     def update(self):
-        # self.get_user_id()
-
+        '''
+        Sets tab for updating a json
+        '''
         self.user_id =0
         if self.user_id != None:
             desc = 'Update :'
             type = 'Update'
             self.post_tab_creation(desc,type)
-
             self.doc_write(type)
-
-        # title = 'test: 1 via api'
-        # desc = 'test 1 via api at making a investigation'
-        # id = 2
-        # id = self.investigation_hash(title,desc,id)
-        # title = 'test: 1 via api'
-        # desc = 'test 1 via api at making a study'
-        # id = self.study_hash(title,desc,id)
-        # title = 'test: 1 via api'
-        # desc = 'test 1 via api at making a assay'
-        # id = self.assay_hash(title,desc,id)
     def post_tab_creation(self,desc,type):
+        '''
+        Tab to get details for the file to be uploaded / created
+        '''
         tab_list = []
         title_list =[]
         post_query_widget_list= []
         desc = desc
         options = ['Investigation', 'Study', 'Assay', 'Data File']
         val = options[0]
+        # widget for type of doc
         create_options_dropdown = self.widget.dropdown_widget(
                                                  options,val,desc)
         post_query_widget_list.append(create_options_dropdown)
@@ -121,9 +130,16 @@ class Write():
         min=1
         max = sys.maxsize
         val = min
+        # Input box for ID
+        # ID can either be for the current file or the parent Project file
+        #           ID = updating current file
+        #    Parent ID = creating new file
         id_widget = self.widget.bounded_int_text_widget(val,desc,bool,
                                                              min ,max)
         post_query_widget_list.append(id_widget)
+        # extra widget for updating
+        # the extra widget is used to fill the form with the current file
+        # details
         if type == 'Create':
             self.post_query_container = widgets.VBox([post_query_widget_list[0],
                                                       post_query_widget_list[1]])
@@ -142,24 +158,33 @@ class Write():
         display(self.create_tab)
 
     def doc_write(self,type):
+        '''
+        Creates a tab that allows the user to fill the details for JSON to be
+        uploaded
+        '''
         tab_list = []
         title_list =[]
         accordion_widget_list = []
         vbox_widget_list = []
+        # Fields that are necessary for a json to be uploaded
         self.doc_write_compulsory_tab = self.compulsory_fields()
         accordion_widget_list.append(self.doc_write_compulsory_tab)
-
+        # Fields that are necessary for a assay json to be uploaded
+        self.doc_write_assay_tab = self.assay_fields()
+        accordion_widget_list.append(self.doc_write_assay_tab)
+        # Fields that are necessary for a data file json to be uploaded
         self.doc_write_data_file_tab = self.data_file_fields()
         accordion_widget_list.append(self.doc_write_data_file_tab)
-
+        # Fields that are optional
         self.doc_write_optional_tab = self.optional_fields()
         accordion_widget_list.append(self.doc_write_optional_tab)
 
         self.post_accordion = self.widget.accordion(accordion_widget_list,3)
 
         self.post_accordion.set_title(0, 'Compulsory')
-        self.post_accordion.set_title(1, 'Data File')
-        self.post_accordion.set_title(2, 'Optional')
+        self.post_accordion.set_title(1, 'Assay options')
+        self.post_accordion.set_title(2, 'Data File options')
+        self.post_accordion.set_title(3, 'Optional')
         self.post_accordion.selected_index = 0
         vbox_widget_list.append(self.post_accordion)
 
@@ -181,6 +206,11 @@ class Write():
         display(self.doc_write_tab)
 
     def compulsory_fields(self):
+        '''
+        Fields that are compulsory for JSON file
+                - Title
+                - Description
+        '''
         doc_write_widget_list= []
 
         desc = 'Title :'
@@ -199,6 +229,14 @@ class Write():
         return compulsory_container
 
     def data_file_fields(self):
+        '''
+        Fields that are compulsory for Data file JSON file
+                - URL of data file
+                - Filename
+                - License
+
+        Also allows the data file to be linked to related assays
+        '''
         doc_write_widget_list= []
 
         desc = 'URL :'
@@ -257,6 +295,11 @@ class Write():
         return data_file_info_container
 
     def optional_fields(self):
+        '''
+        Optional information displayed :
+                - Version number
+                - Public Access setting
+        '''
         doc_write_widget_list= []
         ver = ''
         desc = 'Version :'
@@ -266,7 +309,7 @@ class Write():
         doc_write_widget_list.append(version_widget)
 
         desc = 'Access :'
-        options = ['no_access','view']
+        options = ['no_access','view','download','edit','manage']
         access_widget = self.widget.select(desc,options)
         doc_write_widget_list.append(access_widget)
 
@@ -274,7 +317,67 @@ class Write():
                                            doc_write_widget_list[1]])
         return optional_container
 
+    def check_access_chosen(self):
+        access = self.doc_write_optional_tab.children[1].value
+        options = ['no_access','view','download','edit','manage']
+        create_doc = self.create_tab.children[0].children[0].value
+
+        if create_doc == 'Project':
+            pass
+        elif create_doc == 'Investigation':
+            if access != 'no_access' or access != 'view':
+                access = 'view'
+        elif create_doc == 'Study':
+            if access != 'no_access' or access != 'view':
+                access = 'view'
+        elif create_doc == 'Assay':
+            if access != 'no_access' or access != 'view':
+                access = 'view'
+        elif create_doc == 'Data File':
+            if access != 'no_access' or access != 'view' or access != 'download':
+                access = 'download'
+        return access
+    def assay_fields(self):
+        '''
+        Fields that are compulsory for assay JSON file
+                - Title
+                - Description
+                - Assay Class
+                - Assay Type
+                - Assay Tech Type
+        '''
+        doc_write_widget_list= []
+
+        desc = 'Assay Class :'
+        options = ['EXP','MODEL']
+        class_type_button = self.widget.toggle_with_options_button(desc,
+                                                                   options[0],
+                                                                   options)
+        doc_write_widget_list.append(class_type_button)
+
+        desc = 'Assay Type :'
+        val = ''
+        JERM_type_input = self.widget.text_widget(val,desc,2)
+        doc_write_widget_list.append(JERM_type_input)
+
+
+        desc = 'Tech Type :'
+        val = ''
+        JERM_tech_type_input = self.widget.text_widget(val,desc,2)
+        doc_write_widget_list.append(JERM_tech_type_input)
+
+
+
+        compulsory_container = widgets.VBox([doc_write_widget_list[0],
+                                             doc_write_widget_list[1],
+                                             doc_write_widget_list[2]])
+
+        return compulsory_container
+
     def on_click_load_update(self,button):
+        '''
+        Load data for widgets
+        '''
         type =self.post_query_container.children[0].value
         id =self.post_query_container.children[1].value
         self.json  = self.json_handler.get_JSON(type,id)
@@ -283,6 +386,9 @@ class Write():
             self.fill_form(type)
 
     def on_click_add(self,button):
+        '''
+        Add Assay ID to a list of assays to link
+        '''
         id =self.doc_write_data_file_tab.children[3].value
         options = self.doc_write_data_file_tab.children[5].options
         # remove duplicates
@@ -292,8 +398,10 @@ class Write():
         # options.remove('None')
         self.doc_write_data_file_tab.children[5].options = options
 
-
     def on_click_remove(self,button):
+        '''
+        Remove Assay ID from a list of assays to link
+        '''
         id =self.doc_write_data_file_tab.children[5].value
         id = list(id)
         id = id[0]
@@ -301,11 +409,13 @@ class Write():
         options = list(options)
 
         options.remove(id)
-        # if not options:
-        #     options.append('None')
         self.doc_write_data_file_tab.children[5].options = options
 
     def fill_form(self,type):
+        '''
+        Fills widget boxes with the data from JSON downloaded
+        Only used for a update function call
+        '''
         self.doc_write_compulsory_tab.children[0].value =\
                                         self.json_handler.get_title(self.json)
         self.doc_write_compulsory_tab.children[1].value =\
@@ -327,16 +437,38 @@ class Write():
             assay_ids= self.iterate_over_json_list(assays_list)
 
             self.doc_write_data_file_tab.children[5].options = assay_ids
+        elif type == 'Assay':
+            assay_class = self.json_handler.get_assay_class(self.json)
+            assay_class = assay_class.get('key')
+            if assay_class == 'EXP':
+                index = 0
+            else :
+                index =1
+            self.doc_write_assay_tab.children[0].value = \
+                        self.doc_write_assay_tab.children[0].options[index]
+            if assay_class == 'EXP':
+                assay_type = self.json_handler.get_assay_type_uri(self.json)
+                # print(assay_type)
+                # assay_type = assay_class.get('uri')
+                self.doc_write_assay_tab.children[1].value =assay_type
+
+                technology_type = self.json_handler.get_assay_tech_type_uri(self.json)
+                # technology_type = assay_class.get('uri')
+                self.doc_write_assay_tab.children[2].value =technology_type
 
     def on_click_post(self,button):
+        '''
+        Post JSON to fairdom by creating necessary hash (JSON)
+        '''
         create_doc = self.create_tab.children[0].children[0].value
         id = self.create_tab.children[0].children[1].value
         title = self.doc_write_tab.children[0].children[0].children[0].children[0].value
         desc = self.doc_write_tab.children[0].children[0].children[0].children[1].value
-        access = self.doc_write_optional_tab.children[1].value
         url = self.doc_write_data_file_tab.children[0].value
         filename =self.doc_write_data_file_tab.children[1].value
         license = self.doc_write_data_file_tab.children[2].value
+        access = self.doc_write_optional_tab.children[1].value
+        access = self.check_access_chosen()
         if self.choice == 'Update':
             current_id = str(id)
             id = self.get_parent_id()
@@ -345,13 +477,13 @@ class Write():
             valid = False
             print('Title can not be left empty')
 
-        if create_doc == 'Data File':
-            if url == '':
-                valid = False
-                print('URL can not be left empty')
-            if filename == '':
-                valid = False
-                print('Filename can not be left empty')
+        # if create_doc == 'Data File':
+        #     if url == '':
+        #         valid = False
+        #         print('URL can not be left empty')
+        #     if filename == '':
+        #         valid = False
+        #         print('Filename can not be left empty')
 
         if valid == True:
             if create_doc == 'Project':
@@ -363,8 +495,12 @@ class Write():
                 type = 'Study'
                 hash = self.study_hash(title,desc,access,id)
             elif create_doc == 'Assay':
+                assay_class = self.doc_write_assay_tab.children[0].value
+                assay_type = self.doc_write_assay_tab.children[1].value
+                assay_tech_type = self.doc_write_assay_tab.children[2].value
                 type = 'Assay'
-                hash = self.assay_hash(title,desc,access,id)
+                hash = self.assay_hash(title,desc,access,id,assay_class,
+                                       assay_type,assay_tech_type)
             elif create_doc == 'Data File':
                 type = 'Data File'
                 hash = self.data_file_hash(title,desc,access,id,license,url,filename)
@@ -379,6 +515,10 @@ class Write():
 
         # print(id)
     def get_parent_id(self):
+        '''
+        Used in updating
+        Gets the parent ID that the file is linked to
+        '''
         doc_type = self.json_handler.get_type(self.json)
         if doc_type == 'investigations':
             parent_dict = self.json_handler.get_relationship_projects(self.json)
@@ -392,20 +532,28 @@ class Write():
         return id
 
     def iterate_over_json_list(self,data):
+        '''
+        Gets list of dictionary keys
+        '''
         ids = []
         for value in data:
             ids.append(value.get('id'))
         return ids
 
-
-
     def get_user_id(self):
+        '''
+        Gets user ID
+        NOT IMPLEMENTED FOR CURRENT VERSION OF API
+        '''
         self.user_id = self.json_handler.get_user_id()
         if user_id == {}:
             self.user_id = None
             print('Need Correct login details')
 
     def investigation_hash(self,title,desc,access,id):
+        '''
+        JSON for Investigation
+        '''
         type = 'Investigation'
         investigation = {}
         investigation['data'] = {}
@@ -423,6 +571,9 @@ class Write():
         return investigation
 
     def study_hash(self,title,desc,access,id):
+        '''
+        JSON for Study
+        '''
         type = 'Study'
         study = {}
         study['data'] = {}
@@ -440,7 +591,10 @@ class Write():
         # id = self.json_handler.post_json(type,study)
         return study
 
-    def assay_hash(self,title,desc,access,id):
+    def assay_hash(self,title,desc,access,id,assay_class,assay_type,assay_tech_type):
+        '''
+        JSON for Assay
+        '''
         type = 'Assay'
         assay = {}
         assay['data'] = {}
@@ -450,9 +604,13 @@ class Write():
         assay['data']['attributes']['description'] =desc
         assay['data']['attributes']['policy']= {}
         assay['data']['attributes']['policy']['access'] = access
-        assay['data']['attributes']['assay_class'] = {'key' : 'EXP'}
-        assay['data']['attributes']['assay_type'] = {'uri' : 'http://jermontology.org/ontology/JERMOntology#Metabolomics'}
-        assay['data']['attributes']['technology_type'] = {'uri' : 'http://jermontology.org/ontology/JERMOntology#Electrophoresis'}
+        assay['data']['attributes']['assay_class'] = {}
+        assay['data']['attributes']['assay_class']['key'] = assay_class
+        if assay_class == 'EXP':
+            assay['data']['attributes']['assay_type'] = {}
+            assay['data']['attributes']['assay_type']['uri'] = assay_type
+            assay['data']['attributes']['technology_type'] = {}
+            assay['data']['attributes']['technology_type']['uri'] = assay_tech_type
         assay['data']['relationships'] = {}
         assay['data']['relationships']['study'] = {}
         assay['data']['relationships']['study']['data'] = {'id' : id, 'type' : 'studies'}
@@ -460,6 +618,9 @@ class Write():
         return assay
 
     def data_file_hash(self,title,desc,access,id,license,url,filename):
+        '''
+        JSON for Data File
+        '''
         data_file = {}
         data_file['data'] = {}
         data_file['data']['type'] = 'data_files'
@@ -478,9 +639,12 @@ class Write():
         return(data_file)
 
     def link_data_files_to_assays(self,id):
+        '''
+        Updates the JSON for Assays to include a relation to data file uploaded
+        '''
+        # list of assay ids to link
         assay_ids = self.doc_write_data_file_tab.children[5].options
-        # assay['data']['relationships']['data_files'] = {}
-        # dict_of_
+        # for each id , update the JSON
         for item in assay_ids:
             assay_json = self.json_handler.get_JSON('Assay',item)
             assay_data_files =  self.json_handler.get_relationship_data_files(assay_json)
@@ -492,7 +656,6 @@ class Write():
             assay['data']['type'] = 'assays'
             assay['data']['relationships'] = {}
             assay['data']['relationships']['data_files'] = {}
-
             if item not in id_dict:
                 new_relation_data_file = {}
                 new_relation_data_file = {'id' : id, 'type' : 'data_files'}

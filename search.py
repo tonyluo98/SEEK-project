@@ -23,6 +23,10 @@ from widget import Widget
 
 
 class Search():
+    '''
+    Class handles with sending requests to FAIRDOMHUB to get the
+    chosen JSON file
+    '''
     def __init__(self,json_handler):
         self.topic = None
         self.search_id = None
@@ -77,6 +81,10 @@ class Search():
         self.csv = None
         self.download_link_text = None
     def set_json_handler(self,json_handler):
+        '''
+        Sets the json_handler to the most recent changed version
+        This allows users to login and access private data
+        '''
         self.json_handler = json_handler
     def display(self):
         '''
@@ -87,7 +95,6 @@ class Search():
         # File type
         type = self.search_type
         self.json =self.json_handler.get_JSON(type,id)
-        # print(self.json)
         #title and description of file
         if self.json != []:
             self.display_basic_info()
@@ -103,27 +110,34 @@ class Search():
 
             self.display_work_relations()
     def display_basic_info(self):
+        '''
+        Displays the Title and Description
+        '''
         if self.settings_dict.get('display_title') == 'True':
             self.display_title()
         if self.settings_dict.get('display_description') == 'True':
             self.display_description()
     def display_title(self):
-                # display(HTML('<h1><u>{0}</u></h1>'.format(title)))
-
+        '''
+        Displays title
+        '''
         title = self.json_handler.get_title(self.json)
         self.title = title + '\n'
         title = ('<h1><u>{0}</u></h1>'.format(title))
 
-        title_widget = widgets.HTML(
-                       value = title
-        )
+        title_widget = self.widget.HTML(title)
         display(title_widget)
-
     def display_description(self):
+        '''
+        Displays Description
+        '''
         description = self.json_handler.get_description(self.json)
         print(description)
         self.desc = description
     def display_institution(self):
+        '''
+        Displays the institution related to the project
+        '''
         #list of items to display
         container_list =[]
         #name of items to display
@@ -186,8 +200,6 @@ class Search():
 
         Checks settings list to see which to display, then for each item, a
         container is created with the name of each related item
-
-        Can be optimised by using multiprocessing
         '''
         #list of items to display
         container_list =[]
@@ -226,6 +238,13 @@ class Search():
             display(self.related_work_tab)
             self.list_of_top_level_widgets.append(self.related_work_tab)
     def display_project(self):
+        '''
+        Shows all the related items related to current working document.
+                - not including data files / docs
+
+        Checks settings list to see which to display, then for each item, a
+        container is created with the name of each related item
+        '''
         container_list =[]
         #name of items to display
         self.project_tab_title_names_list =[]
@@ -454,7 +473,10 @@ class Search():
 
         return relationship_people_container
     def on_click_search_doc(self,button):
-
+        '''
+        Set the values to be searched and call the search function to get the
+        data
+        '''
         tab_index = self.related_work_tab.selected_index
         item_index = self.related_work_tab.children[tab_index].children[0].index[0]
         if self.tab_title_names_list_doc[tab_index] == 'Related Projects':
@@ -478,8 +500,6 @@ class Search():
             type = 'Data File'
             id = self.data_file_ids[item_index]
 
-        # topic =
-        # type =
         settings_dict = self.settings_dict
         list_of_names = self.list_of_names
         list_of_ids = self.list_of_ids
@@ -489,7 +509,10 @@ class Search():
         # print(type)
         self.search()
     def on_click_search_person(self,button):
-
+        '''
+        Set the values to be searched and call the search function to get the
+        data
+        '''
         tab_index = self.related_people_tab.selected_index
         item_index = self.related_people_tab.children[tab_index].children[0].index[0]
         if self.tab_title_names_list_people[tab_index] == 'Creator':
@@ -504,15 +527,16 @@ class Search():
             topic = 'Document query'
             type = 'Person'
             id = self.people_ids[item_index]
-        # topic =
-        # type =
         settings_dict = self.settings_dict
         list_of_names = self.list_of_names
         list_of_ids = self.list_of_ids
         self.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
         self.search()
     def on_click_search_project_meta_data(self,button):
-
+        '''
+        Set the values to be searched and call the search function to get the
+        data
+        '''
         tab_index = self.project_tab.selected_index
         item_index = self.project_tab.children[tab_index].children[0].index[0]
 
@@ -543,8 +567,10 @@ class Search():
         list_of_ids = self.list_of_ids
         self.search_parameters(topic,id,type,settings_dict,list_of_names,list_of_ids)
         self.search()
-
     def on_click_convert(self, button):
+        '''
+        Converts all widgets that display value (not relations) into text
+        '''
         clear_output()
 
         if self.settings_dict.get('display_title') == 'True':
@@ -568,10 +594,10 @@ class Search():
         #     item_title = self.list_of_top_level_widgets[tab_index].children[0].value
         #     print('Query type       : {0}'.format(tab_title))
         #     print('Title of file    : {0}'.format(id))
-
-
     def getListOfNamesFromDict(self,dict,type):
-
+        '''
+        Get names of and ids from dict into two lists
+        '''
         ids = []
         if type == 'Project Member':
             ids = self.iterate_over_json_list_person(dict,ids)
@@ -609,6 +635,9 @@ class Search():
         return values
 
     def getDictOfIDandNamesPerson(self,dict,sessionType):
+        '''
+        Uses multiprocessing to get the names from ids listed in a dict
+        '''
         ids = []
         ids = self.iterate_over_json_list_person(dict,ids)
         # self.temp_list_of_ids = ids
@@ -617,6 +646,9 @@ class Search():
         dictIDAndNames = self.multiprocess_search(ids,sessionType)
         return dictIDAndNames
     def getDictOfIDandNames(self,dict,sessionType):
+        '''
+        Uses multiprocessing to get the names from ids listed in a dict
+        '''
         ids = []
         ids = self.iterate_over_json_list(dict,ids)
         # self.temp_list_of_ids = ids
@@ -624,8 +656,10 @@ class Search():
 
         dictIDAndNames = self.multiprocess_search(ids,sessionType)
         return dictIDAndNames
-
     def relationship_drop_box(self,list_of_names,increased_width,desc):
+        '''
+        Creates a drop box to display the relationships
+        '''
         options =list_of_names
         default_value =[]
         number_of_rows = 1
@@ -649,6 +683,9 @@ class Search():
         return relationship_dropdown_widget
 
     def iterate_over_json_list(self,data,list_type):
+        '''
+        Loop through dict and get a list of values
+        '''
         list_type.clear()
 
         for value in data:
@@ -656,6 +693,9 @@ class Search():
         return list_type
 
     def iterate_over_json_list_person(self,data,list_type):
+        '''
+        Loop through dict and get a list of values for a person
+        '''
         list_type.clear()
 
         for value in data:
@@ -664,7 +704,8 @@ class Search():
 
     def display_datafile(self):
         '''
-        displays the file by getting the appropriate data from the JSON tags
+        displays the data file by getting the appropriate data from the JSON
+        tags
         '''
         self.current_blob = self.json_handler.get_blob(self.json)
         link = self.json_handler.get_link(self.current_blob)
@@ -675,6 +716,7 @@ class Search():
         # display(filename)
         if self.settings_dict.get('display_model') =='True':
             self.csv = self.json_handler.get_csv_sheet(link)
+            # Try display data file
             try:
                 display(self.csv)
             except Exception as e:
@@ -684,6 +726,9 @@ class Search():
             self.download_link()
 
     def download_link(self):
+        '''
+        Displays download link
+        '''
         link = self.json_handler.get_link(self.current_blob)
         filename = self.json_handler.get_filename(self.current_blob)
         download_link = link+"/download"
@@ -692,6 +737,9 @@ class Search():
         self.download_link_text = download_link
 
     def retrieve_person_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets person name from a JSON
+        '''
         personMetaData = self.json_handler.get_JSON('people',idNumber)
         if not personMetaData:
             # return personMetaData
@@ -701,6 +749,9 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(personMetaData)
 
     def retrieve_project_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets project name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Project',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -710,6 +761,9 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
     def retrieve_investigation_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets investigation name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Investigation',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -719,6 +773,9 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
     def retrieve_study_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets study name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Study',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -728,6 +785,9 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
     def retrieve_assay_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets assay name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Assay',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -737,6 +797,9 @@ class Search():
             dictData[idNumber]=self.json_handler.get_title(metaData)
 
     def retrieve_data_file_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets data file name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Data File',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -745,6 +808,9 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_organism_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets organism name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Project Organisms',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -753,6 +819,9 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_institute_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets institute name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Project Institute',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -761,6 +830,9 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_program_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets program name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Project Program',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -769,6 +841,9 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def retrieve_project_people_name(self,idNumber,dictData,pnumber):
+        '''
+        Gets project person name from a JSON
+        '''
         metaData = self.json_handler.get_JSON('Project People',idNumber)
         if not metaData:
             dictData[idNumber]=metaData
@@ -777,6 +852,12 @@ class Search():
         # return self.json_handler.get_title(metaData)
             dictData[idNumber]=self.json_handler.get_title(metaData)
     def multiprocess_search(self,idNumbers,sessionType):
+        '''
+        Multiprocessing is used to get the names of related data
+        Needed as many calls via to API are made to get names
+        JSON only provides ID of related files and not the names
+        Therefore each related file needs to ge searched to get the name
+        '''
         manager = mp.Manager()
         dict_return_data = manager.dict()
         processes = []
@@ -849,7 +930,6 @@ class Search():
 
         return dict_return_data
 
-    ## needs comments
     def change_made_search_related_person(self, change):
         '''
         Checks for any updates in the select multiple
@@ -857,6 +937,9 @@ class Search():
         self.search_person_list = change['new']
 
     def search_parameters(self,topic,id ,type ,settings_dict,list_of_names,list_of_ids):
+        '''
+        Searh parameters are set 
+        '''
         self.creator_ids = []
         self.submitter_ids = []
         self.people_ids = []
@@ -872,10 +955,6 @@ class Search():
         self.settings_dict = settings_dict
         self.list_of_names = list_of_names
         self.list_of_ids = list_of_ids
-        # print(self.topic)
-        # print(self.search_id)
-        # print(self.search_type)
-        # time.sleep(5)
 
     def search(self):
         '''

@@ -18,6 +18,9 @@ from IPython.display import clear_output
 from json_methods import JSON_methods
 
 class Widget():
+    '''
+    Widgets that are used and layout associated
+    '''
     def __init__(self):
         self.layout0 = {'width': '400px'}
         self.layout1 = {'width': '750px'}
@@ -36,18 +39,10 @@ class Widget():
         self.toggle_button_style = {'description_width': '180px'}
         self.small_toggle_button_style = {'description_width': '110px'}
 
-    def check_list_content(self,list):
-        temp_list =list
-        default_value =[]
-        number_of_rows = 1
-        if list:
-            default_value.append(x[0])
-            if len(list_of_names) > 4:
-                number_of_rows = 4
-            else :
-                number_of_rows = len(list_of_names)+1
     def dropdown_widget(self,options,value,desc):
-
+        '''
+        RETURNS dropdown widget
+        '''
         if value == 'default' and len(value) > 0:
             val = options[0]
         else :
@@ -60,6 +55,9 @@ class Widget():
         return widget
 
     def bounded_int_text_widget(self,val,desc,boolean,min ,max ):
+        '''
+        RETURNS int text widget
+        '''
         widget = widgets.BoundedIntText(
             value=val,
             description=desc,
@@ -70,6 +68,9 @@ class Widget():
         return widget
 
     def combobox(self,ph,options,desc,bool_option,bool_active):
+        '''
+        RETURNS Combobox
+        '''
         widget = widgets.Combobox(
             # value='',
             placeholder=ph,
@@ -81,7 +82,9 @@ class Widget():
         return widget
 
     def toggle_button(self,desc,val):
-
+        '''
+        RETURNS toggle button
+        '''
         widget = widgets.ToggleButtons(
             options=['True', 'False'],
             description=desc,
@@ -97,7 +100,9 @@ class Widget():
         return widget
 
     def toggle_with_options_button(self,desc,val,options):
-
+        '''
+        RETURNS toggle button but options can be set
+        '''
         widget = widgets.ToggleButtons(
             options=options,
             description=desc,
@@ -113,6 +118,9 @@ class Widget():
         return widget
 
     def text_widget(self,val,desc,increased_width = 0):
+        '''
+        RETURNS text widget
+        '''
         if increased_width == 0:
             layout = self.layout0
         elif increased_width == 1:
@@ -129,6 +137,9 @@ class Widget():
         return widget
 
     def text_area_widget(self,val,desc,increased_width=1):
+        '''
+        RETURNS text area widget
+        '''
         if increased_width == 0:
             layout = self.layout0
         elif increased_width == 1:
@@ -144,7 +155,19 @@ class Widget():
         )
         return widget
 
+    def HTML(self,string):
+        '''
+        RETURNS HTML widget
+        '''
+        widget = widgets.HTML(
+                       value = string
+        )
+        return widget
+
     def button(self,desc):
+        '''
+        RETURNS button widget
+        '''
         widget = widgets.Button(
             description=desc,
             disabled=False,
@@ -157,7 +180,9 @@ class Widget():
         return widget
 
     def button_optional(self,desc,value):
-
+        '''
+        RETURNS toggle button with set value
+        '''
         if len(value) == 0 :
             boolean = True
         else:
@@ -171,6 +196,9 @@ class Widget():
         return widget
 
     def accordion(self,list,increased_width =1):
+        '''
+        RETURNS accordion widget
+        '''
         if increased_width == 0:
             layout = self.layout0
         elif increased_width == 1:
@@ -188,6 +216,9 @@ class Widget():
         return widget
 
     def tab(self,children,tab_names):
+        '''
+        RETURNS tab widget
+        '''
         widget = widgets.Tab()
         widget.children = children
         for index in range(len(tab_names)):
@@ -195,6 +226,9 @@ class Widget():
         return widget
 
     def select_multiple(self,increased_width,options,default_val,rows,desc):
+        '''
+        RETURNS select multiple widget
+        '''
         if increased_width == 0:
             layout = self.layout0
         elif increased_width == 1:
@@ -214,6 +248,9 @@ class Widget():
         return widget
 
     def select(self,desc,options,increased_width = 1,rows = 2):
+        '''
+        RETURNS select widget
+        '''
         if increased_width == 0:
             layout = self.layout0
         elif increased_width == 1:

@@ -31,6 +31,18 @@ To run
 x= s.SEEK()
 '''
 class SEEK():
+    '''
+    Container of all classes
+    All functions are called from this class
+    FUNCTIONS :
+        query       : select ID and type for searching
+        post        : post a json
+        search      : search a file based on query
+        query       : set login details
+        change_url  : FOR DEMO PURPOSE ONLY
+                      Change url to sandbox website
+
+    '''
     def __init__(self):
         self.json_handler = JSON_methods()
         self.SEEK_query = None

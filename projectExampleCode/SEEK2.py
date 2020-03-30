@@ -1,1131 +1,558 @@
 """
+TESTING THE
 Package SEEK - THE SEEK NOTEBOOK
-
-This package provides methods and functions implementing the SEEK API to be used
-in bioinformatic context.
-
-Build for intuitive usage, this package allows the user to retreive data from
-the web-based cataloguing platform The Fairdom Hub powered by SEEK in order to
-be used in the Jupyter Notebook web app, supporting widgets for user interfacing.
 ___________________
 
 Third Year Project, Bogdan Gherasim, The University of Manchester, 2019
 """
 import getpass
-import io
-from IPython.core.display import display, HTML
+from io import StringIO
 import ipywidgets as widgets
-import json
-import pandas as pd
-from pandas.io.json import json_normalize
-import pydoc
-import requests
-import tabulate
-import threading
+import os
+import pandas
+import sys
+import SEEK
 import time
-
-PROT_TEXTAREA_LAYOUT = widgets.Layout(flex='0 1 auto',
-                                      height='120px',
-                                      min_height='40px',
-                                      width='500px')
-
-PROT_WRITING_DNS_DEFAULT = "https://testing.sysmo-db.org/"
-
-def auth():
-    """
-    Method used externally to get FairdomHub credentials from user
-
-    :returns: (username, password)
-    :rtype: tuple
-    """
-
-    return (_get_input("Username: "),getpass.getpass("Password: "))
-
-def _get_input(prompt):
-    """
-    Method used internally to register user input. This is used for easier
-    testing.
-
-    :param prompt: Prompt printed for user
-    :type prompt: str
-    :returns: input()
-    :rtype: str
-    """
-
-    return input(prompt)
-
-def _get_input_testing(prompt):
-    """
-    Method used internally to register user input. This is used for easier
-    testing
-
-    :param prompt: Prompt printed for user
-    :type prompt: str
-    :returns: input()
-    :rtype: str
-    """
-
-    return input(prompt)
-
-def _relationsFormat(JSON, type, source):
-    """
-    Method used internally with the general purpose of filling up a relationship
-    field when building a JSON file that needs to be uploaded in the writing
-    process
-
-    :param JSON: the given JSON that needs to be filled
-    :param type: relationship type; a new field in the JSON is created with this
-    :param source:
-    :type JSON: str
-    :type type: str
-    :type source: str
-    :returns: void
-    :rtype: None
-    """
-
-    numberOfRelations = int(_get_input("Please specify how many " + type + " is this " + source + " related to: "))
-
-    if numberOfRelations != 0:
-        JSON["data"]["relationships"][type] = {}
-        JSON["data"]["relationships"][type]["data"] = []
-
-        for index in range(1, numberOfRelations + 1):
-            id = int(_get_input("Please specify the id of the " + type[:-1] + " number " + str(index) + ": "))
-            JSON["data"]["relationships"][type]["data"].append({"id" : id, "type" : type})
-
-def _assayFormat(assayKind, description, policy):
-    """
-    Method used internally to create the JSON for an assay
-
-    :param assayKind:
-    :param description:
-    :param policy:
-    :type assayKind: str
-    :type description: str
-    :type policy: str
-    :returns: JSON
-    :rtype: str
-    """
-
-    JSON = {}
-    JSON['data'] = {}
-    JSON['data']['type'] = 'assays'
-    JSON['data']['attributes'] = {}
-    JSON['data']['attributes']['title'] = _get_input('Enter the title: ')
-    JSON['data']['attributes']['description'] = description
-    JSON['data']['attributes']['policy'] = {'access':policy, 'permissions': []}
-
-    other = ""
-    other = _get_input("Please list other creators: ")
-    if other != "":
-        JSON["data"]["attributes"]["other_creators"] = other
-
-    JSON["data"]["attributes"]["assay_class"] = {}
-    JSON["data"]["attributes"]["assay_class"]["key"] = assayKind
+import unittest
+from unittest import TestCase
+from unittest.mock import patch
 
 
-    assayTypeUri = ""
-    assayTypeUri = _get_input("Please specify the assay type uri: ")
-    if assayTypeUri != "":
+PROT_DEFAULT_AUTHENTICATION_STRING = "DEFAULT"
+
+class TestSEEK(TestCase):
+
+    def setUp(self):
+
+        self.auth = (PROT_DEFAULT_AUTHENTICATION_STRING,
+                    PROT_DEFAULT_AUTHENTICATION_STRING)
+
+        self.testOBJ = SEEK.read(self.auth)
+
+        self.testWriteOBJ = SEEK.write(self.auth)
+
+        self.goodFormat_RequestList = [{'id':'281','type':'investigations'},
+                                       {'id':'953','type':'assays'}]
+
+        self.empty_RequestList = [{}]
+
+        self.badRequest_RequestList = [{'id':'1','type':'wrong type'}]
+
+        self.badFormat_RequestList = {'id':'1','type':'assays',
+                                      'id':'2','type':'assays'}
+
+    def tearDown(self):
+
+        del self.auth
+
+        del self.testOBJ
+
+        del self.goodFormat_RequestList
+
+        del self.badFormat_RequestList
+
+
+
+    @patch("SEEK._get_input", return_value="some input")
+    def test_get_input_Method(self, input):
+
+        self.assertEqual(SEEK._get_input("Prompt:"), "some input")
+
+    @patch("SEEK._get_input_testing", return_value="some other input")
+    def test_get_input_testing_Method(self, input):
+
+        self.assertEqual(SEEK._get_input_testing("Prompt:"), 'some other input')
+
+    @patch('SEEK._get_input', return_value=
+                                   PROT_DEFAULT_AUTHENTICATION_STRING)
+    @patch('getpass.getpass', return_value=PROT_DEFAULT_AUTHENTICATION_STRING)
+    def test_init_WithAuth(self, username, password):
+
+        self.testOBJ.session.auth = SEEK.auth()
+        self.assertEqual(self.testOBJ.session.auth,
+                        (PROT_DEFAULT_AUTHENTICATION_STRING,
+                        PROT_DEFAULT_AUTHENTICATION_STRING))
+
+    @patch('SEEK._get_input', return_value=
+                                   PROT_DEFAULT_AUTHENTICATION_STRING)
+    @patch('getpass.getpass', return_value=PROT_DEFAULT_AUTHENTICATION_STRING)
+    def test_init_WithoutAuth(self, username, password):
+
+        self.testOBJ = SEEK.read()
+
+        self.assertEqual(self.testOBJ.session.auth,
+                         (PROT_DEFAULT_AUTHENTICATION_STRING,
+                          PROT_DEFAULT_AUTHENTICATION_STRING))
+
+    @patch('SEEK._get_input', return_value="1")
+    def test_relationsFormat(self, relNumber):
+
+        JSON = {}
+        JSON['data'] = {}
+        JSON["data"]["relationships"] = {}
+
+        SEEK._relationsFormat(JSON, 'creators', 'assay')
+
+        result = [{'id': 1, 'type': 'creators'}]
+        self.assertEqual(JSON['data']['relationships']['creators']['data'],
+                                        result)
+
+    @patch('SEEK._get_input', return_value='1')
+    def test_studyFormat(self, val):
+
+        JSON = {}
+        JSON['data'] = {}
+        JSON['data']['type'] = 'studies'
+        JSON['data']['attributes'] = {}
+        JSON['data']['attributes']['title'] = '1'
+        JSON['data']['attributes']['description'] = '1'
+        JSON['data']['attributes']['policy'] = {'access': '1', 'permissions': [{'resource': {'id': '1','type': 'people'},'access': 'manage'}]}
+        JSON['data']['relationships'] = {}
+        JSON['data']['relationships']['investigation'] = {}
+        JSON['data']['relationships']['investigation']['data'] = {'id' : '1', 'type' : 'investigations'}
+
+        JSON["data"]["attributes"]["other_creators"] = '1'
+
+        JSON['data']['attributes']['experimentalists'] = '1'
+        JSON['data']['attributes']['person_responsible_id'] = '1'
+
+        SEEK._relationsFormat(JSON, 'assays', 'study')
+        SEEK._relationsFormat(JSON, 'creators', 'study')
+        SEEK._relationsFormat(JSON, 'data_files', 'study')
+        SEEK._relationsFormat(JSON, 'documents', 'study')
+        SEEK._relationsFormat(JSON, 'models', 'study')
+        SEEK._relationsFormat(JSON, 'people', 'study')
+        SEEK._relationsFormat(JSON, 'projects', 'study')
+        SEEK._relationsFormat(JSON, 'publications', 'study')
+        SEEK._relationsFormat(JSON, 'sops', 'study')
+
+        studyJSON = SEEK._studyFormat('1', '1')
+        self.assertEqual(JSON, studyJSON)
+
+    @patch('SEEK._get_input', return_value='1')
+    def test_investigationFormat(self, val):
+
+        JSON = {}
+        JSON['data'] = {}
+        JSON['data']['type'] = '1'
+        JSON['data']['attributes'] = {}
+        JSON['data']['attributes']['title'] = '1'
+        JSON['data']['attributes']['description'] = '1'
+        JSON['data']['relationships'] = {}
+
+
+
+        SEEK._relationsFormat(JSON, 'assays', 'study')
+        SEEK._relationsFormat(JSON, 'creators', 'study')
+        SEEK._relationsFormat(JSON, 'data_files', 'study')
+        SEEK._relationsFormat(JSON, 'documents', 'study')
+        SEEK._relationsFormat(JSON, 'models', 'study')
+        SEEK._relationsFormat(JSON, 'people', 'study')
+        SEEK._relationsFormat(JSON, 'projects', 'study')
+        SEEK._relationsFormat(JSON, 'publications', 'study')
+        SEEK._relationsFormat(JSON, 'sops', 'study')
+        SEEK._relationsFormat(JSON, 'studies', 'investigation')
+        SEEK._relationsFormat(JSON, 'submitters', 'investigation')
+
+        investigationJSON = SEEK._investigationFormat()
+        self.assertEqual(JSON, investigationJSON)
+
+    @patch('SEEK._get_input', return_value='10')
+    def test_assayFormat(self, val):
+
+        JSON = {}
+        JSON['data'] = {}
+        JSON['data']['type'] = 'assays'
+        JSON['data']['attributes'] = {}
+        JSON['data']['attributes']['title'] = '1'
+        JSON['data']['attributes']['description'] = '1'
+        JSON['data']['attributes']['policy'] = {'access':'1', 'permissions': []}
+        JSON["data"]["attributes"]["other_creators"] = '1'
+
+        JSON["data"]["attributes"]["assay_class"] = {}
+        JSON["data"]["attributes"]["assay_class"]["key"] = '1'
+
         JSON["data"]["attributes"]["assay_type"] = {}
-        JSON["data"]["attributes"]["assay_type"]["uri"] = assayTypeUri
+        JSON["data"]["attributes"]["assay_type"]["uri"] = '1'
 
-    techTypeUri = ""
-    techTypeUri = _get_input("Please specify the technology type uri: ")
-    if techTypeUri != "":
         JSON["data"]["attributes"]["technology_type"] = {}
-        JSON["data"]["attributes"]["technology_type"]["uri"] = techTypeUri
+        JSON["data"]["attributes"]["technology_type"]["uri"] = '1'
 
-    JSON["data"]["relationships"] = {}
+        JSON["data"]["relationships"] = {}
 
-    _relationsFormat(JSON, "data_files", "assay")
-    _relationsFormat(JSON, "documents", "assay")
 
-    invID = ""
-    invID = _get_input("Please specify the id of the investigation: ")
-    if invID != "":
+        SEEK._relationsFormat(JSON, "data_files", "assay")
+        SEEK._relationsFormat(JSON, "documents", "assay")
+
         JSON["data"]["relationships"]["investigation"] = {}
-        JSON["data"]["relationships"]["investigation"]["data"] = {"id": invID, "type":"investigations"}
+        JSON["data"]["relationships"]["investigation"]["data"] = {"id": '1', "type":"investigations"}
 
-    _relationsFormat(JSON, "models", "assay")
-    _relationsFormat(JSON, "people", "assay")
-    _relationsFormat(JSON, "publications", "assay")
-    _relationsFormat(JSON, "sops", "assay")
+        SEEK._relationsFormat(JSON, "models", "assay")
+        SEEK._relationsFormat(JSON, "people", "assay")
+        SEEK._relationsFormat(JSON, "publications", "assay")
+        SEEK._relationsFormat(JSON, "sops", "assay")
 
-    studyID = ""
-    studyID = _get_input("Please specify the id of the study: ")
-    if studyID != "":
         JSON["data"]["relationships"]["study"] = {}
-        JSON["data"]["relationships"]["study"]["data"] = {"id": studyID, "type":"studies"}
+        JSON["data"]["relationships"]["study"]["data"] = {"id": '1', "type":"studies"}
 
-    _relationsFormat(JSON, "organisms", "assay")
+        SEEK._relationsFormat(JSON, "organisms", "assay")
 
-    return JSON
+        assayJSON = SEEK._assayFormat("1","1", "1")
+        self.assertEqual(JSON, assayJSON)
 
-def _studyFormat(description, policy):
-    """
-    Method used internally to create the JSON for a study
+    @patch('SEEK._get_input', return_value='10')
+    def test_dataFileFormat(self, val):
 
-    :param description:
-    :param policy:
-    :type description: str
-    :type policy: str
-    :returns: JSON
-    :rtype: str
-    """
+        JSON = {}
+        JSON['data'] = {}
+        JSON['data']['type'] = 'data_files'
+        JSON['data']['attributes'] = {}
+        JSON['data']['attributes']['title'] = '1'
 
-    JSON = {}
-    JSON['data'] = {}
-    JSON['data']['type'] = 'studies'
-    JSON['data']['attributes'] = {}
-    JSON['data']['attributes']['title'] = _get_input('Enter the title: ')
-    JSON['data']['attributes']['description'] = description
-    JSON['data']['attributes']['policy'] = {'access': policy, 'permissions': [{'resource': {'id': int(_get_input("What is your user ID? ")),'type': 'people'},'access': 'manage'}]}
-    JSON['data']['relationships'] = {}
-    JSON['data']['relationships']['investigation'] = {}
-    JSON['data']['relationships']['investigation']['data'] = {'id' : int(_get_input("Please enter the investigation id: ")), 'type' : 'investigations'}
-
-    other = ""
-    other = _get_input("Please list other creators: ")
-    if other != "":
-        JSON["data"]["attributes"]["other_creators"] = other
-
-    JSON['data']['attributes']['experimentalists'] = _get_input('Please specify the experimentalists: ')
-    JSON['data']['attributes']['person_responsible_id'] = _get_input('Please specify the id of the person responsible: ')
-
-    _relationsFormat(JSON, 'assays', 'study')
-    _relationsFormat(JSON, 'creators', 'study')
-    _relationsFormat(JSON, 'data_files', 'study')
-    _relationsFormat(JSON, 'documents', 'study')
-    _relationsFormat(JSON, 'models', 'study')
-    _relationsFormat(JSON, 'people', 'study')
-    _relationsFormat(JSON, 'projects', 'study')
-    _relationsFormat(JSON, 'publications', 'study')
-    _relationsFormat(JSON, 'sops', 'study')
-
-    return JSON
-
-def _investigationFormat():
-    """
-    Method used in internally to create the JSON for an investigation
-
-    :returns: JSON
-    :rtype: str
-    """
-    JSON = {}
-    JSON['data'] = {}
-    JSON['data']['type'] = 'investigations'
-    JSON['data']['attributes'] = {}
-    JSON['data']['attributes']['title'] = _get_input('Please enter the title: ')
-    JSON['data']['attributes']['description'] = _get_input('Please enter the description: ')
-    JSON['data']['relationships'] = {}
-
-    _relationsFormat(JSON, 'assays', 'investigation')
-    _relationsFormat(JSON, 'creators', 'investigation')
-    _relationsFormat(JSON, 'data_files', 'investigation')
-    _relationsFormat(JSON, 'documents', 'investigation')
-    _relationsFormat(JSON, 'models', 'investigation')
-    _relationsFormat(JSON, 'people', 'investigation')
-    _relationsFormat(JSON, 'projects', 'investigation')
-    _relationsFormat(JSON, 'publications', 'investigation')
-    _relationsFormat(JSON, 'sops', 'investigation')
-    _relationsFormat(JSON, 'studies', 'investigation')
-    _relationsFormat(JSON, 'submitters', 'investigation')
-
-    return JSON
-
-def _data_fileFormat(description, policy):
-
-    """
-    Method used in internally to create the JSON for a data file
-
-    :param description:
-    :param policy:
-    :type description: str
-    :type policy: str
-    :returns: JSON
-    :rtype: str
-    """
-
-    JSON = {}
-    JSON['data'] = {}
-    JSON['data']['type'] = 'data_files'
-    JSON['data']['attributes'] = {}
-    JSON['data']['attributes']['title'] = _get_input('Enter the title: ')
-
-    numberOfRelations = int(_get_input("Please specify the number of tags: "))
-
-    if numberOfRelations != 0:
         JSON["data"]["attributes"]["tags"] = []
 
-        for index in range(1, numberOfRelations + 1):
+        JSON["data"]["attributes"]["tags"].append('1')
 
-            tag = _get_input("Tag #" + str(index) + ": ")
-            JSON["data"]["attributes"]["tags"].append(tag)
+        JSON['data']['attributes']['license'] = '1'
+        JSON['data']['attributes']['description'] = '1'
+        JSON['data']['attributes']['policy'] = {'access': '1'}
 
-    JSON['data']['attributes']['license'] = 'CC-BY-4.0'
-    JSON['data']['attributes']['description'] = description
-    JSON['data']['attributes']['policy'] = {'access': policy}
-
-    remote_blob = {'url' :
-                         _get_input('Provide the url/ null if uploading local file'),
-                                    'original_filename': _get_input('File name: ')}
-    JSON['data']['attributes']['content_blobs'] = [remote_blob]
-
-
-    JSON['data']['relationships'] = {}
-    _relationsFormat(JSON, 'projects', 'data file')
-    _relationsFormat(JSON, 'creators', 'data file')
-    _relationsFormat(JSON, 'assays', 'data file')
-    _relationsFormat(JSON, 'publications', 'data file')
-    _relationsFormat(JSON, 'events', 'data file')
-
-    return JSON
+        remote_blob = {'url' :'1', 'original_filename': '1'}
 
-class read(object):
+        JSON['data']['attributes']['content_blobs'] = [remote_blob]
 
-    """
-    This class provides methods and functions for reading and browsing the SEEK
 
-    :param auth: FairdomHub credentials; can be left empty
-    :type auth: SEEK.auth()
-    """
+        JSON['data']['relationships'] = {}
+        SEEK._relationsFormat(JSON, 'projects', 'data file')
+        SEEK._relationsFormat(JSON, 'creators', 'data file')
+        SEEK._relationsFormat(JSON, 'assays', 'data file')
+        SEEK._relationsFormat(JSON, 'publications', 'data file')
+        SEEK._relationsFormat(JSON, 'events', 'data file')
 
-    def __init__(self, auth = None):
+        fileJSON = SEEK._data_fileFormat('1', '1')
 
-        self.base_url = 'http://www.fairdomhub.org/'
+        self.assertEqual(JSON, fileJSON)
 
-        self.headers = {"Content-type": "application/vnd.api+json",
-            "Accept": "application/vnd.api+json",
-            "Connection": "close",
-            "Accept-Charset": "ISO-8859-1"}
+    def test_loadJSON_Method(self):
 
-        self.session = requests.Session()
-        self.session.headers.update(self.headers)
+        r = self.testOBJ.session.get(self.testOBJ.base_url + "assays/576")
 
-        if auth != None:
-            self.session.auth = auth
-        else:
-            self.session.auth = (_get_input("Username: "),
-                                 getpass.getpass("Password: "))
+        self.testOBJ.session.close()
 
-        self.json = None
-        self.data = object()
+        self.testOBJ.json = r.json()
+        self.testOBJ._loadJSON(self.testOBJ, self.testOBJ.json['data'])
 
-        self.searchChoices = [
-        "assays",
-        "data_files",
-        "events",
-        "institutions",
-        "investigations",
-        "models",
-        "organisms",
-        "people",
-        "presentations",
-        "programmes",
-        "projects",
-        "publications",
-        "sample_types",
-        "sops",
-        "studies",
-        "all"]
+        for item in ['attributes','id','links','meta','relationships','type']:
+            self.assertIn(item, dir(self.testOBJ.data))
 
+    def test_request_Method(self):
+        self.assertTrue(self.testOBJ._request(type="assays", id="576"))
 
-        self.requestList = []
-        self.relationshipList = []
-        self.requestFails = 0
-        self.percentageLoaded = 0
-        self.threadList = []
+    def test_request_Method_BadRequest(self):
+        self.assertFalse(self.testOBJ._request(type="assays", id="0"))
 
-        self.requestList = []
-        self.searchResultsPerThread = 5
-        self.relationshipsPerThread = 5
+    def test_request_Method_HasError(self):
 
-        self.time = {'start': 0, 'end': 0}
+        self.testOBJ.base_url = "www.wrong.url.com/"
+        self.assertRaises(Exception,
+                            self.testOBJ._request(type="assays", id="576"))
 
-    def _loadJSON(self, layerName, layer):
+    def test_printAttributes(self):
 
-        """Parses the json that each request returns
+        capturedOutput = StringIO()
 
-        Recursively creates an attribute for the read object with the request
-        JSON. The attribute contains the structured object with the parsed JSON
+        sys.stdout = capturedOutput
 
-        :param layerName: the field that will contain the structure
-        :param layer: the json that needs to be parsed
-        :type layerName: str
-        :type layer: obj
-        :returns: void
-        :rtype: None
+        self.testOBJ._request("assays","576")
 
-        :Example:
+        self.testOBJ._printAttributes()
 
-        >>> import SEEK as S
-        >>> request = S.read()
-        >>> request.request('assays',100)
-        >>> request._loadJSON(request, request.json['data'])
-        >>> request.data
-        <function SEEK.read._loadJSON.<locals>.<lambda>()>
-        >>> request.data.attributes.description
-        Proton fluxes ensue a change in the membrane potential to which the
-        potassium uptake responds. The membrane potential changes depend on the
-        extrusion of protons, buffering capacities of the media and experimental
-        parametes.
-        """
+        sys.stdout = sys.__stdout__
 
-        try:
-            layerName = lambda: None
+        self.assertEqual(capturedOutput.getvalue(),
+        "PGK 70C model(id: 576 | type: assays)\n\nDescription: PGK 70C model\n")
 
-            # if hasattr(layer, 'items'):
+    def test_printAttributesMissingDescription(self):
 
-            for key, value in layer.items():
+        capturedOutput = StringIO()
 
+        sys.stdout = capturedOutput
 
-                if hasattr(value, 'items'):
+        self.testOBJ._request("assays","945")
 
-                    # print(str(key))
-                    setattr(layerName, key, self._loadJSON(key, value))
-                else:
-                    # print(str(key))
-                    setattr(layerName, key, value)
+        self.testOBJ._printAttributes()
 
-            setattr(self,'data', layerName)
+        sys.stdout = sys.__stdout__
 
-            # else:
-            #     for item in range(0, len(layer)):
+        self.assertEqual(capturedOutput.getvalue(),
+        "Hormone concentrations(id: 945 | type: assays)\n\nDescription: missing\n")
 
-            #         for key, value in layer[item].items():
+    def test_printRelationshipsSearch(self):
 
-            #             if hasattr(value, 'items'):
+        capturedOutput = StringIO()
 
-            #                 setattr(layerName, key, self.loadJSON(key, value))
-            #             else:
+        sys.stdout = capturedOutput
 
-            #                 setattr(layerName, key, value)
-            return layerName
-        except Exception as e:
-            print(str(e))
+        self.testOBJ.search("assays","576")
 
-    def _request(self, type, id):
+        self.testOBJ._printRelationshipsSearch()
 
-        """Uses python requests to query the SEEK API, then parses the JSON
-        using the loadJSON method.
+        sys.stdout = sys.__stdout__
 
-        :param type: type of the element eg: assays/studie/data_files
-        :param id: id of the element
-        :type type: str
-        :type id: str
-        :returns: True if request fulfils or False otherwise
-        :rtype: bool
+        self.assertEqual(capturedOutput.getvalue(),
+            "(9 s estimated)\nLoading 0.0%\rLoading 11.11%\rLoading 22.22%\rLoading 33.33%\rLoading 44.44%\rLoading 55.56%\rLoading 66.67%\rLoading 77.78%\rLoading 88.89%\r\rLoading Completed\n<IPython.core.display.HTML object>\n")
 
-        :Example:
+    def test_printRelationshipsSearchNoRelationships(self):
 
-        >>> import SEEK as S
-        >>> request = S.read()
-        >>> request._request('assays',100)
-        >>> request.data
-        <function SEEK.read._loadJSON.<locals>.<lambda>()>
-        >>> request.data.attributes.description
-        Proton fluxes ensue a change in the membrane potential to which the
-        potassium uptake responds. The membrane potential changes depend on the
-        extrusion of protons, buffering capacities of the media and experimental
-        parametes.
-        """
+        capturedOutput = StringIO()
 
-        r = None
+        sys.stdout = capturedOutput
 
-        try:
-            r = self.session.get(self.base_url + type + "/" + id)
+        self.testOBJ.search("people","526")
 
-            self.session.close()
-            r.close()
-            if r.status_code != 200:
-                return False
+        self.testOBJ._printRelationshipsSearch()
 
-            self.json = r.json()
-            self._loadJSON(self, self.json['data'])
-            self.requestList = []
+        sys.stdout = sys.__stdout__
 
-            return True
+        self.assertEqual(capturedOutput.getvalue(),
+            "(0 s estimated)\nObject has no relationships\n")
 
-        except Exception as e:
-            print(str(e))
+    @patch("SEEK._get_input", return_value='3')
+    @patch("SEEK._get_input_testing", return_value='10')
+    def test_searchAdvancedSettings_Method(self, srpt, rpt):
 
-    def _printAttributes(self):
+        self.testOBJ.searchAdvancedSetup()
+        self.assertEqual(self.testOBJ.searchResultsPerThread, 3)
+        self.assertEqual(self.testOBJ.relationshipsPerThread, 10)
 
-        """Prints the attributes of an requested object"""
+    @patch("SEEK._get_input", return_value='douazecisitrei')
+    @patch("SEEK._get_input_testing", return_value='august')
+    def test_searchAdvancedSettings_Method_BadInput(self, srpt, rpt):
 
-        print(self.data.attributes.title + "(id: " + self.data.id +
-             " | type: " + self.data.type +")\n")
+        self.assertRaises(Exception, self.testOBJ.searchAdvancedSetup)
 
-        print("Description: ", end="")
-        if hasattr(self.data.attributes, 'description') and self.data.attributes.description != None:
+    def test_print(self):
 
-            print(self.data.attributes.description)
-        else:
+        capturedOutput = StringIO()
 
-            print("missing")
+        sys.stdout = capturedOutput
 
-    def _printRelationshipsSearch(self):
+        self.testOBJ.search("assays","576")
 
-        """Prints the relationships of an requested object via the search method"""
+        self.testOBJ.printSearch()
 
-        hasNoRelationships = True
+        sys.stdout = sys.__stdout__
 
-        displayHTML = []
-        index = 0
+        self.assertEqual(capturedOutput.getvalue(),
+        "(9 s estimated)\nLoading 0.0%\rLoading 11.11%\rLoading 22.22%\rLoading 33.33%\rLoading 44.44%\rLoading 55.56%\rLoading 66.67%\rLoading 77.78%\rLoading 88.89%\r\rLoading Completed\nPGK 70C model(id: 576 | type: assays)\n\nDescription: PGK 70C model\n\n\n<IPython.core.display.HTML object>\n")
 
-        for relation in dir(self.data.relationships):
+    @patch("SEEK._get_input", return_value="liver")
+    @patch("SEEK._get_input_testing", return_value="assays")
+    def test_APISearch_Method(self, keyword, type):
 
-            if relation[:2] != "__":
+        self.assertTrue(self.testOBJ.APISearch())
 
-                r = getattr(self.data.relationships, relation)
+    @patch("SEEK._get_input", return_value="liver")
+    @patch("SEEK._get_input_testing", return_value="wrong type")
+    def test_APISearch_Method_BadRequest(self, keyword, type):
 
-                if r.data != [] and hasattr(r, 'newData'):
+        self.assertFalse(self.testOBJ.APISearch())
 
-                    displayHTML.append([])
+    @patch("SEEK._get_input", return_value="liver")
+    @patch("SEEK._get_input_testing", return_value="assays")
+    def test_createRequestList_Method(self, keyword, type):
 
-                    displayHTML[index].append(relation.upper())
+        self.testOBJ.APISearch()
+        self.testOBJ.createRequestList()
 
-                    for d in r.newData:
-                        hasNoRelationships = False
-                        displayHTML[index].append(d.data.attributes.title)
+        self.assertTrue(len(self.testOBJ.requestList) ,6)
 
-                    index = index + 1
+    def test_makeRequests_Method(self):
 
-        if not hasNoRelationships:
-            display(HTML(tabulate.tabulate(displayHTML, tablefmt='html')))
+        self.testOBJ._makeRequests(self.goodFormat_RequestList,
+                                  len(self.goodFormat_RequestList))
 
-        if hasNoRelationships:
-            print("Object has no relationships")
+        properties = [
+            'attributes',
+            'id',
+            'type',
+            'links',
+            'meta',
+            'relationships']
 
-    def _printRelationshipsBrowse(self):
+        for request in self.testOBJ.requestList:
+            for prop in properties:
+                self.assertIn(prop, dir(request.data))
 
-        """Prints the relationships of an requested object via the browse method"""
+    def test_makeRequests_Method_EmptyList(self):
 
-        hasNoRelationships = True
+        self.assertRaises(Exception,
+                         self.testOBJ._makeRequests(self.empty_RequestList,
+                                                   len(self.empty_RequestList)))
 
-        displayHTML = []
-        index = 0
+    def test_makeRequests_Method_ListWithBadItem(self):
 
-        for relation in dir(self.data.relationships):
+        self.assertRaises(Exception,
+                          self.testOBJ._makeRequests(self.badRequest_RequestList,
+                                              len(self.badRequest_RequestList)))
 
-            if relation[:2] != "__":
+    def test_makeRequests_Method_BadFormat(self):
 
-                r = getattr(self.data.relationships, relation)
+        self.assertRaises(Exception,
+                         self.testOBJ._makeRequests(self.badFormat_RequestList,
+                                                   len(self.badFormat_RequestList)))
 
-                if r.data != [] and hasattr(r, 'newData'):
+    def test_parallelRequest_Method(self):
 
-                    displayHTML.append([])
-
-                    displayHTML[index].append(relation.upper())
-
-                    for data in r.newData:
-                        hasNoRelationships = False
-                        displayHTML[index].append(data.data.attributes.title)
-
-                    index = index + 1
-
-        display(HTML(tabulate.tabulate(displayHTML, tablefmt='html')))
-
-        if hasNoRelationships:
-            print("Object has no relationships")
-
-    def printSearch(self):
-
-        """Prints a search result"""
-
-        if hasattr(self, 'data'):
-
-            if hasattr(self.data, 'attributes'):
-
-                self._printAttributes()
-                print("\n")
-
-            if hasattr(self.data, 'relationships'):
-
-                self._printRelationshipsSearch()
-        else:
-
-            print("Search item unavailable. Try again later.")
-
-    def printBrowse(self):
-
-        """Prints the results of a browse"""
-
-        if hasattr(self, 'data'):
-
-            if hasattr(self.data, 'attributes'):
-
-                self._printAttributes()
-                print("\n")
-
-            if hasattr(self.data, 'relationships'):
-
-                self._printRelationshipsBrowse()
-        else:
-
-            print("Search item unavailable. Try again later.")
-
-    def searchAdvancedSetup(self):
-
-        """Used to set up how fast the multithreading runs
-
-        The method prompts how many requests there will be in each thread, eg:
-        if there are 100 requests and you run this with 1 requests/thread, there
-        will be loads of multithreading(100 threads) and therefore the process
-        will run really
-        fast... or at least will try to. If you run it with 50 requests/thread
-        it will run slow(2 threads).
-
-        :Example:
-
-        >>> import SEEK as S
-        >>> search = S.read(auth)
-        >>> search.searchAdvancedSetup()
-        Search multithreading
-        Decide how fast will the search run
-        Search results are usually less and the search requires less to be
-        requested at once.
-        Relationships are usually a lot more, therefore it requires more
-        requests at once
-        How many search results should be requested per thread:
-        >>> 1
-        How many relationships should be requested per thread:
-        >>> 1
-        """
-
-        display(HTML('<h3>Search multithreading</h3>'))
-        print("Decide how fast will the search run\n")
-        print("Search results are usually less and the search requires less to be requested at once.")
-        print("Relationships are usually a lot more, therefore it requires more requests at once")
-
-        # try:
-
-        self.searchResultsPerThread = int(_get_input(
-                "How many search results should be requested per thread: "))
-        self.relationshipsPerThread = int(_get_input_testing(
-                "How many relationships should be requested per thread: "))
-        # except Exception as e:
-
-            # print(str(e))
-
-    def APISearch(self):
-
-        """Used for Demo Presentation. Searches without sofisticated
-        interpretaion. Process the request and retrieve the JSON
-
-        :Example:
-
-        >>> import SEEK as S
-        >>> search = S.read(auth)
-        >>> search.searchAdvancedSetup()
-        Search multithreading
-        Decide how fast will the search run
-        Search results are usually less and the search requires less to be
-        requested at once.
-        Relationships are usually a lot more, therefore it requires more
-        requests at once
-        How many search results should be requested per thread:
-        >>> 1
-        How many relationships should be requested per thread:
-        >>> 1
-        """
-
-        # Begin the search by inputing the search term
-        self.searchTerm = _get_input("Enter your search: \n")
-
-        # Choose the category of search
-        choice = None
-        # while choice not in self.searchChoices:
-        choice = _get_input_testing("Please enter one of: " +
-                                        ', '.join(self.searchChoices) + ": ")
-
-        if choice not in self.searchChoices:
-            print("\nNot a choice! Try again!" + choice)
-            return False
-
-        # Process the request and retrieve the JSON
-        payload = {'q': self.searchTerm, 'search_type': choice}
-        r = self.session.get(self.base_url + 'search', headers=self.headers,
-                                                                params=payload)
-
-        if r.status_code != 200:
-            return False
-
-        self.json = r.json()
-
-        return True
-
-    def createRequestList(self):
-
-        """Creates the list of requests by parsing a RAW Search Result JSON by searching
-        for each pair of (id, type) present in the string.
-
-        :returns: list of tuples
-        :rtype: list
-
-        :Example:
-
-        >>> import SEEK as S
-        >>> search = S.read(auth)
-        >>> search.APISearch()
-        ...
-        >>> search.createRequestList()
-        >>> print(str(len(s.requestList)))
-        132
-        """
-
-        requestList = []
-
-        for item in self.json['data']:
-            ID = ""
-            TYPE = ""
-            for prop in item.items():
-
-                if prop[0] == 'id':
-                    ID = prop[1]
-
-                if prop[0] == 'type':
-                    TYPE = prop[1]
-
-
-            requestList.append({'id':ID, 'type':TYPE})
-
-        self.requestList = requestList
-
-    # Each thread executes this method
-    # Loops through each batch of requests received and executes them in turn, serialized
-    # 1st param: the request batch
-    # 2nd param: the total number of requests
-    def _makeRequests(self, requestsList, total):
-
-        """Method executed by each thread
-
-        Loops through each batch of requests received and executes them in turn,
-        serialized
-
-        :param requestList: list of request to process
-        :param total: total number of requests; used to compute the loading
-        :type type: list
-        :type id: int
-        """
-
-        try:
-
-            for r in requestsList:
-
-                # Create new request
-                request = read(self.session.auth)
-
-                # Check if it is successful
-                if request._request(type=r['type'], id=r['id']) == False:
-                    self.requestFails = self.requestFails + 1
-
-                else:
-                    # Compute percentace for user info
-                    p = self.percentageLoaded / total * 100
-
-                    if p >= (100 - (1 / total) * 100):
-                        print("Loading " + str(round(p,2)) + "%\r", end='')
-                        print("\rLoading Completed\n", end='')
-
-                    else:
-                        print("Loading " + str(round(p,2)) + "%\r", end='')
-
-                    self.requestList.append(request)
-
-                self.percentageLoaded = self.percentageLoaded + 1
-        except Exception as e:
-
-            print(str(e))
-
-    # Uses multithreading to read a number of request and retrieve results from the API
-    # 1st param: the list of requests
-    # 2nd param: the total number of requests
-    # 3rd param: the number of requests that each thread has to process
-    # return: none
-    # Fills the 'requestList' attribute with the response
-    def parallelRequest(self, requests, requestPerThread):
-
-        """Creates a list of processed request from an unprocessed list
-
-        Uses multithreading to read a number of request and retrieve results
-        from the API
-
-        :param requests: list of request to process
-        :param requestPerThread: specifies how many requests each thread is supposed to handle and, therefore, how many threads are there going to be created
-        :type requests: list
-        :type requestPerThread: int
-        """
-        self.requestList = []
-        # Compute the number of threads
-        numberOfThreads = 1
-        try:
-            if len(requests) % requestPerThread == 0:
-                numberOfThreads = len(requests) // requestPerThread
-            else:
-                numberOfThreads = len(requests) // requestPerThread + 1
-
-            if requestPerThread > 10:
-                print("(" + str(numberOfThreads * 5) + ' s estimated)')
-            else:
-                print("(" + str(numberOfThreads) + ' s estimated)')
-        except Exception as e:
-
-            print(str(e))
-
-        for currentThread in range(0, numberOfThreads):
-
-            # Compute the index of the next batch of requests that are going to be processed
-            if currentThread == (numberOfThreads - 1):
-                rightArrayBound = len(requests)
-            else:
-                rightArrayBound = (currentThread + 1) * requestPerThread
-
-            # Create the thread with the specified number of requests
-            newThread = threading.Thread(name="Thread number " + str(currentThread), target=self._makeRequests, args=(requests[currentThread * requestPerThread : rightArrayBound], len(requests),))
-            newThread.start()
-
-            # Add the thread to the list of threads
-            self.threadList.append(newThread)
-
-    def getRelationshipsFrom(self, request):
-
-        """Creates the relationships list by parsing the data attribute of the specified object
-
-        :param request: object to extract relationships from
-        :type request: SEEK.read
-        :returns: unprocessed relationships
-        :rtype: list of tuples
-        """
-        relations = []
-
-        if hasattr(request.data, 'relationships'):
-
-                for relationship in dir(request.data.relationships):
-
-                    if relationship[:2] != '__':
-                        relation = getattr(request.data.relationships, relationship)
-
-                        if type(relation.data) == type([{'id':'x','type':'y'}]) and relation.data != []:
-                            for r in relation.data:
-                                relations.append(r)
-
-                        elif relation.data != []:
-                            relations.append({'id':relation.data.id,'type':relation.data.type})
-
-        return relations
-
-    def createRelationshipList(self):
-
-        """Create the relationship list by parsing the search result list
-
-        This method fills the relationshipList array attribute before returning
-
-        :returns: number of relationships found
-        :rtype: int
-        """
-
-        relations = []
-
-        for request in self.requestList:
-
-            relations.extend(self.getRelationshipsFrom(request))
-
-
-        self.relationshipList = relations
-
-        return len(relations)
-
-    def removeDuplicateRelationships(self):
-
-        """Loops through the relationshipList array attribute and removes the duplicated entries for further modifications"""
-
-        noDuplicates = []
-        for relation in self.relationshipList:
-
-            if relation not in noDuplicates:
-
-                noDuplicates.append(relation)
-
-        self.relationshipList = noDuplicates
-
-    def substituteRelationships(self, relationshipsList):
-
-        """Loops through the search results and substitutes the raw relationships with requested objects
-
-        This method relaces the relationships from the data.relationships attribute with objects from the first parameter
-
-        :param relationshipsList: the processed relationships used to substitute the raw ones
-        :type relationshipsList: list
-        """
-        self.percentageLoaded = 0
-        if hasattr(self.data, 'relationships'):
-            for r in range(0, len(dir(self.data.relationships))):
-
-                if dir(self.data.relationships)[r][:2] != '__':
-                    relation = getattr(self.data.relationships, dir(self.data.relationships)[r])
-
-
-                    if type(relation.data) == type([{'id':'x','type':'y'}]) and relation.data != []:
-
-                        for k in relation.data:
-
-                            ID = 0
-                            TYPE = ''
-                            for key, value in k.items():
-                                if key == 'id':
-                                    ID = value
-                                if key == 'type':
-                                    TYPE = value
-
-                            # Search to match relation
-                            for item in relationshipsList:
-
-                                # Check if relation in search results matches the one in the list
-                                if item.data.id == ID and item.data.type == TYPE:
-
-                                    # Compute percentace for user info
-                                    p = round(self.percentageLoaded / len(relationshipsList) * 100, 2)
-
-                                    if p >= (100 - (1 / len(relationshipsList)) * 100):
-                                        print("Loading " + str(p) + "%\r", end='')
-                                        print("\nLoading Completed\r")
-                                    else:
-                                        print("Loading " + str(p) + "%\r", end='')
-
-                                    self.percentageLoaded = self.percentageLoaded + 1
-
-                                    if hasattr(relation, 'newData'):
-                                        relation.newData.append(item)
-
-                                    else:
-
-                                        relation.newData = []
-                                        relation.newData.append(item)
-
-                                    # Don't look anymore
-                                    break
-
-                    elif relation.data != []:
-
-                        # Search to match relation
-                        for item in relationshipsList:
-
-                            # Check if relation in search result matches the one in the list
-                            if type(item.data) != type(object()) and item.data.id == relation.data.id and item.data.type == relation.data.type:
-
-                                # Compute percentace for user info
-                                p = round(self.percentageLoaded / len(relationshipsList) * 100, 2)
-
-                                if p >= (100 - (1 / len(relationshipsList)) * 100):
-                                    print("Loading " + str(p) + "%\r", end='')
-                                    print("\nLoading Completed\r")
-                                else:
-                                    print("Loading " + str(p) + "%\r", end='')
-
-                                self.percentageLoaded = self.percentageLoaded + 1
-
-                                if hasattr(relation, 'newData'):
-                                    relation.newData.append(item)
-
-                                else:
-                                    # print('ba')
-                                    relation.newData = []
-                                    relation.newData.append(item)
-
-                                # Don't look anymore
-                                break
-
-    def search(self, TYPE, ID):
-
-        """Searches and retrieves a specific object from the API along with it's relationships
-
-        :param TYPE: eg: assays / studies / investigations etc.
-        :param ID: identification number
-        :type TYPE: string
-        :type ID: int
-        :returns: whether the search is successful or not
-        :rtype: bool
-        """
-
-        r = read(self.session.auth)
-        r._request(type=TYPE, id=ID)
-
-        relations = r.getRelationshipsFrom(r)
-
-        ps = read(self.session.auth)
-        ps.parallelRequest(relations, 1)
-
-        for thread in ps.threadList:
+        self.testOBJ.parallelRequest(self.goodFormat_RequestList, 1)
+        for thread in self.testOBJ.threadList:
             thread.join()
 
-        r.substituteRelationships(ps.requestList)
-        # print(str(ps.requestList))
-        self.data = r.data
+        properties = [
+            'attributes',
+            'id',
+            'type',
+            'links',
+            'meta',
+            'relationships']
 
-        return True
+        for request in self.testOBJ.requestList:
+            for prop in properties:
+                self.assertIn(prop, dir(request.data))
 
-    # Substitute the information from the relationship list back to the original search results
-    # 1st param: the relationship list (without duplicates)
-    # 2nd param: the total number of relations in the search results that need to be filled out
-    # return: none
-    # Adds a 'newData' attribute in each search result relation
-    def substituteRelationshipsForSearchResults(self, relationshipsList):
+    def test_parallelRequest_Method_ManyRequestPerThread(self):
 
-        """Used when browsing"""
-        print("\nSubstituting relationships into original search results: ")
-        self.percentageLoaded = 0
-
-        for i in self.requestList:
-
-            i.substituteRelationships(relationshipsList)
-
-    # Simplified method for the user in order to operate a browsing in the SEEK API
-    def browse(self):
-
-        """Runs a browse in the API
-
-        This method prints the results before returning
-
-        :returns: whether the search is successful or not
-        :rtype: bool
-        """
-        self.APISearch()
-
-        # Create the request list of the form [{'id':'x', 'type':'y'}]
-        self.createRequestList()
-
-        print("\n" + str(len(self.requestList)) + " results found",end='')
-
-        # Create a paralelized request for each search result
-        # 1st param: the search results to be requested
-        # 2nd param: the total amount of request
-        # 3rd param: the number of request per thread for the paralelization
-        self.time['start'] = time.time()
-
-        ps = read(self.session.auth)
-        ps.parallelRequest(self.requestList, requestPerThread=self.searchResultsPerThread)
-
-        # Wait for the requests to finish in order to continue
-        for thread in ps.threadList:
+        self.testOBJ.parallelRequest(self.goodFormat_RequestList, 15)
+        for thread in self.testOBJ.threadList:
             thread.join()
 
-        self.time['end'] = time.time()
+        properties = [
+            'attributes',
+            'id',
+            'type',
+            'links',
+            'meta',
+            'relationships']
 
-        print("\n" + str(ps.requestFails) + " ommited results (" + str(int(self.time['end'] - self.time['start'])) + " s elapsed)")
+        for request in self.testOBJ.requestList:
+            for prop in properties:
+                self.assertIn(prop, dir(request.data))
 
-        # Get the total number of places where there is a relationship
-        totalNumberRelationships = ps.createRelationshipList()
+    def wait(self, rList):
 
-        ps.removeDuplicateRelationships()
-
-        print("\n" + str(len(ps.relationshipList)) + " relationships found",end='')
-
-        # Create a paralelized request for each relationship in the search results
-        self.time['start'] = time.time()
-
-        PS = read(self.session.auth)
-        PS.parallelRequest(ps.relationshipList, requestPerThread=self.relationshipsPerThread)
-
-        # Wait for the requests to finish in order to continue
-        for thread in PS.threadList:
+        self.testOBJ.parallelRequest(rList, 1)
+        for thread in self.testOBJ.threadList:
             thread.join()
 
-        self.time['end'] = time.time()
+    def test_parallelRequest_Method_EmptyRequestList(self):
 
-        print("\n" + str(PS.requestFails) + " ommited results (" + str(int(self.time['end'] - self.time['start'])) + " s elapsed)")
+        self.assertRaises(Exception, self.wait(self.empty_RequestList))
 
-        ps.substituteRelationshipsForSearchResults(PS.requestList)
+    def test_parallelRequest_Method_ZeroRequestsPerThread(self):
 
-        self.requestList = ps.requestList
-        print("\n\n                                        --SEARCH RESULTS--\n\n")
-        for request in ps.requestList:
+        self.testOBJ.parallelRequest(self.goodFormat_RequestList, 0)
+        for thread in self.testOBJ.threadList:
+            thread.join()
 
-            request.printBrowse()
-            print('\n___________________________________________________________________________________________________________\n')
+        properties = [
+            'attributes',
+            'id',
+            'type',
+            'links',
+            'meta',
+            'relationships']
 
-        return True
+        for request in self.testOBJ.requestList:
+            for prop in properties:
+                self.assertIn(prop, dir(request.data))
 
-    def find(self, string):
+    def test_parallelRequest_Method_BadRequestList(self):
 
-        results = []
+        self.assertRaises(Exception, self.wait(self.badRequest_RequestList))
 
-        for request in self.requestList:
-            if string in request.data.attributes.title:
-                results.append(request)
+    def test_createRelationshipsList_Method(self):
 
-        return results
+        self.testOBJ.parallelRequest(self.goodFormat_RequestList,1)
+        for thread in self.testOBJ.threadList:
+            thread.join()
 
-    def download(self):
+        self.testOBJ.createRelationshipList()
+        self.assertEqual(len(self.testOBJ.relationshipList), 17)
 
-        """Downloads a content blob in the file"""
+    def test_removeDuplicateRelationships_Method(self):
 
-        if hasattr(self.data.attributes, 'content_blobs') == False:
-            print("This method can be called from data files only")
-            return False
+        self.testOBJ.parallelRequest(self.goodFormat_RequestList,1)
+        for thread in self.testOBJ.threadList:
+            thread.join()
 
-        self.link = self.data.attributes.content_blobs[0]['link'] + "/download"
-        self.fileName = self.data.attributes.content_blobs[0]['original_filename']
+        self.testOBJ.createRelationshipList()
+        self.testOBJ.removeDuplicateRelationships()
 
-        r = None
+        for i in range(0,len(self.testOBJ.relationshipList)):
+            for j in range(0, len(self.testOBJ.relationshipList)):
 
-        try:
-            r = self.session.get(self.link)
-            r.raise_for_status()
-            # self.session.close()
-            if r.status_code != 200:
-                return False
+                if i is not j:
+                    self.assertNotEquals(self.testOBJ.relationshipList[i],
+                                         self.testOBJ.relationshipList[j])
 
-            self.file = r
-            # self.json = r.json()
-            # self._loadJSON(self, self.json['data'])
-            open(self.fileName, 'wb').write(r.content)
+    def test_substituteRelationships_Method(self):
 
-            return True
+        self.testOBJ.parallelRequest(self.goodFormat_RequestList,1)
+        for thread in self.testOBJ.threadList:
+            thread.join()
 
-        except Exception as e:
-            print(str(e))
+        self.testOBJ.createRelationshipList()
+        self.testOBJ.substituteRelationships(self.testOBJ.relationshipList)
+        self.assertEqual(1,1)
 
-    def view(self, columnForHeader, page):
+    @patch('SEEK._get_input', return_value="liver")
+    @patch('SEEK._get_input_testing', return_value="assays")
+    def test_browse_Method(self, name, key):
+        self.assertTrue(self.testOBJ.browse())
 
-        """View the downloaded file"""
-        csv = pd.read_excel(self.fileName, header=columnForHeader, sheet_name=page)
-        return csv
+    def test_download_Method(self):
 
+        self.testOBJ._request(type="data_files", id="2813")
+        self.assertTrue(self.testOBJ.download())
+        self.assertTrue(os.path.isfile(self.testOBJ.fileName))
 
-class write:
-    """
-    This class provides methods and functions for writing into the SEEK
+    def test_download_Method_NoDataFile(self):
 
-    :param auth: FairdomHub credentials; can be left empty
-    :param DNS: Specify if you are posting to the official HUB or leave empty to write to testing.sysmo-db
-    :type auth: SEEK.auth()
-    :type DNS: string
-    """
+        self.testOBJ._request(type="assays", id="43")
+        self.assertFalse(self.testOBJ.download())
 
-    def __init__(self, auth = None, DNS = PROT_WRITING_DNS_DEFAULT):
+    def test_view_Method(self):
 
-        self.base_url = DNS
+        self.testOBJ._request(type="data_files", id="2813")
+        self.assertTrue(self.testOBJ.download())
+        self.assertTrue(os.path.isfile(self.testOBJ.fileName))
+        self.assertEquals(type(pandas.read_excel(self.testOBJ.fileName)),
+            type(self.testOBJ.view(columnForHeader=1, page='6h results genes')))
 
-        self.headers = {"Content-type": "application/vnd.api+json",
-            "Accept": "application/vnd.api+json",
-            "Connection": "close",
-            "Accept-Charset": "ISO-8859-1"}
+    @patch('SEEK._get_input', return_value=
+                                   PROT_DEFAULT_AUTHENTICATION_STRING)
+    @patch('getpass.getpass', return_value=PROT_DEFAULT_AUTHENTICATION_STRING)
+    def test_initWrite_WithAuth(self, username, password):
 
-        self.type = None
-        self.JSON = None
-        self.session = requests.Session()
-        self.session.headers.update(self.headers)
+        self.testWriteOBJ.session.auth = SEEK.auth()
+        self.assertEqual(self.testWriteOBJ.session.auth,
+                        (PROT_DEFAULT_AUTHENTICATION_STRING,
+                        PROT_DEFAULT_AUTHENTICATION_STRING))
 
-        if auth != None:
-            self.session.auth = auth
-        else:
-            self.session.auth = (_get_input("Username: "),
-                                 getpass.getpass("Password: "))
+    @patch('SEEK._get_input', return_value=
+                                   PROT_DEFAULT_AUTHENTICATION_STRING)
+    @patch('getpass.getpass', return_value=PROT_DEFAULT_AUTHENTICATION_STRING)
+    def test_initWrite_WithoutAuth(self, username, password):
 
-        self.dropdown = None
-        self.data = object()
+        self.testWriteOBJ = SEEK.write()
+
+        self.assertEqual(self.testWriteOBJ.session.auth,
+                         (PROT_DEFAULT_AUTHENTICATION_STRING,
+                          PROT_DEFAULT_AUTHENTICATION_STRING))
+
+    @patch('SEEK._get_input', return_value='1')
+    def test_post_Method(self, rofl):
+
         self.type = widgets.Dropdown(
             options=[
                 "assays",
@@ -1136,132 +563,11 @@ class write:
                 "sops",
                 "publications"
             ],
-            value='assays',
+            value='studies',
             disabled=False,
         )
+        self.testWriteOBJ.JSON = SEEK._studyFormat('1','1')
+        self.assertTrue(self.testWriteOBJ.post())
 
-    def selectResearchType(self):
-
-        """Mandatory"""
-
-        display(HTML('<h3>SEEK FORM</h3>'))
-        print('\nYou need to complete the following form in order to succesfully upload your information to SEEK')
-
-
-
-        return widgets.HBox([widgets.Label(
-                            value="What is it that you want to post?"),
-                            self.type])
-
-    def fillSEEKForm(self):
-
-        """Mandatory"""
-
-        if self.type.value == 'assays':
-            self.JSON = _assayFormat(self.assayKind.value,
-                                            self.description.value,
-                                            self.policyAccess.value)
-
-        elif self.type.value == 'investigations':
-            self.JSON = _investigationFormat()
-        elif self.type.value == 'studies':
-            self.JSON = _studyFormat(self.description.value,
-                                            self.policyAccess.value)
-        elif self.type.value == 'data_files':
-            self.JSON = _data_fileFormat(self.description.value,
-                                                self.policyAccess.value)
-
-    def fillDescription(self):
-
-        """Mandatory"""
-
-        self.description = widgets.Textarea(disabled=False,
-                                            layout=PROT_TEXTAREA_LAYOUT)
-
-
-        return widgets.HBox([widgets.Label(
-                            value="Please provide your description:"),
-                            self.description])
-
-    def selectAssayKind(self):
-
-        """Mandatory for assays"""
-
-        self.assayKind = widgets.Dropdown(
-            options=[
-                "EXP",
-                "MOD"
-            ],
-            value='EXP',
-            disabled=False,
-        )
-
-
-        return widgets.HBox([widgets.Label(
-                value="Please select the class of Assay you wish to create:"),
-                self.assayKind])
-
-    def selectPolicyAccess(self):
-
-        """Mandatory"""
-
-        self.policyAccess = widgets.Dropdown(
-            options=[
-                "no_access",
-                "view",
-                "download",
-                "edit",
-                "manage"
-            ],
-            value='no_access',
-            disabled=False,
-        )
-
-
-        return widgets.HBox([widgets.Label(
-                value="Please select the policy access:"),
-                self.policyAccess])
-
-
-    def post(self):
-        """Uses python requests to post the object created previously and saved in the JSON attribute to the SEEK
-
-        :returns: whether the post is successful or not
-        :rtype: bool
-
-        :Example:
-
-        >>> import SEEK as S
-        >>> request = S.write()
-        >>> request.post()
-        False
-        >>> request.selectResearchType()
-        ...
-        >>> request.selectAssayKind()
-        ...
-        >>> request.fillDescription()
-        ...
-        >>> request.selectPolicyAccess()
-        ...
-        >>> request.fillSEEKForm()
-        ...
-        >>> request.post()
-        True
-        """
-        r = None
-
-        try:
-            r = self.session.post(self.base_url + '/' + self.type.value, json=self.JSON)
-
-            self.session.close()
-            r.close()
-            if r.status_code != 200:
-                return False
-
-            self.json = r.json()
-            # self._loadJSON(self, self.json['data'])
-
-            return True
-
-        except Exception as e:
-            print(str(e))
+if __name__ == '__main__':
+    unittest.main()

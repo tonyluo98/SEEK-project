@@ -251,14 +251,6 @@ finn :
 
 
 
-
-
-
-
-
-
-
-
 What did i use
 what is the api like - its changing
 What fairdom is and what seek is
@@ -321,44 +313,6 @@ Be direct - I am going
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Scale ?
   what happens with lots of results
 
@@ -384,3 +338,12 @@ make a notebook up
 
 essentially navigate isa structure via notebook
 use login stuff
+
+
+
+report :
+
+Seamless intergration
+engagement with users outside of project / manchester
+TABLE OF USERS of user feedback
+Evaluation what i could have done different
